@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XML Document Example -->
+
+<Company xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="company.xsd">
+
+    <!-- Root Element -->
+    <Departments>
+        <Department id="HR">
+            <Name>Human Resources</Name>
+            <Employees>
+                <Employee id="E001" gender="Female">
+                    <FirstName>Jane</FirstName>
+                    <LastName>Doe</LastName>
+                    <Email>jane.doe@example.com</Email>
+                    <Salary currency="USD">60000</Salary>
+                </Employee>
+                <Employee id="E002" gender="Male">
+                    <FirstName>John</FirstName>
+                    <LastName>Smith</LastName>
+                    <Email>john.smith@example.com</Email>
+                    <Salary currency="USD">70000</Salary>
+                </Employee>
+            </Employees>
+        </Department>
+        <Department id="ENG">
+            <Name>Engineering</Name>
+            <Employees>
+                <Employee id="E003" gender="Male">
+                    <FirstName>Tom</FirstName>
+                    <LastName>Brown</LastName>
+                    <Email>tom.brown@example.com</Email>
+                    <Salary currency="USD">80000</Salary>
+                </Employee>
+            </Employees>
+        </Department>
+    </Departments> 
+
+    <!-- CDATA Section -->
+    <Project>
+        <Name>Project Alpha</Name>
+        <Description><![CDATA[This is a complex project that requires multiple resources and time management.]]></Description>
+    </Project>
+
+    <!-- Entity Reference -->
+    <Message>
+        <Content>Dear &lt;Employee&gt;, you are assigned to &amp;Project Alpha&amp;.</Content>
+    </Message>
+
+    <!-- Nested Elements -->
+    <Configuration>
+        <Database>
+            <Host>localhost</Host>
+            <Port>5432</Port>
+            <Username>admin</Username>
+            <Password>password123</Password>
+        </Database>
+        <Logging>
+            <Level>DEBUG</Level>
+            <FilePath>/var/log/application.log</FilePath>
+        </Logging>
+    </Configuration>
+
+    <!-- Namespace Example -->
+    <ExternalResources xmlns:ext="http://www.example.com/external">
+        <ext:Resource>
+            <ext:Name>External API</ext:Name>
+            <ext:Endpoint>https://api.example.com</ext:Endpoint>
+        </ext:Resource>
+    </ExternalResources>
+
+    <!-- Processing Instruction -->
+    <?xml-stylesheet type="text/xsl" href="style.xsl"?>
+
+    <!-- Self-closing Tags -->
+    <SelfClosingExample />
+</Company>

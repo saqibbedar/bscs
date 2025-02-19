@@ -1,0 +1,82 @@
+#import <Foundation/Foundation.h>
+
+// Declare a base class - Person
+@interface Person : NSObject
+
+@property (nonatomic, strong) NSString *name;
+@property (nonatomic, assign) NSInteger age;
+
+// Initializer method
+- (instancetype)initWithName:(NSString *)name age:(NSInteger)age;
+
+// Method to print details about the person
+- (void)speak;
+
+@end
+
+// Implement the base class - Person
+@implementation Person
+
+// Implement the initializer
+- (instancetype)initWithName:(NSString *)name age:(NSInteger)age {
+    self = [super init];
+    if (self) {
+        _name = name;
+        _age = age;
+    }
+    return self;
+}
+
+// Implement the speak method
+- (void)speak {
+    NSLog(@"Hi, my name is %@ and I am %ld years old.", self.name, (long)self.age);
+}
+
+@end
+
+// Declare a subclass - Student
+@interface Student : Person
+
+@property (nonatomic, strong) NSString *grade;
+
+// Initializer method for Student
+- (instancetype)initWithName:(NSString *)name age:(NSInteger)age grade:(NSString *)grade;
+
+// Method to print student-specific message
+- (void)study;
+
+@end
+
+// Implement the subclass - Student
+@implementation Student
+
+// Implement the initializer for Student
+- (instancetype)initWithName:(NSString *)name age:(NSInteger)age grade:(NSString *)grade {
+    self = [super initWithName:name age:age]; // Call parent class initializer
+    if (self) {
+        _grade = grade;
+    }
+    return self;
+}
+
+// Implement the study method
+- (void)study {
+    NSLog(@"%@ is studying for grade %@.", self.name, self.grade);
+}
+
+@end
+
+// Main function to test the classes
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        // Create an instance of Person
+        Person *person1 = [[Person alloc] initWithName:@"John" age:30];
+        [person1 speak]; // Calling the speak method
+
+        // Create an instance of Student
+        Student *student1 = [[Student alloc] initWithName:@"Alice" age:20 grade:@"A"];
+        [student1 speak]; // Inherited method from Person
+        [student1 study]; // Method specific to Student
+    }
+    return 0;
+}

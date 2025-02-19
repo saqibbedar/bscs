@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive HTML and JavaScript Example</title>
+</head>
+<body>
+    <h1 id="header">Hello, World!</h1>
+    <p class="description">Dear &lt;Employee&gt;, you are assigned to &amp;Project Alpha&amp;</p>
+    
+    <button type="button" id="changeText">Change Text</button>
+    <button type="button" id="toggleVisibility">Toggle Visibility</button>
+    <button type="button" id="addElement">Add Element</button>
+    <button type="button" id="removeElement">Remove Element</button>
+    
+    <input type="text" id="inputField" placeholder="Type something...">
+    <button type="button" id="showAlert">Show Alert</button>
+    
+    <form id="form">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name"> 
+        <input type="submit" value="Submit">
+    </form>
+    
+    <button class="IamButton" id="IamID" type="button">I am Button</button>
+    
+    <div id="container">
+        <div class="box">Box 1</div>
+        <div class="box">Box 2</div>
+    </div>
+    
+    <script defer>
+        // Change text content
+        document.getElementById('changeText').addEventListene('click', () => {
+            document.getElementById('header').textContent = 'Text Changed!';
+        });
+
+        // Toggle visibility
+        document.getElementById('toggleVisibility').addEventListener('click', () => {
+            const description = document.querySelector('.description');
+            description.style.display = (description.style.display === 'none') ? 'block' : 'none';
+        });
+
+        // Add new element
+        document.getElementById('addElement').addEventListener('click', () => {
+            const newDiv = document.createElement('div');
+            newDiv.className = 'box';
+            newDiv.style.backgroundColor = 'lightcoral';
+            newDiv.textContent = 'New Box';
+            document.getElementById('container').appendChild(newDiv);
+        });
+
+        // Remove last element
+        document.getElementById('removeElement').addEventListener('click', () => {
+            const container = document.getElementById('container');
+            if (container.lastElementChild) {
+                container.removeChild(container.lastElementChild);
+            }
+        });
+
+        // Show alert with input value
+        document.getElementById('showAlert').addEventListener('click', () => {
+            const inputField = document.getElementById('inputField');
+            alert(`Input value: ${inputField.value}`);
+        });
+        
+        let a = 11
+
+        // Form submission
+        document.getElementById('form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            alert(`Form submitted with name: ${name}`);
+        });
+
+        // JavaScript DOM Manipulation Examples
+        console.log('Document title:', document.title);
+        console.log('Window inner height:', window.innerHeight);
+
+        // Query selectors
+        console.log('First .box:', document.querySelector('.box'));
+        console.log('All .box elements:', document.querySelectorAll('.box'));
+
+        // Event handling
+        window.addEventListener('resize', () => {
+            console.log('Window resized to:', window.innerWidth, 'x', window.innerHeight);
+        });
+
+        // AJAX Example using Fetch API
+        fetch('https://jsonplaceholder.typicode.com/posts/1')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Fetched data:', data);
+            })
+            .catch(error => {
+                console.error('Error fetching data:', error);
+            });
+    </script>
+</body>
+</html>

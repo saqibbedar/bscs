@@ -1,0 +1,218 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+ 
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+html, body{
+    width: 100%;
+    height: 100%;
+    font-family: 'Roboto', sans-serif;
+}
+a {
+    text-decoration: none;
+}
+
+/* ============================== */
+/* 🎨 1. CSS Variables (Custom Properties) */
+/* ============================== */
+:root {
+    --primary: #007bff;
+    --secondary: #ff4081;
+    --background: #f4f4f4;
+    --text-color: #222;
+    --border-radius: 10em;
+    --shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* ============================== */
+/* 🔹 2. Global Reset & Modern Logical Properties */
+/* ============================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    color: var(--text-color);
+    background-color: var(--background);
+    line-height: 1.6;
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+}
+ 
+#main{
+
+}
+
+/* ============================== */
+/* 🔥 3. Modern Container Queries */
+/* ============================== */
+.container {
+    container-type: inline-size;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-block: 20px;
+}
+
+/* Responsive inside a container */
+@container (max-width: 600px) {
+    .card {
+        flex-direction: column;
+    }
+}
+
+/* ============================== */
+/* 🚀 4. Flexbox + Grid with Subgrid */
+/* ============================== */
+.flex-container {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-around;
+}
+
+.grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+}
+
+.grid-item {
+    background: var(--primary);
+    color: white;
+    padding: 20px;
+    border-radius: var(--border-radius);
+    display: grid;
+    place-items: center;
+}
+
+/* ============================== */
+/* 🎥 5. Modern Media & Aspect Ratio */
+/* ============================== */
+.video-container {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: black;
+}
+
+/* ============================== */
+/* 📜 6. Modern Selectors: :is(), :has(), :where() */
+/* ============================== */
+:is(h1, h2, h3) {
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.card:has(img) {
+    border: 2px solid var(--secondary);
+}
+
+.button {
+    background: var(--primary);
+    color: white;
+    padding: 10px 20px;
+    border-radius: var(--border-radius);
+    transition: background 0.3s ease-in-out;
+}
+
+.button:hover {
+    background-Color: var(--secondary);
+}
+
+/* ============================== */
+/* 🌐 7. Dark Mode Support */
+/* ============================== */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #222;
+        color: white;
+    }
+
+    .grid-item {
+        background: #333;
+    }
+}
+
+/* ============================== */
+/* 🎬 8. Animations with View Timeline */
+/* ============================== */
+@keyframes slide-in {
+    0% {
+        opacity: 0;
+        transform: translateY(50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animated {
+    animation: slide-in 1s ease-in-out;
+    view-timeline-name: --element;
+    view-timeline-axis: block;
+}
+
+/* ============================== */
+/* ✨ 9. Backdrop Filters & Glassmorphism */
+/* ============================== */
+.glass {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ============================== */
+/* 🖥️ 10. Custom Scrollbars (Modern) */
+/* ============================== */
+::-webkit-scrollbar {
+    width: 10px;
+    -webkit-perspective:0ch;
+    -webkit-transition-property: none;
+}
+
+::-webkit-scrollbar-track {
+    background: #f4f4f4;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: var(--border-radius);
+}
+
+/* ============================== */
+/* 🔄 11. 3D Effects */
+/* ============================== */
+.card-3d {
+    perspective: 1000px;
+}
+
+.card-3d-inner {
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+}
+
+.card-3d:hover .card-3d-inner {
+    transform: rotateY(180deg);
+}
+
+/* ============================== */
+/* 📱 12. Responsive Media Queries */
+/* ============================== */
+@media (max-width: 768px) {
+    .flex-container {
+        flex-direction: column;
+    }
+
+    .grid-container {
+        grid-template-columns: 1fr;
+    }
+}

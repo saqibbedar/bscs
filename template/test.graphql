@@ -1,0 +1,56 @@
+# Define a custom scalar type
+scalar DateTime
+
+# Enum Type
+enum UserRole {
+  ADMIN
+  USER
+  GUEST
+}
+
+# Interface for reusable fields
+interface Person {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+# Object Type extending interface
+type User implements Person {
+  id: ID!
+  name: String!
+  email: String!
+  role: UserRole!
+  createdAt: DateTime!
+}
+
+# Input Type for Mutations
+input CreateUserInput {
+  name: String!
+  email: String!
+  role: UserRole = USER
+}
+
+# Queries
+type Query {
+  getUser(id: ID!): User
+  listUsers: [User!]!
+}
+
+# Mutations
+type Mutation {
+  createUser(input: CreateUserInput!): User
+  deleteUser(id: ID!): Boolean
+}
+
+# Subscriptions
+type Subscription {
+  userAdded: User!
+}
+
+# Schema definition (optional in modern GraphQL)
+schema {
+  query: Query
+  mutation: Mutation
+  subscription: Subscription
+}
