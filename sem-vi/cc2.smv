@@ -1,0 +1,30 @@
+MODULE main
+
+VAR
+  velocity : {stop, slow, fast};
+
+IVAR
+  --brake : boolean;
+  accelerate : boolean;
+
+ASSIGN
+  init(velocity) := stop;
+
+  next(velocity) := case
+    velocity = stop & accelerate = TRUE  : slow;
+    velocity = stop & accelerate = FALSE : stop;
+
+    velocity = slow & accelerate = TRUE  : fast;
+    velocity = slow & accelerate = FALSE : stop;
+
+    velocity = fast & accelerate = TRUE  : fast;
+    velocity = fast & accelerate = FALSE : stop;
+
+    --TRUE : velocity;
+  esac;
+--Edge Coverage
+LTLSPEC
+G(velocity = stop & accelerate = TRUE -> X(velocity = slow))
+
+--velocity != slow  to move kry ga 
+-- velocity = slow to true hy to move nae kry ga
