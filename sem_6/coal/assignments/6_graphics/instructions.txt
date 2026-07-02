@@ -1,0 +1,11 @@
+Write a program in assembly that takes input about size of square, and number of square from the user and then prints them on the screen.
+
+   
+
+*Submission Rules:*
+
+1. Submit your file in .ASM format only.
+2. Do not submit .ZIP or any other file format.
+3. Any submission not in .ASM format will receive zero marks.
+4. File name should be in the format:
+    RegNo_Name_Task4.asm

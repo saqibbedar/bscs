@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSI Layer 2 — Data Link Layer | Revision Booklet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b1e36; --ink-2:#14314f; --paper:#f6f1e8; --paper-2:#ece3d0;
+    --rule:#1a3b5c; --amber:#c97a1e; --amber-2:#e9a84a;
+    --red:#a8321f; --green:#2d5a3d; --muted:#5a6b7f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{background:var(--paper);color:var(--ink);font-family:"Inter",system-ui,sans-serif;font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  .sheet{max-width:920px;margin:0 auto;padding:56px 56px 80px;background:radial-gradient(1200px 600px at 100% 0%, rgba(201,122,30,0.06), transparent 60%),radial-gradient(900px 500px at 0% 100%, rgba(11,30,54,0.05), transparent 60%),var(--paper);box-shadow:0 0 0 1px rgba(11,30,54,0.08)}
+  .masthead{border-top:6px solid var(--ink);border-bottom:1px solid var(--ink);padding:18px 0 14px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:flex-end;gap:24px}
+  .masthead .brand{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--muted)}
+  .masthead .chapter{font-family:"JetBrains Mono",monospace;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:var(--amber)}
+  h1.title{font-family:"Fraunces",serif;font-weight:800;font-size:clamp(40px,6vw,68px);line-height:0.98;letter-spacing:-0.02em;margin:24px 0 6px;color:var(--ink)}
+  h1.title .layernum{display:block;font-size:18px;font-weight:500;font-style:italic;color:var(--amber);letter-spacing:0.02em;margin-bottom:6px}
+  .one-liner{font-family:"Fraunces",serif;font-style:italic;font-size:22px;color:var(--ink-2);max-width:720px;margin:8px 0 0;line-height:1.35}
+  .analogy{margin-top:22px;padding:18px 22px;border-left:4px solid var(--amber);background:rgba(233,168,74,0.12);font-family:"Fraunces",serif;font-size:17px;font-style:italic;color:var(--ink-2)}
+  .analogy strong{font-style:normal;font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.15em;color:var(--amber);display:block;margin-bottom:6px}
+  section{margin:48px 0 0}
+  h2.sec{font-family:"Fraunces",serif;font-size:30px;font-weight:700;letter-spacing:-0.01em;color:var(--ink);margin:0 0 4px;display:flex;align-items:baseline;gap:14px}
+  h2.sec .num{font-family:"JetBrains Mono",monospace;font-size:12px;font-weight:600;color:var(--amber);letter-spacing:0.1em}
+  h2.sec::after{content:"";flex:1;height:1px;background:var(--ink);margin-left:10px;transform:translateY(-8px)}
+  h3{font-family:"Fraunces",serif;font-size:22px;margin:28px 0 10px;color:var(--ink)}
+  h4{font-family:"JetBrains Mono",monospace;text-transform:uppercase;font-size:12px;letter-spacing:0.12em;color:var(--amber);margin:22px 0 8px}
+  p{margin:10px 0}
+  ul,ol{padding-left:22px;margin:10px 0}
+  ul li,ol li{margin:6px 0}
+  ul.responsibilities{list-style:none;padding:0}
+  ul.responsibilities li{padding:14px 18px;border:1px solid rgba(11,30,54,0.15);background:rgba(255,255,255,0.5);margin:10px 0;border-radius:2px;position:relative;padding-left:54px}
+  ul.responsibilities li::before{content:attr(data-n);position:absolute;left:14px;top:14px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--amber);font-weight:600;letter-spacing:0.1em}
+  ul.responsibilities li b{display:block;font-family:"Fraunces",serif;font-size:17px;font-weight:600;margin-bottom:4px}
+  table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14.5px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid rgba(11,30,54,0.15);vertical-align:top}
+  th{background:var(--ink);color:var(--paper);font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600}
+  tr:nth-child(even) td{background:rgba(11,30,54,0.03)}
+  .diagram{background:var(--ink);color:var(--paper);padding:22px 24px;border-radius:2px;margin:14px 0;font-family:"JetBrains Mono",monospace;font-size:13.5px;line-height:1.5;overflow-x:auto;white-space:pre}
+  .diagram .cyan{color:#7fd1d5} .diagram .amber{color:var(--amber-2)} .diagram .green{color:#9fd69f} .diagram .dim{color:#8ea5bd} .diagram .red{color:#ff9082}
+  .diagram-caption{font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--muted);margin:-6px 0 12px}
+  .explain-block{padding:14px 18px;background:rgba(11,30,54,0.04);border-left:3px solid var(--ink-2);margin:10px 0 18px;font-size:15px}
+  .examiner{padding:14px 18px;background:rgba(168,50,31,0.06);border-left:3px solid var(--red);margin:10px 0 18px;font-size:15px}
+  .examiner strong{font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.12em;color:var(--red);display:block;margin-bottom:4px}
+  .must-remember{background:#fff7e4;border:1.5px dashed var(--amber);padding:20px 22px;border-radius:2px;margin:14px 0}
+  .must-remember h4{margin-top:0;color:var(--red)}
+  .must-remember ul{margin:0;padding-left:20px}
+  .trap{background:rgba(168,50,31,0.07);padding:12px 14px;border-left:3px solid var(--red);margin:8px 0;font-size:14.5px}
+  .trap b{color:var(--red)}
+  .importance-card{display:flex;align-items:center;gap:22px;padding:18px 22px;background:var(--ink);color:var(--paper);border-radius:2px}
+  .stars{font-size:28px;color:var(--amber-2);letter-spacing:0.1em}
+  .importance-card .stars .dim{color:rgba(246,241,232,0.2)}
+  .importance-card .rating-label{font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:var(--amber-2)}
+  .importance-card p{margin:0;color:var(--paper)}
+  .qset{margin:20px 0;padding:20px 24px;background:rgba(255,255,255,0.55);border:1px solid rgba(11,30,54,0.15)}
+  .qset h4{margin-top:0}
+  .qset ol li{margin:8px 0;line-height:1.5}
+  code{font-family:"JetBrains Mono",monospace;font-size:13.5px;background:rgba(11,30,54,0.08);padding:1px 6px;border-radius:2px}
+  .pull{font-family:"Fraunces",serif;font-size:24px;font-style:italic;line-height:1.35;color:var(--ink-2);border-top:1px solid var(--ink);border-bottom:1px solid var(--ink);padding:18px 0;margin:26px 0}
+  .pull::before{content:"“";font-size:48px;color:var(--amber);line-height:0;vertical-align:-18px;margin-right:6px}
+  .footer{margin-top:60px;padding-top:16px;border-top:3px double var(--ink);font-family:"JetBrains Mono",monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.14em;color:var(--muted);display:flex;justify-content:space-between}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:14px 0}
+  .two-col .card{padding:16px 18px;border:1px solid rgba(11,30,54,0.18);background:rgba(255,255,255,0.5)}
+  .two-col .card h4{margin-top:0}
+  .frame-anatomy{display:grid;grid-template-columns:0.8fr 0.9fr 2.5fr 0.9fr 0.7fr;gap:2px;margin:16px 0;font-family:"JetBrains Mono",monospace;font-size:12px}
+  .frame-anatomy>div{padding:16px 10px;text-align:center;background:var(--ink);color:var(--paper);border-radius:2px}
+  .frame-anatomy>div b{display:block;font-size:14px;color:var(--amber-2);margin-bottom:4px}
+  .frame-anatomy>div:nth-child(3){background:var(--amber);color:var(--ink)}
+  .frame-anatomy>div:nth-child(3) b{color:var(--ink)}
+  @media (max-width:720px){.sheet{padding:28px 22px 60px}.two-col{grid-template-columns:1fr}.frame-anatomy{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<div class="masthead">
+  <div class="brand">OSI Revision Booklet · Vol. II</div>
+  <div class="chapter">Chapter 02 · Layer 2 of 7</div>
+</div>
+
+<h1 class="title">
+  <span class="layernum">— LAYER 02 —</span>
+  The Data Link Layer
+</h1>
+
+<p class="one-liner">The layer that takes raw bits from Layer 1 and turns them into structured <em>frames</em>, handling <b>node-to-node (hop-to-hop)</b> delivery on a single physical link.</p>
+
+<div class="analogy">
+  <strong>Real-world analogy</strong>
+  If the Physical Layer is the motorcycle that moves an envelope between two post boxes, the Data Link Layer is the <b>local postal worker at each post box</b> — he writes the <i>next post box's address</i> on the envelope (MAC), wraps the letter in a labelled package (framing), checks that the package isn't damaged (error control), waits his turn to hand it over (access control), and throttles delivery if the next office is overwhelmed (flow control). Crucially, he only cares about the <b>next hop</b>, not the final recipient.
+</div>
+
+<!-- ========== CORE RESPONSIBILITIES ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 01</span> Core Responsibilities</h2>
+
+<p>From the slide "Duties of Data Link Layer" (Lec 2, Slide 30), five responsibilities are explicit:</p>
+
+<ul class="responsibilities">
+  <li data-n="01">
+    <b>Framing</b>
+    The Data Link Layer groups incoming bits from Layer 1 into discrete, structured units called <b>frames</b>. A frame has a defined start, end, header, payload, and trailer. Framing turns a formless bit stream into something that can be individually addressed, error-checked, and acknowledged.
+  </li>
+  <li data-n="02">
+    <b>Physical Addressing (MAC)</b>
+    Every frame carries a source and destination <b>MAC address</b> — a 48-bit, globally unique hardware address burned into the network interface. These addresses identify the sender and <em>next-hop</em> receiver on the same physical network. MAC addresses are <em>not</em> routed; they only matter within a single link.
+  </li>
+  <li data-n="03">
+    <b>Flow Control</b>
+    Prevents a fast sender from overwhelming a slow receiver on the same link. If the receiver's buffer fills up, Data Link Layer protocols use flow-control techniques (stop-and-wait, sliding window at L2) to signal the sender to pause or slow down.
+  </li>
+  <li data-n="04">
+    <b>Error Control</b>
+    Detects — and in some protocols corrects — bit errors that occur during physical transmission. Done using a checksum or CRC placed in the frame trailer. On detection, the frame is either discarded (most common) or retransmitted via ARQ protocols.
+  </li>
+  <li data-n="05">
+    <b>Access Control</b>
+    When multiple devices share the same medium (e.g., Wi-Fi, or a bus cable), the Data Link Layer decides <em>who gets to transmit when</em>. Mechanisms include CSMA/CD (Ethernet), CSMA/CA (Wi-Fi), and token passing.
+  </li>
+</ul>
+
+<p>The slide separately emphasises the Data Link Layer is responsible for <b>"hop-to-hop delivery"</b> (also called node-to-node) — this phrase must appear in your answer.</p>
+</section>
+
+<!-- ========== DETAILED CONCEPTS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 02</span> Detailed Concepts</h2>
+
+<h3>2.1 What "Hop-to-Hop" really means</h3>
+<p>A packet travelling from a PC in Islamabad to a server in Frankfurt passes through many routers. Each <b>link</b> between adjacent routers is one "hop." The Data Link Layer only operates on a <em>single hop</em> — when the frame reaches the next router, the frame is torn apart, the packet inside is routed, and a <em>new frame</em> is built for the next hop. The Network Layer (L3) worries about the end-to-end journey; L2 only worries about "how do I get this packet to the next device on this wire."</p>
+
+<h3>2.2 The MAC Address</h3>
+<ul>
+  <li>48 bits, written as six hex bytes: <code>00:1A:2B:3C:4D:5E</code>.</li>
+  <li>First 24 bits = <b>OUI</b> (Organisationally Unique Identifier, IEEE-assigned to the vendor).</li>
+  <li>Last 24 bits = NIC-specific serial number chosen by the vendor.</li>
+  <li>Burned into the network interface card at manufacturing time. (Can be overridden in software on modern systems.)</li>
+  <li>Used only within a single broadcast domain / LAN. Routers <em>rewrite</em> the MAC address at every hop.</li>
+</ul>
+
+<h3>2.3 Framing — giving structure to bits</h3>
+<p>A generic Ethernet-style frame looks like this:</p>
+
+<div class="frame-anatomy">
+  <div><b>Preamble</b>Bit sync</div>
+  <div><b>Dest MAC</b>48 bits</div>
+  <div><b>Src MAC │ Type │ Data / Payload</b>Upper-layer packet lives here</div>
+  <div><b>FCS / CRC</b>Error check</div>
+  <div><b>End</b>Frame gap</div>
+</div>
+
+<p>The framing must solve two subtle problems: (1) <em>how does the receiver know where a frame starts and ends?</em> (2) <em>what if the end-of-frame marker accidentally appears inside the data?</em> The answer is techniques like <b>byte stuffing</b>, <b>bit stuffing</b>, or <b>length counting</b> in the header — not examined in depth in these slides, but worth naming.</p>
+
+<h3>2.4 Flow Control</h3>
+<p>The same "fast sender, slow receiver" problem occurs at Layer 4 too — but at Layer 2 it is solved <em>between adjacent nodes</em>, not end-to-end. Two classical techniques:</p>
+<ul>
+  <li><b>Stop-and-Wait</b> — send one frame, wait for ACK, send the next. Simple; poor throughput on links with high bandwidth-delay product.</li>
+  <li><b>Sliding Window (at L2)</b> — send up to <i>N</i> unacknowledged frames before pausing. <i>N</i> is the window size.</li>
+</ul>
+
+<h3>2.5 Error Control</h3>
+<p>Noise on the physical medium flips bits. The Data Link Layer:</p>
+<ol>
+  <li>Computes a checksum or CRC over the frame's contents.</li>
+  <li>Appends the result in the frame's <b>trailer</b>.</li>
+  <li>On receipt, recomputes the checksum. If it doesn't match, the frame is corrupt.</li>
+</ol>
+<p>Corrupt frames are typically <em>silently discarded</em>. Recovery is left to higher layers (TCP at L4, for example). Some L2 protocols do retransmit (ARQ), but Ethernet itself does not — it relies on TCP.</p>
+
+<h3>2.6 Access Control — sharing the medium</h3>
+<p>Required only when the medium is <em>shared</em>. The slides mention it as a duty but the techniques themselves are:</p>
+<ul>
+  <li><b>CSMA/CD</b> (Carrier Sense Multiple Access with Collision Detection) — classical Ethernet. Listen → if idle, transmit → if collision detected, abort and retry after a random back-off.</li>
+  <li><b>CSMA/CA</b> (Collision Avoidance) — Wi-Fi. Can't detect collisions mid-air, so avoids them using RTS/CTS handshakes and random back-off before transmit.</li>
+  <li><b>Token Passing</b> — a special control frame (the "token") circulates; only the holder may transmit. Used in Token Ring, FDDI.</li>
+</ul>
+
+<h3>2.7 Two sub-layers (useful context)</h3>
+<p>IEEE formally splits the Data Link Layer into two:</p>
+<div class="two-col">
+  <div class="card"><h4>LLC — Logical Link Control</h4><p>Upper sublayer. Provides a uniform interface to the Network Layer regardless of physical technology. Handles flow and error control, multiplexes Network Layer protocols.</p></div>
+  <div class="card"><h4>MAC — Media Access Control</h4><p>Lower sublayer. Handles physical addressing, access to the shared medium, framing at the hardware level. This is where MAC addresses come from.</p></div>
+</div>
+
+</section>
+
+<!-- ========== DIAGRAMS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 03</span> Diagrams</h2>
+
+<h3>Diagram 3.1 — Hop-to-Hop Delivery (Slide: Lec 2, Slide 31)</h3>
+<div class="diagram">
+  <span class="amber">HOP-TO-HOP DELIVERY — Data Link Layer's scope</span>
+
+   <span class="cyan">Host A</span> ──── <span class="green">[Hop 1]</span> ──── <span class="cyan">Router R1</span> ──── <span class="green">[Hop 2]</span> ──── <span class="cyan">Router R2</span> ──── <span class="green">[Hop 3]</span> ──── <span class="cyan">Host B</span>
+              │                         │                         │
+          frame F1                  frame F2                  frame F3
+     (new MACs for H1)         (new MACs for H2)          (new MACs for H3)
+
+   <span class="dim">The IP packet INSIDE survives unchanged from A to B.</span>
+   <span class="dim">The L2 FRAME is rebuilt on every hop with new source/destination MAC.</span>
+</div>
+<div class="diagram-caption">Fig. 2.1 — Data Link operates per-hop. The frame is short-lived; the packet is end-to-end.</div>
+<div class="explain-block">
+  <b>Step-by-step.</b> (1) Host A builds a frame with src MAC = A, dst MAC = R1, and sends it on Hop 1. (2) R1 receives the frame, strips the L2 header, looks at the L3 (IP) destination, decides the next hop is R2. (3) R1 builds a <em>new</em> frame with src MAC = R1, dst MAC = R2, and sends it on Hop 2. (4) The process repeats until the frame arrives at Host B. Inside all these frames, the original IP packet is carried untouched.
+</div>
+<div class="examiner">
+  <strong>What the examiner wants you to see</strong>
+  The MAC address changes at every hop. The IP address does not. If you write that the destination MAC is the same from A to B, that is wrong and costs the full mark.
+</div>
+
+<h3>Diagram 3.2 — The Data Link Layer Example (Slide: Lec 2, Slide 32)</h3>
+<div class="diagram">
+   Host <span class="amber">A</span> wants to send to Host <span class="amber">F</span> through one LAN:
+
+            <span class="cyan">┌────────────────── Shared LAN segment ───────────────────┐</span>
+               │           │           │           │
+              <span class="green">A</span>(MAC_a)    <span class="green">B</span>(MAC_b)    <span class="green">C</span>(MAC_c)    <span class="green">F</span>(MAC_f)
+
+   A sends a frame with:
+      Source MAC      = <span class="green">MAC_a</span>
+      Destination MAC = <span class="green">MAC_f</span>
+      Payload         = <span class="amber">[ IP packet, TCP segment, app data... ]</span>
+      Trailer         = CRC/FCS
+
+   <span class="dim">Every NIC on the LAN sees the frame, but only F's NIC accepts it</span>
+   <span class="dim">because the destination MAC matches F's burned-in address.</span>
+</div>
+<div class="diagram-caption">Fig. 2.2 — Frames on a shared LAN: physical addressing enables selective delivery.</div>
+<div class="explain-block">
+  <b>Step-by-step.</b> On a shared medium (hub or legacy Ethernet), every NIC receives every frame. Each NIC checks the destination MAC. If it does not match, the NIC discards the frame silently. If it matches (or if the address is the broadcast <code>FF:FF:FF:FF:FF:FF</code>), the NIC accepts the frame and hands it up to Layer 3.
+</div>
+<div class="examiner">
+  <strong>What the examiner wants you to see</strong>
+  Physical addressing = hardware filtering. Selective acceptance by MAC is the mechanism that makes Layer 2 efficient on a shared medium.
+</div>
+
+<h3>Diagram 3.3 — Data Link Layer Devices and PDU</h3>
+<div class="diagram">
+   <span class="amber">DEVICES OPERATING AT LAYER 2</span>
+
+       Switch (transparent bridge)     Bridge     NIC     Access Point
+
+   <span class="amber">PDU:</span>  ┌──────────────────────────────────────────────┐
+         │ L2 Header │    Payload (L3 packet)    │ L2 Trl │     ← FRAME
+         └──────────────────────────────────────────────┘
+            │                                       │
+            └─ Dest MAC, Src MAC, Length/Type       └─ CRC / FCS
+</div>
+<div class="diagram-caption">Fig. 2.3 — Frame = L2 header + payload + L2 trailer. Switches read &amp; forward by MAC.</div>
+<div class="examiner">
+  <strong>What the examiner wants you to see</strong>
+  Always name at least one Layer 2 device (switch or bridge) and always state the PDU is a <b>frame</b>. Asking "at what layer does a switch operate?" is a classic one-liner.
+</div>
+
+</section>
+
+<!-- ========== PROTOCOLS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 04</span> Protocols and Examples</h2>
+
+<table>
+<thead><tr><th>Protocol / Standard</th><th>What it does</th><th>Usage</th></tr></thead>
+<tbody>
+<tr><td><b>Ethernet (IEEE 802.3)</b></td><td>The dominant LAN framing + MAC addressing + CSMA/CD standard.</td><td>Every wired LAN interface you've ever used.</td></tr>
+<tr><td><b>Wi-Fi (IEEE 802.11)</b></td><td>Wireless framing + CSMA/CA media access + RTS/CTS.</td><td>Wireless LAN — home, office, café.</td></tr>
+<tr><td><b>PPP</b> (Point-to-Point Protocol)</td><td>Framing + authentication over a serial link between two endpoints.</td><td>DSL connections, serial router-to-router links, VPN tunnels.</td></tr>
+<tr><td><b>HDLC</b> (High-level Data Link Control)</td><td>Synchronous, bit-oriented framing. Default on Cisco serial links.</td><td>WAN links between Cisco routers.</td></tr>
+<tr><td><b>ARP</b> (Address Resolution Protocol)</td><td>Maps an IP address (L3) to a MAC address (L2) on the same LAN. Technically sits between L2/L3 but is indispensable at L2.</td><td>Every time a host talks to another host on the same subnet.</td></tr>
+<tr><td><b>Frame Relay</b></td><td>Legacy packet-switched WAN framing protocol.</td><td>Old enterprise WANs (largely obsolete).</td></tr>
+<tr><td><b>STP</b> (Spanning Tree Protocol, IEEE 802.1D)</td><td>Prevents loops in switched networks.</td><td>Any network with redundant switch links.</td></tr>
+<tr><td><b>VLAN trunking (802.1Q)</b></td><td>Tags frames with VLAN IDs to carry multiple VLANs over a single link.</td><td>Enterprise switched networks.</td></tr>
+</tbody>
+</table>
+
+</section>
+
+<!-- ========== DATA HANDLING ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 05</span> Data Handling</h2>
+
+<p class="pull">At Layer 2 the PDU is the <b>FRAME</b>.</p>
+
+<h3>Encapsulation role</h3>
+<p>The Data Link Layer takes a <b>packet</b> from Layer 3, adds its own <b>header</b> (destination MAC, source MAC, type) at the front and a <b>trailer</b> (CRC/FCS) at the end — producing a <b>frame</b>. The frame is handed down to Layer 1 as a bit stream. On receipt, the process is reversed: the bit stream is reassembled into a frame, the header and trailer are verified and stripped, and the packet is handed up to Layer 3.</p>
+
+<div class="diagram">
+<span class="amber">ENCAPSULATION AT LAYER 2</span>
+
+   Layer 3 hands down:     <span class="green">[ IP header │ data ]</span>     ← PACKET
+
+   Layer 2 wraps it:
+   ┌───────────┬────────────────────────────┬──────┐
+   │ L2 header │  [ IP header │ data ]      │ FCS  │   ← FRAME
+   └───────────┴────────────────────────────┴──────┘
+        ▲                                      ▲
+   Dst MAC, Src MAC,                  Error-check
+   Length/Type                        (CRC)
+
+   Handed down to Layer 1 as <span class="cyan">bits</span>.
+</div>
+
+<h3>Headers &amp; Trailers</h3>
+<p>The slides explicitly ask: <em>"What are headers and trailers, and how do they get added and removed?"</em> Answer template: headers are added on the sending side at each layer during <b>encapsulation</b>; trailers (mostly L2's FCS and some L7 protocols) are added at the end of the frame. On the receiving side, each layer <b>decapsulates</b> by reading and stripping its own header/trailer before passing the inner PDU upward.</p>
+
+<h3>The three address types (slide-direct question)</h3>
+<table>
+<thead><tr><th>Address</th><th>Layer</th><th>Scope</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td>Physical / MAC</td><td>Layer 2</td><td>Single LAN / single hop. Rewritten at every router.</td><td><code>00:1A:2B:3C:4D:5E</code></td></tr>
+<tr><td>Logical / IP</td><td>Layer 3</td><td>End-to-end. Preserved across the entire internet.</td><td><code>192.168.1.20</code></td></tr>
+<tr><td>Port</td><td>Layer 4</td><td>Identifies a specific process/service on a host.</td><td><code>80</code> (HTTP)</td></tr>
+</tbody>
+</table>
+
+</section>
+
+<!-- ========== MUST REMEMBER ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 06</span> Must-Remember Points</h2>
+
+<div class="must-remember">
+<h4>High-Priority Facts</h4>
+<ul>
+  <li><b>PDU = FRAME.</b> Layer 2 groups bits into frames.</li>
+  <li><b>Delivery model = HOP-TO-HOP / NODE-TO-NODE.</b> Always include this exact phrase.</li>
+  <li><b>Five duties:</b> Framing, Physical addressing (MAC), Flow control, Error control, Access control.</li>
+  <li><b>Device examples:</b> switch, bridge, NIC, access point.</li>
+  <li><b>MAC is 48 bits</b>, OUI + vendor portion, burned into the NIC.</li>
+  <li><b>Two sublayers</b> (bonus): LLC (upper), MAC (lower).</li>
+  <li><b>CSMA/CD</b> for wired Ethernet; <b>CSMA/CA</b> for Wi-Fi.</li>
+</ul>
+</div>
+
+<h4>Common Exam Traps</h4>
+<div class="trap"><b>Trap 1:</b> Saying Layer 2 handles "end-to-end" delivery. No — that is Layer 3 (host-to-host) or Layer 4 (process-to-process). L2 is only per-hop.</div>
+<div class="trap"><b>Trap 2:</b> Listing IP as a Layer 2 protocol. IP is Layer 3. Ethernet is Layer 2.</div>
+<div class="trap"><b>Trap 3:</b> Forgetting that MAC addresses change at every router. Examiners love to ask what changes and what stays the same from source to destination.</div>
+<div class="trap"><b>Trap 4:</b> Confusing a hub (Layer 1) with a switch (Layer 2). A hub just regenerates bits; a switch reads the MAC and forwards selectively.</div>
+<div class="trap"><b>Trap 5:</b> Confusing Layer 2 flow control with Layer 4 (TCP) flow control. L2 = between adjacent nodes. L4 = end-to-end.</div>
+
+<h4>Memory Shortcuts</h4>
+<ul>
+  <li><b>FAM-FEA:</b> <b>F</b>raming, <b>A</b>ddressing (MAC), <b>M</b>edia access, <b>F</b>low control, <b>E</b>rror control, <b>A</b>ccess control — the mnemonic for the five duties (with framing + addressing at the top).</li>
+  <li><b>"Hop-to-hop, Frame on the way, MAC for the next bay."</b></li>
+  <li><b>PDU ladder:</b> Bits → <b>Frames</b> → Packets → Segments → Data. Frames = L2.</li>
+</ul>
+</section>
+
+<!-- ========== IMPORTANCE ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 07</span> Importance Rating</h2>
+
+<div class="importance-card">
+  <div>
+    <div class="rating-label">Exam Weight</div>
+    <div class="stars">★★★★★</div>
+  </div>
+  <p><b>5 of 5 stars.</b> Layer 2 is exam gold. It is asked directly ("What are the duties of Data Link Layer?" is a named review question in the slide deck), it sits at the centre of MAC-vs-IP-vs-port comparisons, and it is the natural bridge to questions about switching, VLANs, and ARP. Almost every paper covering OSI will allocate marks here.</p>
+</div>
+</section>
+
+<!-- ========== QUESTIONS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 08</span> Critical Questions</h2>
+
+<div class="qset">
+<h4>Conceptual</h4>
+<ol>
+  <li>State the five duties of the Data Link Layer as given in the slides.</li>
+  <li>Explain what "hop-to-hop" or "node-to-node" delivery means. How does it differ from "source-to-destination" delivery?</li>
+  <li>What is a MAC address? How long is it, and how is it structured?</li>
+  <li>Distinguish between the LLC and MAC sublayers of Layer 2.</li>
+  <li>Why does the Data Link Layer need <em>access control</em>? Under what conditions does it not need it?</li>
+</ol>
+</div>
+
+<div class="qset">
+<h4>Short-Answer</h4>
+<ol>
+  <li>Name three Layer 2 devices.</li>
+  <li>What is framing and why is it necessary?</li>
+  <li>Give one protocol that uses CSMA/CD and one that uses CSMA/CA.</li>
+  <li>What is the difference between Layer 2 flow control and Layer 4 flow control?</li>
+  <li>What is placed in the frame trailer, and what is it used for?</li>
+</ol>
+</div>
+
+<div class="qset">
+<h4>Diagram-Based</h4>
+<ol>
+  <li>Draw the encapsulation of a packet into a frame, labelling the header, payload, and trailer.</li>
+  <li>Draw a packet travelling from Host A to Host B via two routers R1 and R2. At each hop, show the source and destination MAC addresses and the source and destination IP addresses. Highlight what changes and what stays the same.</li>
+  <li>Draw a shared LAN with five devices. Illustrate frame acceptance when A sends to E — which devices see the frame, and which accepts it?</li>
+</ol>
+</div>
+
+<div class="qset">
+<h4>Scenario-Based</h4>
+<ol>
+  <li>A user reports that on a 100 Mbps Ethernet LAN, collisions occur frequently. Which layer's mechanism handles this, and what is that mechanism called?</li>
+  <li>A file transfer from a server to a thin client succeeds over Wi-Fi but fails when the Wi-Fi signal weakens. TCP retransmits the lost packets. Identify which layer first detected the corruption (bit errors) and which layer recovered the data.</li>
+  <li>You tap into a switched LAN and capture a frame. You observe that the destination MAC address is <code>FF:FF:FF:FF:FF:FF</code>. What does this mean, and how will switches handle this frame?</li>
+  <li>A company's network team replaces all its hubs with switches. Explain which OSI layer the two devices operate at, and name one specific performance benefit of the change.</li>
+</ol>
+</div>
+
+</section>
+
+<div class="footer">
+  <span>OSI Revision Booklet · Vol. II · Layer 02 · Data Link</span>
+  <span>← Physical │ Next → Layer 03 · Network</span>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,18 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+
+# Generated pytest reports
+initial_report.html
+report.html
+
+# Generated assignment/report artifacts, not required for running the app/tests
+*.docx
+build_part3_report.py
+phase*.md
+prep_site/
+rendered_report/
+scripts/

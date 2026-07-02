@@ -1,0 +1,1 @@
+Program calculates addition, subtraction, multiplication, and division correctly for single-digit inputs. Could improve handling of larger numbers

@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSI Layer 1 — Physical Layer | Revision Booklet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0b1e36;
+    --ink-2:#14314f;
+    --paper:#f6f1e8;
+    --paper-2:#ece3d0;
+    --rule:#1a3b5c;
+    --amber:#c97a1e;
+    --amber-2:#e9a84a;
+    --red:#a8321f;
+    --green:#2d5a3d;
+    --muted:#5a6b7f;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:"Inter",system-ui,sans-serif;
+    font-size:16px;
+    line-height:1.65;
+    -webkit-font-smoothing:antialiased;
+  }
+  .sheet{
+    max-width:920px;
+    margin:0 auto;
+    padding:56px 56px 80px;
+    background:
+      radial-gradient(1200px 600px at 100% 0%, rgba(201,122,30,0.06), transparent 60%),
+      radial-gradient(900px 500px at 0% 100%, rgba(11,30,54,0.05), transparent 60%),
+      var(--paper);
+    box-shadow:0 0 0 1px rgba(11,30,54,0.08);
+  }
+  /* ---------- Masthead ---------- */
+  .masthead{
+    border-top:6px solid var(--ink);
+    border-bottom:1px solid var(--ink);
+    padding:18px 0 14px;
+    margin-bottom:28px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    gap:24px;
+  }
+  .masthead .brand{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .masthead .chapter{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    letter-spacing:0.18em;
+    text-transform:uppercase;
+    color:var(--amber);
+  }
+  h1.title{
+    font-family:"Fraunces",serif;
+    font-weight:800;
+    font-size:clamp(40px,6vw,68px);
+    line-height:0.98;
+    letter-spacing:-0.02em;
+    margin:24px 0 6px;
+    color:var(--ink);
+  }
+  h1.title .layernum{
+    display:block;
+    font-size:18px;
+    font-weight:500;
+    font-style:italic;
+    color:var(--amber);
+    letter-spacing:0.02em;
+    margin-bottom:6px;
+  }
+  .one-liner{
+    font-family:"Fraunces",serif;
+    font-style:italic;
+    font-size:22px;
+    color:var(--ink-2);
+    max-width:720px;
+    margin:8px 0 0;
+    line-height:1.35;
+  }
+  .analogy{
+    margin-top:22px;
+    padding:18px 22px;
+    border-left:4px solid var(--amber);
+    background:rgba(233,168,74,0.12);
+    font-family:"Fraunces",serif;
+    font-size:17px;
+    font-style:italic;
+    color:var(--ink-2);
+  }
+  .analogy strong{
+    font-style:normal;
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.15em;
+    color:var(--amber);
+    display:block;
+    margin-bottom:6px;
+  }
+  /* ---------- Section ---------- */
+  section{margin:48px 0 0}
+  h2.sec{
+    font-family:"Fraunces",serif;
+    font-size:30px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    color:var(--ink);
+    margin:0 0 4px;
+    display:flex;
+    align-items:baseline;
+    gap:14px;
+  }
+  h2.sec .num{
+    font-family:"JetBrains Mono",monospace;
+    font-size:12px;
+    font-weight:600;
+    color:var(--amber);
+    letter-spacing:0.1em;
+  }
+  h2.sec::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--ink);
+    margin-left:10px;
+    transform:translateY(-8px);
+  }
+  h3{
+    font-family:"Fraunces",serif;
+    font-size:22px;
+    margin:28px 0 10px;
+    color:var(--ink);
+  }
+  h4{
+    font-family:"JetBrains Mono",monospace;
+    text-transform:uppercase;
+    font-size:12px;
+    letter-spacing:0.12em;
+    color:var(--amber);
+    margin:22px 0 8px;
+  }
+  p{margin:10px 0}
+  /* ---------- Lists ---------- */
+  ul,ol{padding-left:22px;margin:10px 0}
+  ul li,ol li{margin:6px 0}
+  ul.tight li{margin:3px 0}
+  ul.responsibilities{list-style:none;padding:0}
+  ul.responsibilities li{
+    padding:14px 18px;
+    border:1px solid rgba(11,30,54,0.15);
+    background:rgba(255,255,255,0.5);
+    margin:10px 0;
+    border-radius:2px;
+    position:relative;
+    padding-left:54px;
+  }
+  ul.responsibilities li::before{
+    content:attr(data-n);
+    position:absolute;
+    left:14px;
+    top:14px;
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    color:var(--amber);
+    font-weight:600;
+    letter-spacing:0.1em;
+  }
+  ul.responsibilities li b{
+    display:block;
+    font-family:"Fraunces",serif;
+    font-size:17px;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  /* ---------- Tables ---------- */
+  table{
+    width:100%;
+    border-collapse:collapse;
+    margin:18px 0;
+    font-size:14.5px;
+  }
+  th,td{
+    text-align:left;
+    padding:10px 12px;
+    border-bottom:1px solid rgba(11,30,54,0.15);
+    vertical-align:top;
+  }
+  th{
+    background:var(--ink);
+    color:var(--paper);
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    font-weight:600;
+  }
+  tr:nth-child(even) td{background:rgba(11,30,54,0.03)}
+  /* ---------- Diagrams ---------- */
+  .diagram{
+    background:var(--ink);
+    color:var(--paper);
+    padding:22px 24px;
+    border-radius:2px;
+    margin:14px 0;
+    font-family:"JetBrains Mono",monospace;
+    font-size:13.5px;
+    line-height:1.5;
+    overflow-x:auto;
+    white-space:pre;
+  }
+  .diagram .cyan{color:#7fd1d5}
+  .diagram .amber{color:var(--amber-2)}
+  .diagram .green{color:#9fd69f}
+  .diagram .dim{color:#8ea5bd}
+  .diagram-caption{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    color:var(--muted);
+    margin:-6px 0 12px;
+  }
+  .explain-block{
+    padding:14px 18px;
+    background:rgba(11,30,54,0.04);
+    border-left:3px solid var(--ink-2);
+    margin:10px 0 18px;
+    font-size:15px;
+  }
+  .explain-block b{color:var(--ink)}
+  .examiner{
+    padding:14px 18px;
+    background:rgba(168,50,31,0.06);
+    border-left:3px solid var(--red);
+    margin:10px 0 18px;
+    font-size:15px;
+  }
+  .examiner strong{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    color:var(--red);
+    display:block;
+    margin-bottom:4px;
+  }
+  /* ---------- Callouts ---------- */
+  .must-remember{
+    background:#fff7e4;
+    border:1.5px dashed var(--amber);
+    padding:20px 22px;
+    border-radius:2px;
+    margin:14px 0;
+  }
+  .must-remember h4{margin-top:0;color:var(--red)}
+  .must-remember ul{margin:0;padding-left:20px}
+  .must-remember li{margin:5px 0}
+  .trap{
+    background:rgba(168,50,31,0.07);
+    padding:12px 14px;
+    border-left:3px solid var(--red);
+    margin:8px 0;
+    font-size:14.5px;
+  }
+  .trap b{color:var(--red)}
+  /* ---------- Importance Stars ---------- */
+  .importance-card{
+    display:flex;
+    align-items:center;
+    gap:22px;
+    padding:18px 22px;
+    background:var(--ink);
+    color:var(--paper);
+    border-radius:2px;
+  }
+  .stars{
+    font-size:28px;
+    color:var(--amber-2);
+    letter-spacing:0.1em;
+  }
+  .importance-card .stars .dim{color:rgba(246,241,232,0.2)}
+  .importance-card .rating-label{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--amber-2);
+  }
+  .importance-card p{margin:0;color:var(--paper)}
+  /* ---------- Questions ---------- */
+  .qset{
+    margin:20px 0;
+    padding:20px 24px;
+    background:rgba(255,255,255,0.55);
+    border:1px solid rgba(11,30,54,0.15);
+  }
+  .qset h4{margin-top:0}
+  .qset ol{margin:0;padding-left:22px}
+  .qset ol li{margin:8px 0;line-height:1.5}
+  /* ---------- Misc ---------- */
+  code{
+    font-family:"JetBrains Mono",monospace;
+    font-size:13.5px;
+    background:rgba(11,30,54,0.08);
+    padding:1px 6px;
+    border-radius:2px;
+  }
+  .pull{
+    font-family:"Fraunces",serif;
+    font-size:24px;
+    font-style:italic;
+    line-height:1.35;
+    color:var(--ink-2);
+    border-top:1px solid var(--ink);
+    border-bottom:1px solid var(--ink);
+    padding:18px 0;
+    margin:26px 0;
+  }
+  .pull::before{
+    content:"“";
+    font-size:48px;
+    color:var(--amber);
+    line-height:0;
+    vertical-align:-18px;
+    margin-right:6px;
+  }
+  .footer{
+    margin-top:60px;
+    padding-top:16px;
+    border-top:3px double var(--ink);
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:0.14em;
+    color:var(--muted);
+    display:flex;
+    justify-content:space-between;
+  }
+  /* ---------- Two-column ---------- */
+  .two-col{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin:14px 0;
+  }
+  .two-col .card{
+    padding:16px 18px;
+    border:1px solid rgba(11,30,54,0.18);
+    background:rgba(255,255,255,0.5);
+  }
+  .two-col .card h4{margin-top:0}
+  @media (max-width:720px){
+    .sheet{padding:28px 22px 60px}
+    .two-col{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+<!-- MASTHEAD -->
+<div class="masthead">
+  <div class="brand">OSI Revision Booklet · Vol. I</div>
+  <div class="chapter">Chapter 01 · Layer 1 of 7</div>
+</div>
+
+<h1 class="title">
+  <span class="layernum">— LAYER 01 —</span>
+  The Physical Layer
+</h1>
+
+<p class="one-liner">The layer that moves <em>raw bits</em> across a wire, fibre, or radio wave — converting 1s and 0s into signals the medium can physically carry.</p>
+
+<div class="analogy">
+  <strong>Real-world analogy</strong>
+  Think of the Physical Layer as the <b>postman on a motorcycle delivering envelopes</b>. He does not read the letter, does not know the sender or recipient, does not check if it reached the right person — his single job is to <b>physically move the envelope from one post box to the next</b>. Everything about the road, the fuel, the vehicle, the speed, and the handover between post boxes — that's the Physical Layer.
+</div>
+
+<!-- ========== SECTION: CORE RESPONSIBILITIES ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 01</span> Core Responsibilities</h2>
+<p>The slides explicitly list four duties of the Physical Layer. Each is expanded below.</p>
+
+<ul class="responsibilities">
+  <li data-n="01">
+    <b>Physical characteristics of interfaces and media</b>
+    Defines the mechanical and electrical specifications of the interface between a device and the transmission medium — connector shape, pin count, pin usage, cable type (copper, coax, fibre, air), voltage levels, and impedance. Example: the RJ-45 connector, the DB-9 serial port, the specification that a "1" is +5V and "0" is 0V on a particular interface.
+  </li>
+  <li data-n="02">
+    <b>Representation of bits (Encoding &amp; Modulation)</b>
+    A bit is a logical concept — but a wire only understands voltage, and a fibre only understands pulses of light. The Physical Layer <i>encodes</i> each bit into a physical signal. This is done by <b>line encoding</b> (e.g., NRZ, Manchester, 4B/5B) for digital signals and by <b>modulation</b> (ASK, FSK, PSK, QAM) when converting to analog for transmission.
+  </li>
+  <li data-n="03">
+    <b>Data rate (bit duration)</b>
+    Defines how long a bit lasts on the medium. If the data rate is 1 Mbps, each bit occupies 1/1,000,000 of a second. This is the <b>bit interval</b> — and the receiver must sample the signal during this interval to recover the bit.
+  </li>
+  <li data-n="04">
+    <b>Synchronization of bits</b>
+    Sender and receiver clocks must agree on <i>when</i> each bit starts and ends. If the receiver samples too early or too late, it reads garbage. Synchronization can be achieved through dedicated clock signals, self-clocking encodings (Manchester), or training preambles at the start of a frame.
+  </li>
+</ul>
+
+<p>Two additional responsibilities appear across the slides that an examiner will expect you to state:</p>
+<ul>
+  <li><b>Line Configuration</b> — point-to-point or multipoint connections (from Lec 2, Slide 7).</li>
+  <li><b>Physical Topology</b> — mesh, star, bus, ring, hybrid (how devices are physically interconnected).</li>
+  <li><b>Transmission Mode</b> — simplex, half-duplex, or full-duplex (direction of signal flow).</li>
+</ul>
+</section>
+
+<!-- ========== SECTION: DETAILED CONCEPTS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 02</span> Detailed Concepts</h2>
+
+<h3>2.1 What is a "bit" at this layer?</h3>
+<p>At every layer above Layer 1, data has structure — segments, packets, frames. Here, all structure is gone. The Physical Layer sees only a <b>stream of 1s and 0s</b>. It does not know where a frame starts, what a header means, or who the destination is. Its contract with Layer 2 is: <em>"Hand me bits. I will push them out. On the other side, I'll hand bits to the peer Layer 2."</em></p>
+
+<h3>2.2 Transmission Modes (Direction of Data Flow)</h3>
+<div class="two-col">
+  <div class="card">
+    <h4>Simplex</h4>
+    <p>One-way only. One device transmits, the other only receives. Example: keyboard → CPU, traditional broadcast TV.</p>
+  </div>
+  <div class="card">
+    <h4>Half-Duplex</h4>
+    <p>Both devices can transmit and receive — but not at the same time. Communication must alternate. Example: walkie-talkie. When one talks, the other listens.</p>
+  </div>
+  <div class="card">
+    <h4>Full-Duplex</h4>
+    <p>Both devices can transmit and receive <em>simultaneously</em>. Example: telephone call, modern Ethernet over twisted pair.</p>
+  </div>
+  <div class="card">
+    <h4>Why this matters</h4>
+    <p>The transmission mode constrains how the physical medium is wired (separate send/receive channels for full-duplex) and how the Data Link Layer must coordinate access.</p>
+  </div>
+</div>
+
+<h3>2.3 Data Representation (inputs to the Physical Layer)</h3>
+<p>All forms of data reaching the Physical Layer have already been reduced to bits by higher layers. The slides list five representations that you should be able to recall:</p>
+<ul>
+  <li><b>Text</b> — represented as a bit pattern; common codes: ASCII, Unicode.</li>
+  <li><b>Numbers</b> — represented by their binary equivalent.</li>
+  <li><b>Images</b> — bit patterns representing pixels (and colour depth per pixel).</li>
+  <li><b>Audio</b> — continuous signal sampled and quantised into bits (e.g., PCM).</li>
+  <li><b>Video</b> — sequence of image frames plus audio, compressed (e.g., H.264).</li>
+</ul>
+
+<h3>2.4 Physical Topologies (from Lec 1 &amp; Lec 2)</h3>
+<p>The arrangement of physical links between devices. The slides cover five, listed below with properties drawn directly from the deck.</p>
+
+<table>
+<thead><tr><th>Topology</th><th>Links</th><th>Advantages</th><th>Disadvantages</th></tr></thead>
+<tbody>
+<tr>
+  <td><b>Mesh</b></td>
+  <td>Dedicated point-to-point to every other device. <code>n(n-1)/2</code> links; each node needs <code>n-1</code> I/O ports.</td>
+  <td>Dedicated links; robust; security &amp; privacy; easy fault identification and isolation.</td>
+  <td>Bulk of wiring; high I/O port count; expensive; difficult to install and reconnect.</td>
+</tr>
+<tr>
+  <td><b>Star</b></td>
+  <td>Every device connected by dedicated point-to-point link to a central controller (hub/switch).</td>
+  <td>Less expensive than mesh; easy to install and configure; robust; easy fault isolation.</td>
+  <td>More cabling than ring/bus; single point of failure at the hub.</td>
+</tr>
+<tr>
+  <td><b>Bus</b></td>
+  <td>Multipoint — one backbone cable links all devices via drop lines &amp; taps.</td>
+  <td>Less cabling; easy to install and reconfigure.</td>
+  <td>Limited number of taps; difficult reconnection &amp; fault isolation; a break in bus stops all transmission.</td>
+</tr>
+<tr>
+  <td><b>Ring</b></td>
+  <td>Dedicated point-to-point to neighbours; each device functions as a repeater; signal passes device to device.</td>
+  <td>Less cabling; easy to install and reconfigure.</td>
+  <td>A break in the ring can disable the entire network.</td>
+</tr>
+<tr>
+  <td><b>Hybrid</b></td>
+  <td>Any combination of the above (e.g., a backbone bus of stars).</td>
+  <td>Flexibility; scales large deployments; inherits strengths of combined topologies.</td>
+  <td>Complex to design; troubleshooting combines issues of multiple topologies.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>2.5 Packet Switching vs Circuit Switching (Physical/Link interaction)</h3>
+<p>Although switching is not exclusively a Physical Layer concern, the slides introduce it here because it dictates <em>how</em> the physical channel is used.</p>
+<ul>
+  <li><b>Circuit Switching</b> — a dedicated end-to-end communication path is established between two stations before data flows. The path is a sequence of links. Switches must know the route and allocate bandwidth (channel) to establish a connection. Example: traditional telephone network.</li>
+  <li><b>Packet Switching</b> — messages are divided into fixed-sized, numbered packets that are independently routed across the network. Devices called <b>routers</b> direct packets between networks. No dedicated channel — efficiency comes from statistical sharing. Example: the Internet.</li>
+</ul>
+
+<h3>2.6 Transmission Media Connection Technologies</h3>
+<p>The slides list the home-to-Internet connection technologies as Physical Layer examples:</p>
+<ul>
+  <li><b>Phone modem</b> — converts digital computer data into an analog audio signal for transmission over a telephone line; a modem at the destination converts it back.</li>
+  <li><b>DSL (Digital Subscriber Line)</b> — uses regular copper phone lines to carry digital data to and from the phone company's central office.</li>
+  <li><b>Cable modem</b> — uses the same coaxial cable line as cable TV to transfer data.</li>
+  <li><b>Broadband</b> — any connection faster than 128 bps (slide definition). DSL and cable are broadband. Download and upload speeds often differ (asymmetric).</li>
+</ul>
+
+</section>
+
+<!-- ========== SECTION: DIAGRAMS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 03</span> Diagrams</h2>
+
+<h3>Diagram 3.1 — The Physical Layer Contract</h3>
+<div class="diagram">
+   <span class="dim">┌─────────────────────────────────────────────────────┐</span>
+   <span class="dim">│</span>          <span class="amber">DATA LINK LAYER (above)</span>                  <span class="dim">│</span>
+   <span class="dim">└───────────────┬─────────────────────────────────────┘</span>
+                   <span class="amber">│</span> hands down a stream of bits
+                   <span class="amber">▼</span>
+   <span class="dim">┌─────────────────────────────────────────────────────┐</span>
+   <span class="dim">│</span>  <span class="cyan">PHYSICAL LAYER</span> — encodes bits into signals        <span class="dim">│</span>
+   <span class="dim">│</span>  1 0 1 1 0 0 1 → <span class="green">~~~~~~~~</span> → voltage / light / wave <span class="dim">│</span>
+   <span class="dim">└───────────────┬─────────────────────────────────────┘</span>
+                   <span class="green">│</span> signal travels over the medium
+                   <span class="green">▼</span>
+   <span class="dim">┌─────────────────────────────────────────────────────┐</span>
+   <span class="dim">│</span>  <span class="cyan">TRANSMISSION MEDIUM</span>                              <span class="dim">│</span>
+   <span class="dim">│</span>  copper wire · coaxial · fibre optic · radio waves  <span class="dim">│</span>
+   <span class="dim">└───────────────┬─────────────────────────────────────┘</span>
+                   <span class="green">│</span> signal arrives at peer
+                   <span class="green">▼</span>
+   <span class="dim">┌─────────────────────────────────────────────────────┐</span>
+   <span class="dim">│</span>  <span class="cyan">PHYSICAL LAYER</span> on destination — decodes           <span class="dim">│</span>
+   <span class="dim">│</span>  <span class="green">~~~~~~~~</span> → 1 0 1 1 0 0 1                          <span class="dim">│</span>
+   <span class="dim">└───────────────┬─────────────────────────────────────┘</span>
+                   <span class="amber">▲</span>
+   <span class="dim">┌───────────────┴─────────────────────────────────────┐</span>
+   <span class="dim">│</span>          <span class="amber">DATA LINK LAYER (above)</span>                  <span class="dim">│</span>
+   <span class="dim">└─────────────────────────────────────────────────────┘</span>
+</div>
+<div class="diagram-caption">Fig. 1.1 — The Physical Layer contract: bits in, signals on the wire, bits out.</div>
+<div class="explain-block">
+  <b>Step-by-step.</b> (1) The Data Link Layer hands a framed bit stream down. (2) Layer 1 encodes those bits using a line encoding scheme (NRZ, Manchester, 4B/5B…) or modulates a carrier wave. (3) The signal travels across the medium — experiencing attenuation, noise, delay. (4) On the destination side, Layer 1 samples the incoming signal at the correct bit interval and reconstructs the bits. (5) Those bits are passed up to the peer Data Link Layer.
+</div>
+<div class="examiner">
+  <strong>What the examiner wants you to see</strong>
+  The Physical Layer does not know about frames, addresses, or protocols. It is a <em>dumb, reliable pipe for bits</em>. Any question that asks "what is the unit at Layer 1" must be answered with <b>bit</b>, not frame or packet.
+</div>
+
+<h3>Diagram 3.2 — Physical Topologies (Slide recap)</h3>
+<div class="diagram">
+<span class="amber">MESH</span>                        <span class="amber">STAR</span>                        <span class="amber">BUS</span>
+  A───B                        A                          A   B   C
+  │╲ ╱│                        │                          │   │   │
+  │ ╳ │                     D──H──B                   ════╧═══╧═══╧════
+  │╱ ╲│                        │                          │   │   │
+  D───C                        C                          D   E   F
+
+<span class="amber">RING</span>                        <span class="amber">HYBRID (bus of stars)</span>
+    A                              H1            H2
+  ╱   ╲                         ╱ │ ╲         ╱ │ ╲
+ D     B                       A  B  C ══════D  E  F
+  ╲   ╱                                backbone
+    C
+</div>
+<div class="diagram-caption">Fig. 1.2 — The five physical topologies referenced across Lec 1 and Lec 2.</div>
+<div class="explain-block">
+  <b>How to read it.</b> Each letter is a host (node). In <b>Mesh</b>, every node links directly to every other — count the lines: for 4 nodes, 4(4-1)/2 = 6 links. In <b>Star</b>, all nodes route through a central hub <code>H</code>. In <b>Bus</b>, all nodes tap a single shared backbone cable. In <b>Ring</b>, each node links only to two neighbours forming a closed loop. In <b>Hybrid</b>, two star clusters are joined by a backbone — the most common real-world form.
+</div>
+<div class="examiner">
+  <strong>What the examiner wants you to see</strong>
+  Be able to compute <code>n(n-1)/2</code> for mesh. Be able to justify <em>robustness</em>: mesh wins; a single cable break disables ring or bus; a hub failure kills a star. Always pair the topology with at least one advantage and one disadvantage from the slide — that's the Cisco-style answer pattern.
+</div>
+
+<h3>Diagram 3.3 — Packet vs Circuit Switching</h3>
+<div class="diagram">
+<span class="amber">CIRCUIT SWITCHING</span>   (dedicated end-to-end path reserved)
+
+  A ══════════════════════════════════════════════════════ B
+       fixed channel · fixed bandwidth · held for session
+
+<span class="amber">PACKET SWITCHING</span>    (message split into numbered packets)
+
+  A ─[P1]──┐                                    ┌──[P1]─ B
+           ├─→ Router → Router → Router ─→ ... ─┤
+  A ─[P2]──┤     (each packet may take          ├──[P2]─ B
+  A ─[P3]──┘      a different path)             └──[P3]─ B
+</div>
+<div class="diagram-caption">Fig. 1.3 — Circuit vs packet switching as presented in Lec 1.</div>
+<div class="explain-block">
+  <b>Step-by-step.</b> In <b>circuit switching</b>, before any data moves, the network reserves a channel from A to B end-to-end — bandwidth is guaranteed but wasted if nobody talks. In <b>packet switching</b>, the message is chopped into numbered packets; each packet travels independently through the routers and may arrive out-of-order; the receiver reassembles using the packet numbers.
+</div>
+<div class="examiner">
+  <strong>What the examiner wants you to see</strong>
+  Circuit → dedicated path, must know route &amp; allocate bandwidth, example: telephone. Packet → efficient sharing, numbered packets, routers do the directing, example: the Internet. Mentioning <em>both</em> the efficiency argument and the routing device is what separates a half-mark answer from a full-mark answer.
+</div>
+
+</section>
+
+<!-- ========== SECTION: PROTOCOLS & EXAMPLES ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 04</span> Protocols, Standards &amp; Examples</h2>
+
+<p>The Physical Layer is dominated by <em>standards</em> rather than protocols in the software sense. The slides emphasise the following:</p>
+
+<table>
+<thead><tr><th>Standard / Tech</th><th>What it specifies</th><th>Real-world use</th></tr></thead>
+<tbody>
+<tr><td><b>IEEE 802.3</b></td><td>Ethernet physical specifications — cable types, connector (RJ-45), electrical signalling, Manchester / 4B5B encoding.</td><td>Wired LAN in every office/home.</td></tr>
+<tr><td><b>IEEE 802.11</b></td><td>Wi-Fi — radio frequency modulation, channels, RF signalling at the Physical Layer.</td><td>Wireless LAN.</td></tr>
+<tr><td><b>RS-232 / EIA-232</b></td><td>Serial interface electrical &amp; mechanical specs (voltage levels, DB-9/DB-25 pinout).</td><td>Serial port, console cables to routers.</td></tr>
+<tr><td><b>DSL</b></td><td>Uses copper phone line to carry digital data to a DSLAM at the phone company's central office.</td><td>Home broadband over telephone lines.</td></tr>
+<tr><td><b>Cable modem (DOCSIS)</b></td><td>Uses the coaxial cable of cable-TV plants to modulate digital data onto RF channels.</td><td>Home broadband from the cable operator.</td></tr>
+<tr><td><b>Phone modem</b></td><td>Converts digital bits ↔ analog audio in the 300–3400 Hz band of a voice line.</td><td>Dial-up Internet (legacy).</td></tr>
+<tr><td><b>Fibre standards (e.g., 1000BASE-LX)</b></td><td>Optical wavelengths, laser/LED source, fibre type (SMF/MMF), signalling rate.</td><td>Backbone links, data-centre interconnects.</td></tr>
+</tbody>
+</table>
+
+<h4>Standards organisations that govern Layer 1</h4>
+<ul>
+  <li><b>ISO</b> — publishes the OSI reference model itself.</li>
+  <li><b>ITU-T</b> — telecom standards (V.90 modem, G.992 ADSL).</li>
+  <li><b>ANSI</b> — US-level standards (FDDI).</li>
+  <li><b>IEEE</b> — Ethernet (802.3), Wi-Fi (802.11), Bluetooth (802.15).</li>
+  <li><b>EIA</b> — physical connectors (RS-232, RS-485).</li>
+</ul>
+<p>The two <em>types</em> of standards the slides explicitly name are <b>de jure</b> (by law/regulation, legislated by an official body) and <b>de facto</b> (by convention or widespread use).</p>
+</section>
+
+<!-- ========== SECTION: DATA HANDLING ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 05</span> Data Handling</h2>
+
+<h3>Data unit</h3>
+<p class="pull">At Layer 1 the Protocol Data Unit (PDU) is the <b>BIT</b>. Nothing else.</p>
+
+<h3>Encapsulation role</h3>
+<p>The Physical Layer does <b>not</b> add a header or trailer. It <em>receives</em> the complete frame from the Data Link Layer (which has already added its header/trailer) and converts that entire bit stream into physical signals. On the receiving side, it reverses the process and hands the bit stream up.</p>
+
+<div class="diagram">
+<span class="amber">ENCAPSULATION FLOW — where Layer 1 sits</span>
+
+  Application data                       ← L7 App
+  └─[ L7 hdr │ data ]                    ← L6 Pres
+     └─[ L6 hdr │ ... ]                  ← L5 Sess
+        └─[ L5 hdr │ ... ]               ← L4 Trans  (SEGMENT)
+           └─[ L4 hdr │ ... ]            ← L3 Net    (PACKET)
+              └─[ L3 hdr │ ... ]         ← L2 Link   (FRAME)
+                 └─[ L2 hdr │ ... │ L2 trl ]
+                                         ← <span class="cyan">L1 Physical (BITS)</span>
+                 ─────────────────────
+                 <span class="green">1010110011101001010011110...</span>   → on the wire
+</div>
+<div class="diagram-caption">Fig. 1.4 — The full encapsulation chain. Layer 1 carries the entire frame as bits.</div>
+
+<h3>Cross-layer flow</h3>
+<ol>
+  <li><b>Sender side:</b> bits from L2 → encoded into signal → placed on medium.</li>
+  <li><b>Medium:</b> signal propagates (suffers attenuation, noise, delay).</li>
+  <li><b>Receiver side:</b> signal sampled at each bit interval → decoded to bits → handed up to L2.</li>
+</ol>
+</section>
+
+<!-- ========== SECTION: MUST-REMEMBER ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 06</span> Must-Remember Points</h2>
+
+<div class="must-remember">
+<h4>High-Priority Facts</h4>
+<ul>
+  <li><b>PDU at Layer 1 = BIT.</b> Never frame, never packet.</li>
+  <li><b>Four duties</b> from the slide: physical characteristics, representation of bits, data rate, synchronization of bits.</li>
+  <li><b>Three transmission modes:</b> simplex, half-duplex, full-duplex.</li>
+  <li><b>Mesh formula:</b> <code>n(n-1)/2</code> links, each node needs <code>n-1</code> I/O ports.</li>
+  <li><b>Devices that operate at Layer 1:</b> repeaters, hubs, cables, connectors, modems, transceivers — they deal only in signals.</li>
+  <li><b>Broadband</b> (slide definition) = connection faster than 128 bps — a DSL or cable modem qualifies.</li>
+  <li><b>Packet switching uses routers;</b> circuit switching reserves a dedicated path.</li>
+</ul>
+</div>
+
+<h4>Common Exam Traps</h4>
+<div class="trap"><b>Trap 1:</b> Confusing the Physical Layer with the Data Link Layer. A hub is Layer 1. A switch is Layer 2. Remember: if the device <em>reads a MAC address</em>, it's Layer 2.</div>
+<div class="trap"><b>Trap 2:</b> Answering "packets" when asked about the data unit at Layer 1. Wrong. Bits.</div>
+<div class="trap"><b>Trap 3:</b> Mixing up <em>topology</em> (physical) with <em>mode</em> (direction of flow). Star is a topology; half-duplex is a mode.</div>
+<div class="trap"><b>Trap 4:</b> Citing protocols like TCP or IP as examples. Those are higher layers. At Layer 1 cite cable specs, encoding schemes, or IEEE 802.3/.11 physical specs.</div>
+
+<h4>Memory Shortcuts</h4>
+<ul>
+  <li>The <b>4 Duties</b> = <i>"P-R-D-S"</i> → <b>P</b>hysical characteristics · <b>R</b>epresentation of bits · <b>D</b>ata rate · <b>S</b>ynchronisation.</li>
+  <li>The <b>5 topologies</b> = <i>"My Sister Bought Red Heels"</i> → <b>M</b>esh, <b>S</b>tar, <b>B</b>us, <b>R</b>ing, <b>H</b>ybrid.</li>
+  <li><b>Simplex-Half-Full</b> = 1-way · 1-at-a-time · both-at-once.</li>
+</ul>
+</section>
+
+<!-- ========== SECTION: IMPORTANCE ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 07</span> Importance Rating</h2>
+
+<div class="importance-card">
+  <div>
+    <div class="rating-label">Exam Weight</div>
+    <div class="stars">★★★★<span class="dim">★</span></div>
+  </div>
+  <p><b>4 of 5 stars.</b> The Physical Layer is foundational and guaranteed to appear in one-line, short-answer, and MCQ form. The Cisco-style slides explicitly list "duties of Physical Layer" as a direct review question — this is almost always a mark-bearing item. It rarely carries long essay questions by itself, but it combines with the Data Link Layer for topology and medium questions, so mastering it is a non-negotiable base.</p>
+</div>
+</section>
+
+<!-- ========== SECTION: CRITICAL QUESTIONS ========== -->
+<section>
+<h2 class="sec"><span class="num">§ 08</span> Critical Questions</h2>
+
+<div class="qset">
+<h4>Conceptual</h4>
+<ol>
+  <li>Define the Physical Layer in a single sentence. What is its data unit?</li>
+  <li>List the four duties of the Physical Layer as specified by the slide.</li>
+  <li>Differentiate between simplex, half-duplex, and full-duplex transmission modes with one real-world example each.</li>
+  <li>Why is synchronization of bits a Physical Layer responsibility and not a Data Link Layer one?</li>
+  <li>Explain why the Physical Layer is said to be "medium-agnostic in function but medium-specific in implementation."</li>
+</ol>
+</div>
+
+<div class="qset">
+<h4>Short-Answer</h4>
+<ol>
+  <li>Derive the number of physical links and per-node I/O ports for a mesh of 8 devices.</li>
+  <li>State two advantages and two disadvantages of the bus topology.</li>
+  <li>Name three standards organisations that publish Physical Layer standards.</li>
+  <li>Define <i>broadband</i> as given in the slides.</li>
+  <li>Compare circuit switching and packet switching in one row each of: path, bandwidth allocation, efficiency, example.</li>
+</ol>
+</div>
+
+<div class="qset">
+<h4>Diagram-Based</h4>
+<ol>
+  <li>Draw a mesh, star, bus, ring, and hybrid topology for 5 nodes. Label each.</li>
+  <li>Draw the encapsulation stack showing exactly where the bit stream enters the physical medium. Label the PDU at each layer.</li>
+  <li>Sketch packet-switched communication between host A and host B via three routers, showing that packets may take different paths.</li>
+</ol>
+</div>
+
+<div class="qset">
+<h4>Scenario-Based</h4>
+<ol>
+  <li>A company wires its new building using one long coaxial cable that taps every floor. Every floor goes offline when the basement cable is cut. Identify the topology, justify it with a slide-drawn disadvantage, and recommend an alternative.</li>
+  <li>You are handed two devices: Device X regenerates an electrical signal but cannot read MAC addresses. Device Y reads MAC addresses and forwards frames. Classify each into its OSI layer and justify in one sentence.</li>
+  <li>A remote office complains that large downloads arrive but take far longer than the sender thinks they should. Upstream speed tests show 20 Mbps down but only 1 Mbps up. Which Physical Layer property from the slides explains this asymmetry?</li>
+  <li>Two routers are connected by an RS-232 console cable for out-of-band management. Identify the Physical Layer standard, the applicable transmission mode, and why this connection is <em>not</em> suitable for production data traffic.</li>
+</ol>
+</div>
+
+</section>
+
+<div class="footer">
+  <span>OSI Revision Booklet · Vol. I · Layer 01 · Physical</span>
+  <span>Next → Layer 02 · Data Link</span>
+</div>
+
+</div>
+</body>
+</html>

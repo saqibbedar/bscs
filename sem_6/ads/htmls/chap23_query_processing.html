@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 23 — Query Processing & Optimization</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:        #f7f6f2;
+  --surface:   #ffffff;
+  --surface2:  #f0efe9;
+  --border:    #e2e0d8;
+  --text:      #1c1917;
+  --muted:     #78716c;
+  --sigma:     #2563eb;   /* selection σ — blue */
+  --pi:        #059669;   /* projection π — green */
+  --join:      #7c3aed;   /* join ⋈ — violet */
+  --cart:      #d97706;   /* cartesian × — amber */
+  --accent:    #c2410c;   /* main accent — brick red */
+  --gold:      #92400e;
+  --ink:       #292524;
+  --rule-bg:   #fef3c7;
+  --rule-bdr:  #f59e0b;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+/* ── HEADER ── */
+header {
+  background: var(--ink);
+  color: #fff;
+  padding: 44px 64px 38px;
+}
+.eyebrow {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .16em;
+  color: #a8a29e;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+header h1 {
+  font-family: 'Source Serif 4', serif;
+  font-size: 2.4rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #fff;
+}
+header h1 em { color: #fbbf24; font-style: normal; }
+.header-sub { margin-top: 8px; color: #a8a29e; font-size: 14px; }
+.exam-box {
+  margin-top: 20px;
+  background: rgba(251,191,36,.12);
+  border: 1px solid rgba(251,191,36,.35);
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 13.5px;
+  color: #fde68a;
+  line-height: 1.6;
+}
+.exam-box strong { color: #fbbf24; }
+
+/* ── NAV ── */
+.toc {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 64px;
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+}
+.toc a {
+  display: inline-block;
+  padding: 11px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color .15s, border-color .15s;
+}
+.toc a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ── LAYOUT ── */
+main { max-width: 980px; margin: 0 auto; padding: 52px 40px 80px; }
+section { margin-bottom: 64px; }
+.sec-label {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+h2 {
+  font-family: 'Source Serif 4', serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border);
+}
+h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 28px 0 10px;
+}
+h4 {
+  font-size: .93rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 18px 0 8px;
+}
+p { margin-bottom: 13px; }
+
+/* ── OPERATOR REFERENCE CARDS ── */
+.op-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin: 20px 0;
+}
+.op-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 16px;
+  border-top: 4px solid;
+}
+.op-card.sigma { border-top-color: var(--sigma); }
+.op-card.pi    { border-top-color: var(--pi);    }
+.op-card.join  { border-top-color: var(--join);  }
+.op-card.cart  { border-top-color: var(--cart);  }
+.op-card.set   { border-top-color: #64748b;       }
+
+.op-sym {
+  font-family: 'Source Serif 4', serif;
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.op-card.sigma .op-sym { color: var(--sigma); }
+.op-card.pi    .op-sym { color: var(--pi);    }
+.op-card.join  .op-sym { color: var(--join);  }
+.op-card.cart  .op-sym { color: var(--cart);  }
+.op-card.set   .op-sym { color: #64748b;       }
+
+.op-name { font-weight: 700; font-size: .9rem; color: var(--ink); margin-bottom: 4px; }
+.op-sql  { font-size: .8rem; color: var(--muted); font-family: 'JetBrains Mono', monospace; margin-bottom: 6px; }
+.op-desc { font-size: .84rem; color: var(--muted); }
+
+/* ── BOXES ── */
+.box {
+  border-radius: 8px;
+  padding: 15px 18px;
+  margin: 14px 0;
+  border-left: 3px solid;
+  font-size: .93em;
+}
+.box-blue   { background: #eff6ff; border-color: var(--sigma);  }
+.box-green  { background: #f0fdf4; border-color: var(--pi);     }
+.box-violet { background: #f5f3ff; border-color: var(--join);   }
+.box-amber  { background: #fffbeb; border-color: var(--rule-bdr); }
+.box-red    { background: #fff7ed; border-color: var(--accent);  }
+.box-title  { font-weight: 700; margin-bottom: 5px; font-size: .92rem; }
+.box-blue   .box-title { color: var(--sigma); }
+.box-green  .box-title { color: var(--pi);    }
+.box-violet .box-title { color: var(--join);  }
+.box-amber  .box-title { color: #92400e;       }
+.box-red    .box-title { color: var(--accent); }
+
+/* ── CODE ── */
+pre, code {
+  font-family: 'JetBrains Mono', monospace;
+}
+pre {
+  background: #1c1917;
+  color: #e7e5e4;
+  border-radius: 8px;
+  padding: 18px 20px;
+  font-size: 13px;
+  line-height: 1.65;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+code {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .88em;
+  color: var(--accent);
+}
+.ck { color: #93c5fd; font-weight: 600; }
+.cs { color: #86efac; }
+.cc { color: #6b7280; font-style: italic; }
+.cf { color: #c4b5fd; }
+pre .sigma { color: #60a5fa; font-weight: 700; }
+pre .pi    { color: #4ade80; font-weight: 700; }
+pre .join  { color: #c4b5fd; font-weight: 700; }
+
+/* ── RA EXPRESSION DISPLAY ── */
+.ra-expr {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  line-height: 1.9;
+  overflow-x: auto;
+}
+.ra-sigma { color: var(--sigma); font-weight: 700; }
+.ra-pi    { color: var(--pi);    font-weight: 700; }
+.ra-join  { color: var(--join);  font-weight: 700; }
+.ra-cart  { color: var(--cart);  font-weight: 700; }
+.ra-attr  { color: var(--ink);   }
+.ra-val   { color: #16a34a; }
+
+/* ── TREE SVG WRAPPER ── */
+.tree-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin: 16px 0;
+  overflow-x: auto;
+  text-align: center;
+}
+.tree-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--muted);
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+/* ── HEURISTIC RULES ── */
+.rule-list { list-style: none; padding: 0; }
+.rule-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  margin: 10px 0;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+.rule-num {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.rule-body strong { color: var(--ink); display: block; margin-bottom: 4px; }
+.rule-body small  { color: var(--muted); font-size: .87rem; }
+
+/* ── TRANSFORMATION RULES TABLE ── */
+.tr-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 14px 0;
+}
+.tr-table th {
+  background: var(--surface2);
+  padding: 9px 14px;
+  text-align: left;
+  border: 1px solid var(--border);
+  font-size: 11.5px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  color: var(--muted);
+  font-weight: 700;
+}
+.tr-table td {
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: #fafaf8; }
+.tr-num { font-weight: 700; color: var(--accent); }
+.tr-name { font-weight: 600; color: var(--ink); }
+.tr-expr { font-family: 'JetBrains Mono', monospace; font-size: 11.5px; color: #374151; }
+
+/* ── 3-STEP PROCESS FLOW ── */
+.step-flow {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+  align-items: stretch;
+  flex-wrap: wrap;
+}
+.step-box {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  flex: 1;
+  min-width: 200px;
+  position: relative;
+}
+.step-num-lbl {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .12em;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.step-box h4 { margin: 0 0 6px; font-size: .95rem; text-transform: none; color: var(--ink); }
+.step-box p  { font-size: .85rem; color: var(--muted); margin: 0; }
+.step-arr {
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  font-size: 22px;
+  flex-shrink: 0;
+  padding-top: 20px;
+}
+
+/* ── WORKED EXAMPLE ── */
+.example-wrap {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 20px 0;
+}
+.example-header {
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 20px;
+  font-size: .9rem;
+  font-weight: 600;
+}
+.example-body { padding: 20px; }
+
+/* ── QUIZ CARDS ── */
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 12px 0;
+  border-left: 4px solid var(--accent);
+}
+.quiz-q { font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+.quiz-a { color: #374151; font-size: .92rem; }
+
+/* ── INLINE CODE in text ── */
+.sigma-il { color: var(--sigma); font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: .95em; }
+.pi-il    { color: var(--pi);    font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: .95em; }
+.join-il  { color: var(--join);  font-weight: 600; font-family: 'JetBrains Mono', monospace; font-size: .95em; }
+
+/* ── KEY TERM ── */
+.kt { color: var(--accent); font-weight: 600; }
+
+hr { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+/* ── OPTIMIZED vs CANONICAL label ── */
+.label-canonical { display: inline-block; background: #fef3c7; color: #92400e; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; }
+.label-optimized { display: inline-block; background: #dcfce7; color: #166534; font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .06em; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">ADS — Connolly & Begg, 6th Ed.</div>
+  <h1>Chapter 23<br><em>Query Processing &amp; Optimization</em></h1>
+  <p class="header-sub">Connolly &amp; Begg — Database Systems, 6th Edition</p>
+  <div class="exam-box">
+    <strong>📋 Exam Format (as told by Sir):</strong> Given a query — write <strong>(1) Optimized SQL</strong>, <strong>(2) Relational Algebra expression</strong>, <strong>(3) Draw the Relational Algebra Tree</strong>. This guide teaches you exactly those three skills.
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#overview">Overview</a>
+  <a href="#operators">RA Operators</a>
+  <a href="#3steps">3-Step Process</a>
+  <a href="#canonical">Canonical Tree</a>
+  <a href="#rules">Transform Rules</a>
+  <a href="#heuristics">5 Heuristics</a>
+  <a href="#example">Worked Examples</a>
+  <a href="#drawing">Drawing Trees</a>
+  <a href="#quiz">Quiz Prep</a>
+</nav>
+
+<main>
+
+<!-- ══════════════════════════════ SECTION 1 ══════════════════════════════ -->
+<section id="overview">
+  <div class="sec-label">Section 01</div>
+  <h2>What is Query Processing?</h2>
+
+  <p>
+    <span class="kt">Query processing</span> is the set of activities that happens after you write an SQL query — parsing it, validating it, converting it to relational algebra, optimizing it, and executing it to get the data back.
+  </p>
+
+  <p>
+    Because SQL is <em>declarative</em> (you say <em>what</em> you want, not <em>how</em> to get it), the DBMS has to figure out the best way to actually retrieve the data. That decision-making process is <span class="kt">query optimization</span>.
+  </p>
+
+  <div class="box box-amber">
+    <div class="box-title">⚡ Why does it matter? — Example 23.1</div>
+    The query "Find all Managers who work at a London branch" can be run 3 ways:
+    <ul style="margin:.6em 0 0 1em;font-size:.92rem;line-height:2">
+      <li><strong>Strategy 1</strong>: Cartesian product first → <strong>101,050 disk accesses</strong></li>
+      <li><strong>Strategy 2</strong>: Join, then filter → <strong>3,050 disk accesses</strong></li>
+      <li><strong>Strategy 3</strong>: Filter first, then join → <strong>1,160 disk accesses</strong></li>
+    </ul>
+    Strategy 3 is <strong>87× faster</strong> than Strategy 1 — same result, same SQL.
+  </div>
+
+  <h3>The 4 Phases of Query Processing</h3>
+  <div class="step-flow">
+    <div class="step-box">
+      <div class="step-num-lbl">Phase 1</div>
+      <h4>Decomposition</h4>
+      <p>Parse SQL, check syntax/semantics, convert to a canonical relational algebra tree</p>
+    </div>
+    <div class="step-arr">→</div>
+    <div class="step-box">
+      <div class="step-num-lbl">Phase 2</div>
+      <h4>Optimization</h4>
+      <p>Apply transformation rules and heuristics to produce an efficient execution plan</p>
+    </div>
+    <div class="step-arr">→</div>
+    <div class="step-box">
+      <div class="step-num-lbl">Phase 3</div>
+      <h4>Code Generation</h4>
+      <p>Convert the optimized plan into executable low-level code</p>
+    </div>
+    <div class="step-arr">→</div>
+    <div class="step-box">
+      <div class="step-num-lbl">Phase 4</div>
+      <h4>Execution</h4>
+      <p>Run the code and return the result to the user</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 2 ══════════════════════════════ -->
+<section id="operators">
+  <div class="sec-label">Section 02</div>
+  <h2>Relational Algebra Operators — Reference Card</h2>
+  <p>Every SQL keyword maps to a relational algebra operator. Learn these symbols — they are what you write in the exam.</p>
+
+  <div class="op-grid">
+    <div class="op-card sigma">
+      <div class="op-sym">σ</div>
+      <div class="op-name">Selection (Sigma)</div>
+      <div class="op-sql">WHERE in SQL</div>
+      <div class="op-desc">Filters rows that satisfy a condition. <br><em>σ<sub>condition</sub>(Table)</em></div>
+    </div>
+    <div class="op-card pi">
+      <div class="op-sym">π</div>
+      <div class="op-name">Projection (Pi)</div>
+      <div class="op-sql">SELECT col1, col2</div>
+      <div class="op-desc">Picks specific columns, removes duplicates. <br><em>π<sub>col1,col2</sub>(Table)</em></div>
+    </div>
+    <div class="op-card join">
+      <div class="op-sym">⋈</div>
+      <div class="op-name">Natural / Theta Join</div>
+      <div class="op-sql">JOIN ... ON in SQL</div>
+      <div class="op-desc">Combines two tables on a condition. <br><em>R ⋈<sub>R.a=S.b</sub> S</em></div>
+    </div>
+    <div class="op-card cart">
+      <div class="op-sym">×</div>
+      <div class="op-name">Cartesian Product</div>
+      <div class="op-sql">FROM A, B (no WHERE join)</div>
+      <div class="op-desc">Every row of A combined with every row of B. Very expensive. <br><em>R × S</em></div>
+    </div>
+    <div class="op-card set">
+      <div class="op-sym">∪ ∩ −</div>
+      <div class="op-name">Set Operations</div>
+      <div class="op-sql">UNION / INTERSECT / EXCEPT</div>
+      <div class="op-desc">Union, Intersection, Set Difference on union-compatible relations</div>
+    </div>
+    <div class="op-card sigma" style="border-top-color:#dc2626">
+      <div class="op-sym" style="color:#dc2626">ρ</div>
+      <div class="op-name">Rename (Rho)</div>
+      <div class="op-sql">AS alias in SQL</div>
+      <div class="op-desc">Renames a relation or attribute. <br><em>ρ<sub>new_name</sub>(R)</em></div>
+    </div>
+  </div>
+
+  <h3>NEW and OLD in triggers vs NEW and OLD in RA</h3>
+  <div class="box box-blue">
+    <div class="box-title">How to read RA notation</div>
+    <code>σ<sub>position='Manager' ∧ city='London'</sub>(Staff ⋈<sub>Staff.branchNo=Branch.branchNo</sub> Branch)</code>
+    <p style="margin-top:8px;font-size:.9rem">
+      Read it inside-out, bottom-up: first join Staff and Branch, then filter with σ, then project with π.
+    </p>
+  </div>
+
+  <h3>Logical connectives inside σ</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:12px 0">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:var(--sigma)">∧</div>
+      <div style="font-size:.83rem;color:var(--muted)">AND</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:var(--pi)">∨</div>
+      <div style="font-size:.83rem;color:var(--muted)">OR</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;text-align:center">
+      <div style="font-size:1.4rem;font-weight:700;color:var(--accent)">¬</div>
+      <div style="font-size:.83rem;color:var(--muted)">NOT</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 3 ══════════════════════════════ -->
+<section id="3steps">
+  <div class="sec-label">Section 03</div>
+  <h2>The 3-Step Exam Answer</h2>
+  <p>Sir said: <em>"For a given query write the following — optimized SQL, Relational Algebra, Draw relational algebra tree."</em> Here is your exact workflow:</p>
+
+  <div class="step-flow">
+    <div class="step-box" style="border-top:3px solid var(--cart)">
+      <div class="step-num-lbl" style="color:var(--cart)">Step A</div>
+      <h4>Write Canonical (Unoptimized) RA</h4>
+      <p>Translate SQL literally: Cartesian products for all tables, one big σ on top, π at root. This is the <span class="label-canonical">canonical form</span>.</p>
+    </div>
+    <div class="step-arr">→</div>
+    <div class="step-box" style="border-top:3px solid var(--sigma)">
+      <div class="step-num-lbl" style="color:var(--sigma)">Step B</div>
+      <h4>Apply 5 Heuristics</h4>
+      <p>Push σ down as far as possible. Replace × + σ<sub>join condition</sub> with ⋈. Reorder joins. Push π down. Result: <span class="label-optimized">optimized RA</span>.</p>
+    </div>
+    <div class="step-arr">→</div>
+    <div class="step-box" style="border-top:3px solid var(--pi)">
+      <div class="step-num-lbl" style="color:var(--pi)">Step C</div>
+      <h4>Draw Optimized Tree + Write Optimized SQL</h4>
+      <p>Draw the optimized RA as a tree (leaves = tables, root = result). Then write the SQL that matches the optimized plan.</p>
+    </div>
+  </div>
+
+  <div class="box box-amber">
+    <div class="box-title">🔑 The Key Insight</div>
+    Canonical form = SQL translated blindly (expensive). Optimized = push filters down early (cheap). The exam expects you to show both, and explain the transformation.
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 4 ══════════════════════════════ -->
+<section id="canonical">
+  <div class="sec-label">Section 04</div>
+  <h2>Building the Canonical (Initial) RA Tree</h2>
+
+  <p>When SQL is first converted to relational algebra, the DBMS produces a <span class="kt">canonical relational algebra tree</span> — the naive, direct translation. Here is exactly how to build it:</p>
+
+  <h3>Rules for Building the Canonical Tree</h3>
+  <ul class="rule-list">
+    <li class="rule-item">
+      <div class="rule-num">1</div>
+      <div class="rule-body">
+        <strong>Each table in FROM → a leaf node at the bottom</strong>
+        <small>FROM Staff, Branch → two leaf nodes: Staff and Branch</small>
+      </div>
+    </li>
+    <li class="rule-item">
+      <div class="rule-num">2</div>
+      <div class="rule-body">
+        <strong>Multiple tables → connected by Cartesian product (×) nodes</strong>
+        <small>Staff × Branch sits above both leaf nodes</small>
+      </div>
+    </li>
+    <li class="rule-item">
+      <div class="rule-num">3</div>
+      <div class="rule-body">
+        <strong>The WHERE clause → a single big Selection (σ) node above the Cartesian product</strong>
+        <small>All conditions (join + filter) go into one σ on top of ×</small>
+      </div>
+    </li>
+    <li class="rule-item">
+      <div class="rule-num">4</div>
+      <div class="rule-body">
+        <strong>The SELECT clause → a Projection (π) node at the very root</strong>
+        <small>π<sub>s.staffNo, s.fName</sub> sits at the top</small>
+      </div>
+    </li>
+  </ul>
+
+  <div class="box box-red">
+    <div class="box-title">⚠️ Canonical form is always inefficient</div>
+    Cartesian product creates n × m rows (e.g., 1000 × 50 = 50,000 rows) just to filter them afterward. The optimizer's job is to fix this by pushing selections down before the join happens.
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 5 ══════════════════════════════ -->
+<section id="rules">
+  <div class="sec-label">Section 05</div>
+  <h2>The 12 Transformation Rules</h2>
+  <p>These rules let you legally rearrange a relational algebra expression without changing its result. They are the mathematical basis for optimization.</p>
+
+  <table class="tr-table">
+    <tr>
+      <th>#</th>
+      <th>Rule Name</th>
+      <th>What it says</th>
+      <th>Expression</th>
+    </tr>
+    <tr>
+      <td class="tr-num">1</td>
+      <td class="tr-name">Cascade of Selection</td>
+      <td>One big σ with AND can be split into separate nested σs</td>
+      <td class="tr-expr">σ<sub>p∧q∧r</sub>(R) = σ<sub>p</sub>(σ<sub>q</sub>(σ<sub>r</sub>(R)))</td>
+    </tr>
+    <tr>
+      <td class="tr-num">2</td>
+      <td class="tr-name">Commutativity of σ</td>
+      <td>Order of nested selections doesn't matter</td>
+      <td class="tr-expr">σ<sub>p</sub>(σ<sub>q</sub>(R)) = σ<sub>q</sub>(σ<sub>p</sub>(R))</td>
+    </tr>
+    <tr>
+      <td class="tr-num">3</td>
+      <td class="tr-name">Cascade of Projection</td>
+      <td>Only the outermost projection matters</td>
+      <td class="tr-expr">π<sub>L</sub>(π<sub>M</sub>(π<sub>N</sub>(R))) = π<sub>L</sub>(R)</td>
+    </tr>
+    <tr>
+      <td class="tr-num">4</td>
+      <td class="tr-name">σ and π Commute</td>
+      <td>If predicate only uses projected columns, swap σ and π</td>
+      <td class="tr-expr">π<sub>A1..Am</sub>(σ<sub>p</sub>(R)) = σ<sub>p</sub>(π<sub>A1..Am</sub>(R))</td>
+    </tr>
+    <tr>
+      <td class="tr-num">5</td>
+      <td class="tr-name">Commutativity of Join</td>
+      <td>Join order doesn't change the result</td>
+      <td class="tr-expr">R ⋈<sub>p</sub> S = S ⋈<sub>p</sub> R</td>
+    </tr>
+    <tr>
+      <td class="tr-num">6</td>
+      <td class="tr-name">σ and Join Commute ⭐</td>
+      <td>If σ only involves one table, push it inside before the join</td>
+      <td class="tr-expr">σ<sub>p</sub>(R ⋈ S) = σ<sub>p</sub>(R) ⋈ S <br>(where p involves only R)</td>
+    </tr>
+    <tr>
+      <td class="tr-num">7</td>
+      <td class="tr-name">π and Join Commute</td>
+      <td>Push projections past joins when attributes are split across tables</td>
+      <td class="tr-expr">π<sub>L1∪L2</sub>(R ⋈ S) = π<sub>L1</sub>(R) ⋈ π<sub>L2</sub>(S)</td>
+    </tr>
+    <tr>
+      <td class="tr-num">8</td>
+      <td class="tr-name">Commutativity of ∪ and ∩</td>
+      <td>Set union and intersection are commutative (but NOT set difference)</td>
+      <td class="tr-expr">R ∪ S = S ∪ R &nbsp;|&nbsp; R ∩ S = S ∩ R</td>
+    </tr>
+    <tr>
+      <td class="tr-num">9</td>
+      <td class="tr-name">σ and Set Ops Commute</td>
+      <td>Push σ inside union/intersection/set difference</td>
+      <td class="tr-expr">σ<sub>p</sub>(R ∪ S) = σ<sub>p</sub>(R) ∪ σ<sub>p</sub>(S)</td>
+    </tr>
+    <tr>
+      <td class="tr-num">10</td>
+      <td class="tr-name">π and Union Commute</td>
+      <td>Push projection inside union</td>
+      <td class="tr-expr">π<sub>L</sub>(R ∪ S) = π<sub>L</sub>(R) ∪ π<sub>L</sub>(S)</td>
+    </tr>
+    <tr>
+      <td class="tr-num">11</td>
+      <td class="tr-name">Associativity of Join ⭐</td>
+      <td>Regroup joins to change which pair is computed first</td>
+      <td class="tr-expr">(R ⋈ S) ⋈ T = R ⋈ (S ⋈ T)</td>
+    </tr>
+    <tr>
+      <td class="tr-num">12</td>
+      <td class="tr-name">Associativity of ∪ and ∩</td>
+      <td>Set operations can be regrouped</td>
+      <td class="tr-expr">(R ∪ S) ∪ T = S ∪ (R ∪ T)</td>
+    </tr>
+  </table>
+
+  <div class="box box-green">
+    <div class="box-title">⭐ For the exam, Rules 1, 6, and 11 are the most important</div>
+    Rule 1: Split AND conditions into separate σs so you can push them down individually.<br>
+    Rule 6: Push σ that only involves one table down below the join → reduces the join's input.<br>
+    Rule 11: Reorder joins so the smaller result is computed first.
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 6 ══════════════════════════════ -->
+<section id="heuristics">
+  <div class="sec-label">Section 06</div>
+  <h2>The 5 Heuristics — Your Optimization Checklist</h2>
+  <p>These are the practical rules you apply to the canonical tree to get the optimized tree. Apply them in order for the exam.</p>
+
+  <ul class="rule-list">
+    <li class="rule-item" style="border-top:3px solid var(--sigma)">
+      <div class="rule-num" style="background:var(--sigma)">H1</div>
+      <div class="rule-body">
+        <strong>Perform σ (Selection) as early as possible — push it DOWN the tree</strong>
+        <small>Use Rule 1 to split σ<sub>p∧q</sub> into two σs. Then use Rule 6 to push each σ down as far as possible toward the leaf node whose table it references. This reduces the number of rows before any join happens. Keep predicates on the same relation together.</small>
+      </div>
+    </li>
+    <li class="rule-item" style="border-top:3px solid var(--cart)">
+      <div class="rule-num" style="background:var(--cart)">H2</div>
+      <div class="rule-body">
+        <strong>Replace σ + × (Cartesian product) with ⋈ (Join)</strong>
+        <small>If a Selection predicate is a join condition (e.g., Staff.branchNo = Branch.branchNo), and it sits above a Cartesian product, replace the whole thing with a single Join node. Joins are far cheaper than Cartesian products + subsequent filtering.</small>
+      </div>
+    </li>
+    <li class="rule-item" style="border-top:3px solid var(--join)">
+      <div class="rule-num" style="background:var(--join)">H3</div>
+      <div class="rule-body">
+        <strong>Use associativity of joins (Rule 11) to reorder — most restrictive join first</strong>
+        <small>If you have two consecutive joins, use Rule 11 to reorder so the join that produces the fewest rows happens first. This makes the second join work on a smaller relation. Ask: "which condition is most selective?" — that one goes first.</small>
+      </div>
+    </li>
+    <li class="rule-item" style="border-top:3px solid var(--pi)">
+      <div class="rule-num" style="background:var(--pi)">H4</div>
+      <div class="rule-body">
+        <strong>Perform π (Projection) as early as possible — push it DOWN the tree</strong>
+        <small>Use Rules 3 and 7 to push projections down past joins. Dropping unnecessary columns early reduces the size of intermediate results. Keep only the attributes needed for the final SELECT or for subsequent join conditions.</small>
+      </div>
+    </li>
+    <li class="rule-item" style="border-top:3px solid #64748b">
+      <div class="rule-num" style="background:#64748b">H5</div>
+      <div class="rule-body">
+        <strong>Compute common sub-expressions once and cache them</strong>
+        <small>If the same sub-expression appears more than once in the tree (common in views), compute it once and store the result in memory for reuse. Only worthwhile if the intermediate result is small enough to store cheaply.</small>
+      </div>
+    </li>
+  </ul>
+
+  <div class="box box-amber">
+    <div class="box-title">🎯 Exam Shortcut — The Golden Rule</div>
+    The single most important optimization is: <strong>filter (σ) before you join (⋈)</strong>. This alone — moving the WHERE conditions inside, down to the leaf tables — produces the biggest speedup. Everything else is secondary.
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 7 ══════════════════════════════ -->
+<section id="example">
+  <div class="sec-label">Section 07</div>
+  <h2>Worked Example — Full 3-Step Answer</h2>
+  <p>This is based on Example 23.1 from your textbook — the DreamHome database. Staff table has 1000 tuples, Branch has 50. Query: <em>Find all Managers who work at a London branch.</em></p>
+
+  <!-- Step 1 SQL -->
+  <div class="example-wrap">
+    <div class="example-header">① Write the SQL (given)</div>
+    <div class="example-body">
+      <pre><span class="ck">SELECT</span> *
+<span class="ck">FROM</span>   Staff s, Branch b
+<span class="ck">WHERE</span>  s.branchNo = b.branchNo
+  <span class="ck">AND</span>  s.position = <span class="cs">'Manager'</span>
+  <span class="ck">AND</span>  b.city = <span class="cs">'London'</span>;</pre>
+    </div>
+  </div>
+
+  <!-- Step 2 Canonical RA -->
+  <div class="example-wrap">
+    <div class="example-header">② Canonical (Unoptimized) Relational Algebra Expression <span class="label-canonical" style="margin-left:8px">Unoptimized</span></div>
+    <div class="example-body">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:10px">Translate SQL literally: Cartesian product first, then one big σ on top, π at root.</p>
+      <div class="ra-expr">
+        <span class="ra-pi">π</span><sub>*</sub> ( <span class="ra-sigma">σ</span><sub>s.branchNo=b.branchNo ∧ s.position='Manager' ∧ b.city='London'</sub> ( Staff <span class="ra-cart">×</span> Branch ) )
+      </div>
+      <div class="box box-red" style="margin-top:12px">
+        <strong>Cost:</strong> Staff × Branch = 1000 × 50 = 50,000 rows created, then filtered. Very expensive.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 Optimized RA -->
+  <div class="example-wrap">
+    <div class="example-header">③ Optimized Relational Algebra Expression <span class="label-optimized" style="margin-left:8px">Optimized</span></div>
+    <div class="example-body">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:10px">Apply Heuristics H1, H2, H3:</p>
+
+      <h4>H1: Split AND conditions (Rule 1), push σs down (Rule 6)</h4>
+      <p style="font-size:.9rem">
+        σ<sub>s.branchNo=b.branchNo ∧ s.position='Manager' ∧ b.city='London'</sub> splits into three σs.<br>
+        σ<sub>position='Manager'</sub> involves only Staff → push it down to Staff.<br>
+        σ<sub>city='London'</sub> involves only Branch → push it down to Branch.
+      </p>
+
+      <h4>H2: Replace σ<sub>join_condition</sub>(A × B) with A ⋈ B</h4>
+      <p style="font-size:.9rem">The condition s.branchNo = b.branchNo is a join predicate on a Cartesian product → replace with ⋈.</p>
+
+      <div class="ra-expr">
+        <span class="ra-sigma">σ</span><sub>position='Manager'</sub>(Staff)
+        &nbsp;<span class="ra-join">⋈</span><sub>Staff.branchNo=Branch.branchNo</sub>&nbsp;
+        <span class="ra-sigma">σ</span><sub>city='London'</sub>(Branch)
+      </div>
+
+      <div class="box box-green" style="margin-top:10px">
+        <strong>Cost now:</strong> Staff filtered to 50 Managers first. Branch filtered to 5 London branches first. Join of 50 × 5 = 250 rows — compared to 50,000 rows in the canonical form.
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 Draw Trees -->
+  <div class="example-wrap">
+    <div class="example-header">④ Draw Both Trees</div>
+    <div class="example-body">
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;flex-wrap:wrap">
+
+        <div>
+          <div class="tree-label">Canonical (Unoptimized) Tree</div>
+          <div class="tree-wrap">
+            <svg viewBox="0 0 260 300" width="260" height="300" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="11">
+              <!-- root π -->
+              <rect x="90" y="8" width="80" height="28" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="130" y="27" text-anchor="middle" fill="#2563eb" font-weight="700">π *</text>
+              <!-- line to σ -->
+              <line x1="130" y1="36" x2="130" y2="66" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- σ -->
+              <rect x="20" y="66" width="220" height="36" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+              <text x="130" y="80" text-anchor="middle" fill="#92400e" font-weight="700" font-size="9">σ position='Manager' ∧</text>
+              <text x="130" y="94" text-anchor="middle" fill="#92400e" font-weight="700" font-size="9">city='London' ∧ branchNo=branchNo</text>
+              <!-- line to × -->
+              <line x1="130" y1="102" x2="130" y2="130" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- × -->
+              <rect x="90" y="130" width="80" height="28" rx="6" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/>
+              <text x="130" y="149" text-anchor="middle" fill="#92400e" font-weight="700">Staff × Branch</text>
+              <!-- lines to leaves -->
+              <line x1="110" y1="158" x2="70" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+              <line x1="150" y1="158" x2="190" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- Staff -->
+              <rect x="20" y="220" width="80" height="28" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="60" y="238" text-anchor="middle" fill="#1e293b" font-weight="600">Staff</text>
+              <text x="60" y="253" text-anchor="middle" fill="#94a3b8" font-size="9">1000 rows</text>
+              <!-- Branch -->
+              <rect x="160" y="220" width="80" height="28" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="200" y="238" text-anchor="middle" fill="#1e293b" font-weight="600">Branch</text>
+              <text x="200" y="253" text-anchor="middle" fill="#94a3b8" font-size="9">50 rows</text>
+              <!-- label -->
+              <text x="130" y="290" text-anchor="middle" fill="#ef4444" font-size="9" font-weight="700">50,000 rows in ×</text>
+            </svg>
+          </div>
+        </div>
+
+        <div>
+          <div class="tree-label">Optimized Tree (after H1 + H2)</div>
+          <div class="tree-wrap">
+            <svg viewBox="0 0 280 310" width="280" height="310" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="11">
+              <!-- root π -->
+              <rect x="100" y="8" width="80" height="28" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+              <text x="140" y="27" text-anchor="middle" fill="#2563eb" font-weight="700">π *</text>
+              <!-- line to join -->
+              <line x1="140" y1="36" x2="140" y2="66" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- ⋈ -->
+              <rect x="55" y="66" width="170" height="28" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+              <text x="140" y="82" text-anchor="middle" fill="#7c3aed" font-weight="700" font-size="10">⋈ branchNo = branchNo</text>
+              <!-- lines -->
+              <line x1="100" y1="94" x2="60" y2="150" stroke="#94a3b8" stroke-width="1.5"/>
+              <line x1="180" y1="94" x2="220" y2="150" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- σ Manager -->
+              <rect x="10" y="150" width="100" height="28" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+              <text x="60" y="169" text-anchor="middle" fill="#92400e" font-weight="700" font-size="9.5">σ position='Manager'</text>
+              <!-- σ London -->
+              <rect x="170" y="150" width="100" height="28" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+              <text x="220" y="169" text-anchor="middle" fill="#92400e" font-weight="700" font-size="9.5">σ city='London'</text>
+              <!-- lines to leaves -->
+              <line x1="60" y1="178" x2="60" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+              <line x1="220" y1="178" x2="220" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+              <!-- Staff -->
+              <rect x="10" y="220" width="100" height="28" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="60" y="238" text-anchor="middle" fill="#1e293b" font-weight="600">Staff</text>
+              <text x="60" y="253" text-anchor="middle" fill="#94a3b8" font-size="9">→ 50 Managers</text>
+              <!-- Branch -->
+              <rect x="170" y="220" width="100" height="28" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="220" y="238" text-anchor="middle" fill="#1e293b" font-weight="600">Branch</text>
+              <text x="220" y="253" text-anchor="middle" fill="#94a3b8" font-size="9">→ 5 London branches</text>
+              <!-- label -->
+              <text x="140" y="290" text-anchor="middle" fill="#16a34a" font-size="9" font-weight="700">Join on 50 × 5 = 250 rows ✓</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5: Optimized SQL -->
+  <div class="example-wrap">
+    <div class="example-header">⑤ Write the Optimized SQL</div>
+    <div class="example-body">
+      <p style="font-size:.9rem;color:var(--muted);margin-bottom:10px">
+        The optimized RA tells you to filter <em>before</em> joining. Write SQL that reflects this:
+      </p>
+      <pre><span class="cc">-- Original (canonical) SQL:</span>
+<span class="ck">SELECT</span> * <span class="ck">FROM</span> Staff s, Branch b
+<span class="ck">WHERE</span> s.branchNo = b.branchNo <span class="ck">AND</span> s.position = <span class="cs">'Manager'</span> <span class="ck">AND</span> b.city = <span class="cs">'London'</span>;
+
+<span class="cc">-- Optimized SQL (explicit subqueries mirroring the optimized RA tree):</span>
+<span class="ck">SELECT</span> *
+<span class="ck">FROM</span>  (<span class="ck">SELECT</span> * <span class="ck">FROM</span> Staff  <span class="ck">WHERE</span> position = <span class="cs">'Manager'</span>) <span class="ck">AS</span> managers
+  <span class="ck">JOIN</span> (<span class="ck">SELECT</span> * <span class="ck">FROM</span> Branch <span class="ck">WHERE</span> city = <span class="cs">'London'</span>)  <span class="ck">AS</span> london_branches
+    <span class="ck">ON</span>  managers.branchNo = london_branches.branchNo;</pre>
+      <div class="box box-blue" style="margin-top:10px">
+        <strong>Note:</strong> Modern SQL optimizers actually run both forms the same way — they internally apply the same heuristics. But writing the "optimized SQL" for the exam means explicitly placing filters in subqueries or CTEs before the join, to show the examiner that you understand the optimization.
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- ── SECOND WORKED EXAMPLE ── -->
+  <h3>Worked Example 2 — Three Tables (Example 23.3)</h3>
+  <p>Query: <em>"For prospective renters who are looking for flats, find properties that match their requirements and are owned by owner CO93."</em></p>
+
+  <div class="example-wrap">
+    <div class="example-header">① The SQL</div>
+    <div class="example-body">
+      <pre><span class="ck">SELECT</span> p.propertyNo, p.street
+<span class="ck">FROM</span>   Client c, Viewing v, PropertyForRent p
+<span class="ck">WHERE</span>  c.prefType = <span class="cs">'Flat'</span>
+  <span class="ck">AND</span>  c.clientNo = v.clientNo
+  <span class="ck">AND</span>  v.propertyNo = p.propertyNo
+  <span class="ck">AND</span>  c.maxRent &gt;= p.rent
+  <span class="ck">AND</span>  c.prefType = p.type
+  <span class="ck">AND</span>  p.ownerNo = <span class="cs">'CO93'</span>;</pre>
+    </div>
+  </div>
+
+  <div class="example-wrap">
+    <div class="example-header">② Canonical RA Expression <span class="label-canonical" style="margin-left:8px">Unoptimized</span></div>
+    <div class="example-body">
+      <div class="ra-expr">
+        <span class="ra-pi">π</span><sub>p.propertyNo, p.street</sub> (<br>
+        &nbsp;&nbsp;<span class="ra-sigma">σ</span><sub>c.prefType='Flat' ∧ c.clientNo=v.clientNo ∧ v.propertyNo=p.propertyNo ∧ c.maxRent≥p.rent ∧ c.prefType=p.type ∧ p.ownerNo='CO93'</sub> (<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;(Client <span class="ra-cart">×</span> Viewing) <span class="ra-cart">×</span> PropertyForRent<br>
+        &nbsp;&nbsp;)<br>
+        )
+      </div>
+      <div class="box box-red" style="margin-top:10px">Big single σ on top of a double Cartesian product — worst possible strategy.</div>
+    </div>
+  </div>
+
+  <div class="example-wrap">
+    <div class="example-header">③ Optimization Steps</div>
+    <div class="example-body">
+      <h4>Step 1 — H1: Split σ and push down (Rules 1 + 6)</h4>
+      <p style="font-size:.9rem">
+        <code>c.prefType='Flat'</code> → push down to Client.<br>
+        <code>p.ownerNo='CO93'</code> → push down to PropertyForRent.<br>
+        <code>c.clientNo=v.clientNo</code> → join condition between Client and Viewing.<br>
+        <code>v.propertyNo=p.propertyNo</code> → join condition between Viewing and PropertyForRent.
+      </p>
+
+      <h4>Step 2 — H2: Replace σ<sub>join</sub>(× ) with ⋈</h4>
+      <p style="font-size:.9rem">The two join conditions become ⋈ operators.</p>
+
+      <h4>Step 3 — H3: Reorder joins (Rule 11) — most restrictive first</h4>
+      <p style="font-size:.9rem">
+        Assume fewer properties owned by CO93 than clients looking for flats.<br>
+        So: PropertyForRent (filtered by ownerNo='CO93') should be joined first with Viewing, then with Client.
+      </p>
+
+      <h4>Step 4 — H4: Push π down (Rule 7)</h4>
+      <p style="font-size:.9rem">Project out columns not needed at each stage to reduce intermediate result size.</p>
+
+      <h4>Optimized RA Expression:</h4>
+      <div class="ra-expr">
+        <span class="ra-pi">π</span><sub>p.propertyNo, p.street</sub> (<br>
+        &nbsp;&nbsp;<span class="ra-sigma">σ</span><sub>c.prefType='Flat'</sub>(Client)<br>
+        &nbsp;&nbsp;&nbsp;&nbsp;<span class="ra-join">⋈</span><sub>c.clientNo=v.clientNo ∧ c.maxRent≥p.rent ∧ c.prefType=p.type</sub><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( Viewing <span class="ra-join">⋈</span><sub>v.propertyNo=p.propertyNo</sub> <span class="ra-sigma">σ</span><sub>p.ownerNo='CO93'</sub>(PropertyForRent) )<br>
+        )
+      </div>
+    </div>
+  </div>
+
+  <div class="example-wrap">
+    <div class="example-header">④ Optimized RA Tree (3 tables)</div>
+    <div class="example-body">
+      <div class="tree-wrap">
+        <svg viewBox="0 0 460 380" width="100%" height="350" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace" font-size="10.5">
+
+          <!-- ROOT: π -->
+          <rect x="165" y="6" width="130" height="26" rx="6" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+          <text x="230" y="23" text-anchor="middle" fill="#2563eb" font-weight="700">π p.propertyNo, p.street</text>
+
+          <line x1="230" y1="32" x2="230" y2="60" stroke="#94a3b8" stroke-width="1.5"/>
+
+          <!-- ⋈ top join -->
+          <rect x="100" y="60" width="260" height="28" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="230" y="76" text-anchor="middle" fill="#7c3aed" font-weight="700" font-size="9">⋈  c.clientNo=v.clientNo ∧ c.maxRent≥p.rent ∧ c.prefType=p.type</text>
+
+          <line x1="170" y1="88" x2="80" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="290" y1="88" x2="340" y2="140" stroke="#94a3b8" stroke-width="1.5"/>
+
+          <!-- σ Client (left) -->
+          <rect x="10" y="140" width="140" height="26" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+          <text x="80" y="157" text-anchor="middle" fill="#92400e" font-weight="700" font-size="9.5">σ prefType='Flat'</text>
+
+          <line x1="80" y1="166" x2="80" y2="200" stroke="#94a3b8" stroke-width="1.5"/>
+
+          <!-- Client leaf -->
+          <rect x="30" y="200" width="100" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="80" y="217" text-anchor="middle" fill="#1e293b" font-weight="600">Client</text>
+          <text x="80" y="231" text-anchor="middle" fill="#94a3b8" font-size="8">→ fewer rows</text>
+
+          <!-- ⋈ bottom join (right branch) -->
+          <rect x="240" y="140" width="200" height="26" rx="6" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+          <text x="340" y="156" text-anchor="middle" fill="#7c3aed" font-weight="700" font-size="9">⋈  v.propertyNo=p.propertyNo</text>
+
+          <line x1="300" y1="166" x2="270" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="380" y1="166" x2="400" y2="220" stroke="#94a3b8" stroke-width="1.5"/>
+
+          <!-- Viewing leaf -->
+          <rect x="220" y="220" width="100" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="270" y="237" text-anchor="middle" fill="#1e293b" font-weight="600">Viewing</text>
+
+          <!-- σ PropertyForRent -->
+          <rect x="340" y="220" width="110" height="26" rx="6" fill="#fff7ed" stroke="#d97706" stroke-width="1.5"/>
+          <text x="395" y="237" text-anchor="middle" fill="#92400e" font-weight="700" font-size="9">σ ownerNo='CO93'</text>
+
+          <line x1="395" y1="246" x2="395" y2="280" stroke="#94a3b8" stroke-width="1.5"/>
+
+          <!-- PropertyForRent leaf -->
+          <rect x="330" y="280" width="130" height="26" rx="6" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+          <text x="395" y="297" text-anchor="middle" fill="#1e293b" font-weight="600">PropertyForRent</text>
+          <text x="395" y="313" text-anchor="middle" fill="#94a3b8" font-size="8">→ few CO93 props</text>
+
+          <!-- Legend -->
+          <circle cx="20" cy="345" r="5" fill="#2563eb"/>
+          <text x="30" y="349" fill="#64748b" font-size="9">π = Projection</text>
+          <circle cx="110" cy="345" r="5" fill="#7c3aed"/>
+          <text x="120" y="349" fill="#64748b" font-size="9">⋈ = Join</text>
+          <circle cx="175" cy="345" r="5" fill="#d97706"/>
+          <text x="185" y="349" fill="#64748b" font-size="9">σ = Selection (pushed down!)</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- ══════════════════════════════ SECTION 8 ══════════════════════════════ -->
+<section id="drawing">
+  <div class="sec-label">Section 08</div>
+  <h2>How to Draw a RA Tree — Step-by-Step Protocol</h2>
+
+  <div class="box box-blue">
+    <div class="box-title">The Drawing Protocol (use for any exam question)</div>
+    <ol style="padding-left:1.2em;line-height:2.2;font-size:.93rem">
+      <li><strong>Identify tables (FROM clause)</strong> → draw them as rectangles at the bottom (leaf nodes)</li>
+      <li><strong>Canonical tree</strong>: connect leaves with <strong>×</strong> nodes, put one big σ on top, then π at root</li>
+      <li><strong>Optimized tree</strong>: apply H1–H4 transformations, step by step, showing the tree change</li>
+      <li><strong>Labels</strong>: always write the full condition inside σ and π nodes</li>
+      <li><strong>Arrows</strong>: data flows <em>upward</em> — from leaf to root</li>
+      <li><strong>Left-deep form</strong>: in joins, always make the left child the result of a previous join and right child a base relation (this is the standard form)</li>
+    </ol>
+  </div>
+
+  <h3>Node Shape Conventions</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:16px 0">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:700;color:var(--sigma);font-family:serif">σ</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:4px">Selection — oval or rectangle, blue. Write condition as subscript.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:700;color:var(--pi);font-family:serif">π</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:4px">Projection — oval or rectangle, green. Write column list as subscript.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+      <div style="font-size:1.6rem;font-weight:700;color:var(--join);font-family:serif">⋈</div>
+      <div style="font-size:.82rem;color:var(--muted);margin-top:4px">Join — two children, write join condition. Left child is outer, right is inner.</div>
+    </div>
+  </div>
+
+  <div class="box box-violet">
+    <div class="box-title">Left-Deep Tree (the standard)</div>
+    In a left-deep tree, every join node's <strong>right child is always a base relation</strong> (leaf). The left child is the result of a previous join. This is what most DBMSs use internally, and it's what you should draw in the exam unless told otherwise.
+  </div>
+</section>
+
+<!-- ══════════════════════════════ SECTION 9 ══════════════════════════════ -->
+<section id="quiz">
+  <div class="sec-label">Section 09</div>
+  <h2>⚡ Quiz Prep — Expected Questions</h2>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q1: What is query optimization? What are the two main techniques?</div>
+    <div class="quiz-a">Query optimization is the process of choosing the most efficient execution strategy for a query. The two techniques are: (1) <strong>Heuristic approach</strong> — applies transformation rules to reorder operations (push σ down, replace × with ⋈, etc.) and (2) <strong>Cost-based approach</strong> — estimates the I/O cost of different strategies and picks the cheapest one.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q2: What is a canonical relational algebra tree?</div>
+    <div class="quiz-a">The naive, direct translation of SQL into RA. It has all table relationships as Cartesian products (×) at the bottom, one large σ node with all WHERE conditions on top of the products, and a π node at the root. It is always unoptimized and expensive.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q3: What is the most important heuristic in query optimization?</div>
+    <div class="quiz-a">Perform Selection (σ) as early as possible — push it down the RA tree toward the leaf nodes. This reduces the number of rows in each relation before any join is performed, dramatically reducing the cost of subsequent binary operations like joins.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q4: How do you convert a Cartesian product + Selection into a Join?</div>
+    <div class="quiz-a">If a Selection predicate expresses a join condition (e.g., R.a = S.b) and it sits above a Cartesian product (R × S), replace the pair with a single Join: σ<sub>R.a=S.b</sub>(R × S) = R ⋈<sub>R.a=S.b</sub> S. This is Heuristic 2 / part of Rule 6.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q5: What is the difference between materialization and pipelining?</div>
+    <div class="quiz-a"><strong>Materialization</strong>: the intermediate result of one RA operation is written to a temporary relation on disk, and the next operation reads from it. <strong>Pipelining</strong>: the result tuples of one operation are passed directly to the next operation without creating a temporary disk relation — saving I/O cost.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q6: What is a left-deep tree and why is it preferred?</div>
+    <div class="quiz-a">A left-deep join tree is one where the right child of every join node is always a base relation (a table), while the left child is the result of a previous join. It is preferred because: (1) it reduces the optimizer's search space, (2) it allows the use of dynamic programming algorithms, and (3) it allows fully pipelined execution — inner relations are always base tables (already materialized).</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q7: Write the RA expression for: "Find all staff (name, salary) in branch B003 with salary > 15000"</div>
+    <div class="quiz-a">
+      <strong>Canonical:</strong> π<sub>fName,lName,salary</sub>( σ<sub>branchNo='B003' ∧ salary>15000</sub>(Staff) )<br><br>
+      <strong>Optimized:</strong> Same in this case — it's a single table, so push both conditions directly: π<sub>fName,lName,salary</sub>( σ<sub>branchNo='B003'</sub>( σ<sub>salary>15000</sub>(Staff) ) )<br><br>
+      <strong>Optimized SQL:</strong><br>
+      <code>SELECT fName, lName, salary FROM Staff WHERE branchNo = 'B003' AND salary > 15000;</code>
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q8: What are the 5 heuristics in order?</div>
+    <div class="quiz-a">
+      H1: Perform Selection (σ) as early as possible — push down.<br>
+      H2: Replace σ<sub>join condition</sub>(R × S) with R ⋈ S.<br>
+      H3: Reorder joins using associativity — most restrictive (smallest result) first.<br>
+      H4: Perform Projection (π) as early as possible — push down.<br>
+      H5: Compute common sub-expressions once and cache the result.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q9: What is static vs dynamic query optimization?</div>
+    <div class="quiz-a"><strong>Dynamic</strong>: query is parsed, validated, and optimized every time it runs — always uses up-to-date statistics but has runtime overhead. <strong>Static</strong>: query is optimized once (like a compiler), plan is reused — no runtime overhead but the plan may become suboptimal if the data changes significantly. Most systems use a hybrid approach.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q10: For a 3-table query, write the template for an optimized RA tree</div>
+    <div class="quiz-a">
+      π<sub>output_columns</sub> (<br>
+      &nbsp;&nbsp;σ<sub>filter on T1</sub>(T1)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;⋈<sub>T1.key=T2.key ∧ extra conditions</sub><br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( T2 ⋈<sub>T2.key=T3.key</sub> σ<sub>filter on T3</sub>(T3) )<br>
+      )<br><br>
+      Key points: σ is pushed down to individual tables, ⋈ replaces ×, most selective join is innermost.
+    </div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:20px 24px;margin-top:28px">
+    <div style="font-weight:700;color:#166534;margin-bottom:10px;font-size:.95rem">✅ Key Vocabulary</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:.88rem;line-height:1.9">
+      <div><strong>Query optimization</strong> — choosing the best execution plan</div>
+      <div><strong>Canonical tree</strong> — naive, unoptimized RA tree</div>
+      <div><strong>σ (Selection)</strong> — filters rows (= WHERE)</div>
+      <div><strong>π (Projection)</strong> — picks columns (= SELECT)</div>
+      <div><strong>⋈ (Join)</strong> — combines tables on condition</div>
+      <div><strong>× (Cartesian product)</strong> — all rows × all rows</div>
+      <div><strong>Heuristic</strong> — rule of thumb, not guaranteed optimal</div>
+      <div><strong>Left-deep tree</strong> — right child always a base table</div>
+      <div><strong>Pipelining</strong> — pass results between ops without disk write</div>
+      <div><strong>Materialization</strong> — write intermediate result to disk</div>
+      <div><strong>Push σ down</strong> — filter early, before joins</div>
+      <div><strong>Push π down</strong> — drop columns early, before joins</div>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

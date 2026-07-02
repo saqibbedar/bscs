@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 24 — Distributed DBMSs: Concepts and Design</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b27;
+    --bg3: #1e2535;
+    --bg4: #252d40;
+    --border: #2e3a52;
+    --border2: #3d4f70;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --blue: #3b82f6;
+    --blue-light: #60a5fa;
+    --blue-dim: #1e3a5f;
+    --teal: #14b8a6;
+    --teal-dim: #0d3330;
+    --amber: #f59e0b;
+    --amber-dim: #3d2a0a;
+    --coral: #f97316;
+    --coral-dim: #3d1a08;
+    --purple: #a78bfa;
+    --purple-dim: #2d1b6b;
+    --green: #22c55e;
+    --green-dim: #0d2e19;
+    --red: #ef4444;
+    --red-dim: #3d0f0f;
+    --page-ref: #475569;
+    --accent: #3b82f6;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 16px;
+  }
+
+  /* ── LAYOUT ── */
+  .wrapper { max-width: 900px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  /* ── HEADER ── */
+  .chapter-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 32px;
+    margin-bottom: 48px;
+  }
+  .chapter-label {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    letter-spacing: 3px;
+    color: var(--blue);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .chapter-title {
+    font-size: 32px;
+    font-weight: 700;
+    font-family: sans-serif;
+    line-height: 1.2;
+    color: #f1f5f9;
+    margin-bottom: 10px;
+  }
+  .chapter-sub { font-size: 16px; color: var(--text2); font-style: italic; }
+  .toc {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin-top: 28px;
+  }
+  .toc-title {
+    font-family: sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+  .toc a {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text2);
+    text-decoration: none;
+    padding: 5px 0;
+    font-family: sans-serif;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+    transition: color 0.15s;
+  }
+  .toc a:last-child { border-bottom: none; }
+  .toc a:hover { color: var(--blue-light); }
+  .toc .pg { color: var(--page-ref); font-size: 12px; }
+
+  /* ── SECTION HEADERS ── */
+  .section {
+    margin-bottom: 56px;
+    scroll-margin-top: 24px;
+  }
+  .section-num {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-family: sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: #f1f5f9;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-family: sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: #cbd5e1;
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-family: sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 20px 0 8px;
+  }
+
+  p { margin-bottom: 14px; color: var(--text); }
+  p:last-child { margin-bottom: 0; }
+
+  /* ── PAGE REFERENCE ── */
+  .pg-ref {
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    color: var(--page-ref);
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  /* ── DEFINITION BOX ── */
+  .def-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .def-term {
+    font-family: sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue-light);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+  .def-text { color: var(--text); font-style: italic; }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 20px 0;
+    border: 1px solid;
+    font-family: sans-serif;
+    font-size: 14px;
+  }
+  .callout-blue { background: var(--blue-dim); border-color: var(--blue); color: #bfdbfe; }
+  .callout-teal { background: var(--teal-dim); border-color: var(--teal); color: #99f6e4; }
+  .callout-amber { background: var(--amber-dim); border-color: var(--amber); color: #fcd34d; }
+  .callout-coral { background: var(--coral-dim); border-color: var(--coral); color: #fdba74; }
+  .callout-purple { background: var(--purple-dim); border-color: var(--purple); color: #c4b5fd; }
+  .callout-green { background: var(--green-dim); border-color: var(--green); color: #86efac; }
+  .callout-red { background: var(--red-dim); border-color: var(--red); color: #fca5a5; }
+  .callout-label {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    opacity: 0.8;
+    font-weight: 700;
+  }
+
+  /* ── FIGURE / DIAGRAM ── */
+  .figure-wrap {
+    margin: 28px 0;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .figure-body { padding: 24px; }
+  .figure-caption {
+    background: var(--bg3);
+    border-top: 1px solid var(--border);
+    padding: 10px 20px;
+    font-family: sans-serif;
+    font-size: 12px;
+    color: var(--text2);
+  }
+  .figure-caption strong { color: var(--blue-light); }
+
+  /* ── SVG DIAGRAMS ── */
+  svg text { font-family: sans-serif; }
+  .node-label { font-size: 12px; fill: var(--text); }
+  .node-label-sm { font-size: 11px; fill: var(--text2); }
+
+  /* ── TABLE ── */
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: sans-serif;
+    font-size: 13px;
+    margin: 16px 0;
+  }
+  .styled-table th {
+    background: var(--bg3);
+    color: var(--text2);
+    font-weight: 600;
+    padding: 9px 12px;
+    text-align: left;
+    border-bottom: 1px solid var(--border2);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .styled-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    vertical-align: top;
+  }
+  .styled-table tr:last-child td { border-bottom: none; }
+  .styled-table tr:nth-child(even) td { background: var(--bg2); }
+  .td-good { color: var(--green); font-weight: 600; }
+  .td-bad { color: var(--red); font-weight: 600; }
+  .td-mid { color: var(--amber); }
+
+  /* ── CODE ── */
+  .code-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #e2e8f0;
+    margin: 14px 0;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .kw { color: #60a5fa; }
+  .str { color: #86efac; }
+  .cmt { color: #475569; font-style: italic; }
+  .op { color: #f59e0b; }
+
+  /* ── TWO-COL GRID ── */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin: 16px 0; }
+  @media (max-width: 640px) { .grid2, .grid3 { grid-template-columns: 1fr; } }
+
+  /* ── CARD ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px;
+    font-family: sans-serif;
+    font-size: 13px;
+  }
+  .card-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+  }
+  .card-blue .card-title { color: var(--blue-light); }
+  .card-teal .card-title { color: var(--teal); }
+  .card-amber .card-title { color: var(--amber); }
+  .card-coral .card-title { color: var(--coral); }
+  .card-purple .card-title { color: var(--purple); }
+  .card-green .card-title { color: var(--green); }
+  .card-blue { border-left: 3px solid var(--blue); }
+  .card-teal { border-left: 3px solid var(--teal); }
+  .card-amber { border-left: 3px solid var(--amber); }
+  .card-coral { border-left: 3px solid var(--coral); }
+  .card-purple { border-left: 3px solid var(--purple); }
+  .card-green { border-left: 3px solid var(--green); }
+
+  /* ── STEPS LIST ── */
+  .steps { list-style: none; margin: 14px 0; }
+  .steps li {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 12px;
+    font-family: sans-serif;
+    font-size: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    min-width: 26px;
+    height: 26px;
+    background: var(--blue-dim);
+    color: var(--blue-light);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── RULE BADGE ── */
+  .rule-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin: 5px 4px 5px 0;
+    font-family: sans-serif;
+    font-size: 13px;
+    color: var(--text2);
+  }
+  .rule-badge strong { color: var(--text); }
+  .badge-num {
+    background: var(--blue-dim);
+    color: var(--blue-light);
+    font-size: 11px;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* ── EXAMPLE BOX ── */
+  .example-box {
+    background: var(--bg2);
+    border: 1px dashed var(--border2);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 20px 0;
+  }
+  .example-label {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: var(--teal);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* ── QUIZ SECTION ── */
+  .quiz-section {
+    background: var(--bg2);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 48px;
+  }
+  .quiz-section h2 { border-color: var(--purple); }
+  .quiz-item {
+    background: var(--bg3);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 12px 0;
+    font-family: sans-serif;
+    font-size: 14px;
+    border: 1px solid var(--border);
+  }
+  .quiz-q { color: var(--text); margin-bottom: 10px; font-weight: 500; }
+  .quiz-opts label {
+    display: block;
+    padding: 6px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text2);
+    margin: 3px 0;
+    transition: background 0.1s;
+    border: 1px solid transparent;
+  }
+  .quiz-opts label:hover { background: var(--bg4); border-color: var(--border2); }
+  .quiz-opts input[type=radio] { margin-right: 8px; accent-color: var(--blue); }
+  .quiz-btn {
+    margin-top: 10px;
+    padding: 6px 16px;
+    background: var(--blue-dim);
+    color: var(--blue-light);
+    border: 1px solid var(--blue);
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: sans-serif;
+    font-size: 12px;
+    transition: background 0.15s;
+  }
+  .quiz-btn:hover { background: #1e40af; }
+  .quiz-result {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    display: none;
+  }
+  .result-correct { background: var(--green-dim); color: #86efac; border: 1px solid var(--green); }
+  .result-wrong { background: var(--red-dim); color: #fca5a5; border: 1px solid var(--red); }
+
+  /* ── FRAGMENTATION VISUAL TABLE ── */
+  .frag-table {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    border-collapse: collapse;
+    margin: 10px 0;
+  }
+  .frag-table td, .frag-table th {
+    border: 1px solid var(--border2);
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+  .frag-table th { background: var(--bg3); color: var(--text2); font-size: 11px; }
+  .frag-table .h1 { background: rgba(59,130,246,0.2); }
+  .frag-table .h2 { background: rgba(20,184,166,0.2); }
+  .frag-table .v1 { background: rgba(167,139,250,0.2); }
+  .frag-table .v2 { background: rgba(249,115,22,0.2); }
+
+  /* ── HORIZONTAL RULE ── */
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── FOOTER / BACK ── */
+  .chapter-footer {
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+    font-family: sans-serif;
+    font-size: 12px;
+    color: var(--text3);
+    text-align: center;
+  }
+
+  /* ── DARK SVG defaults ── */
+  .svg-container svg { display: block; }
+
+  ul.bullet { padding-left: 20px; margin: 10px 0; }
+  ul.bullet li { margin-bottom: 6px; color: var(--text); font-family: sans-serif; font-size: 14px; }
+  ul.bullet li::marker { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ══════════════════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════════════════ -->
+<header class="chapter-header">
+  <div class="chapter-label">Connolly & Begg · Database Systems 6th Ed.</div>
+  <h1 class="chapter-title">Chapter 24 — Distributed DBMSs<br>Concepts and Design</h1>
+  <p class="chapter-sub">Distributed databases, fragmentation, allocation, replication, transparency, and Date's 12 rules.</p>
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <a href="#s241"><span>24.1 &nbsp; Introduction &amp; Concepts</span><span class="pg">p. 785</span></a>
+    <a href="#s242"><span>24.2 &nbsp; Advantages &amp; Disadvantages</span><span class="pg">p. 791</span></a>
+    <a href="#s243"><span>24.3 &nbsp; Homogeneous vs Heterogeneous</span><span class="pg">p. 794</span></a>
+    <a href="#s244"><span>24.4 &nbsp; Functions &amp; Architectures</span><span class="pg">p. 801</span></a>
+    <a href="#s245"><span>24.5 &nbsp; Distributed DB Design: Allocation</span><span class="pg">p. 805</span></a>
+    <a href="#s246"><span>24.6 &nbsp; Fragmentation (all 4 types)</span><span class="pg">p. 807</span></a>
+    <a href="#s247"><span>24.7 &nbsp; Transparencies in a DDBMS</span><span class="pg">p. 816</span></a>
+    <a href="#s248"><span>24.8 &nbsp; Distributed Query Processing</span><span class="pg">p. 822</span></a>
+    <a href="#s249"><span>24.9 &nbsp; Date's 12 Rules</span><span class="pg">p. 825</span></a>
+    <a href="#quiz"><span>🎯 &nbsp; Quiz Drill</span><span class="pg">exam prep</span></a>
+  </nav>
+</header>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.1 INTRODUCTION
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s241">
+  <div class="section-num">Section 24.1</div>
+  <h2>Introduction &amp; Core Concepts <span class="pg-ref">p. 785–788</span></h2>
+
+  <p>Previously, we focused on <em>centralized</em> database systems — a single logical database at one site under one DBMS. Now we enter distributed territory: data physically spread across machines connected by a network, yet appearing as a single unified system to users.</p>
+
+  <div class="def-box">
+    <div class="def-term">Distributed Database</div>
+    <div class="def-text">A logically interrelated collection of shared data (and a description of this data) physically distributed over a computer network. <span class="pg-ref">p. 787</span></div>
+  </div>
+
+  <div class="def-box">
+    <div class="def-term">Distributed DBMS (DDBMS)</div>
+    <div class="def-text">The software system that permits the management of the distributed database and makes the distribution <strong>transparent</strong> to users. <span class="pg-ref">p. 787</span></div>
+  </div>
+
+  <h3>The Key Characteristics of a DDBMS <span class="pg-ref">p. 787</span></h3>
+  <ul class="bullet">
+    <li>Data is split into a number of <strong>fragments</strong></li>
+    <li>Fragments may be <strong>replicated</strong> (copied at multiple sites)</li>
+    <li>Fragments/replicas are <strong>allocated to sites</strong></li>
+    <li>Sites are linked by a <strong>communications network</strong></li>
+    <li>Each site has its own local DBMS</li>
+    <li>Each local DBMS can handle <strong>local applications</strong> autonomously</li>
+    <li>Each DBMS participates in at least one <strong>global application</strong></li>
+  </ul>
+
+  <!-- FIGURE 24.1 — recreated as SVG -->
+  <div class="figure-wrap">
+    <div class="figure-body">
+      <svg width="100%" viewBox="0 0 700 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- Computer network center -->
+        <ellipse cx="350" cy="160" rx="70" ry="44" fill="#1e2535" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="350" y="155" text-anchor="middle" font-size="13" fill="#60a5fa" font-family="sans-serif" font-weight="600">Computer</text>
+        <text x="350" y="172" text-anchor="middle" font-size="13" fill="#60a5fa" font-family="sans-serif" font-weight="600">Network</text>
+
+        <!-- Site 1 — Top -->
+        <line x1="350" y1="116" x2="350" y2="62" stroke="#3d4f70" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <rect x="300" y="12" width="100" height="50" rx="6" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <rect x="315" y="18" width="70" height="18" rx="3" fill="#252d40" stroke="#3b82f6" stroke-width="0.8"/>
+        <rect x="326" y="40" width="48" height="20" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1"/>
+        <text x="350" y="55" text-anchor="middle" font-size="10" fill="#14b8a6" font-family="sans-serif">DB</text>
+        <text x="350" y="8" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="600">Site 1</text>
+
+        <!-- Site 2 — Right -->
+        <line x1="420" y1="145" x2="550" y2="120" stroke="#3d4f70" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <rect x="545" y="90" width="100" height="50" rx="6" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <rect x="560" y="96" width="70" height="18" rx="3" fill="#252d40" stroke="#3b82f6" stroke-width="0.8"/>
+        <rect x="571" y="118" width="48" height="20" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1"/>
+        <text x="595" y="133" text-anchor="middle" font-size="10" fill="#14b8a6" font-family="sans-serif">DB</text>
+        <text x="595" y="88" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="600">Site 2</text>
+
+        <!-- Site 3 — Bottom -->
+        <line x1="350" y1="204" x2="350" y2="252" stroke="#3d4f70" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <rect x="300" y="252" width="100" height="50" rx="6" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <rect x="315" y="258" width="70" height="18" rx="3" fill="#252d40" stroke="#3b82f6" stroke-width="0.8"/>
+        <rect x="326" y="280" width="48" height="20" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1"/>
+        <text x="350" y="295" text-anchor="middle" font-size="10" fill="#14b8a6" font-family="sans-serif">DB</text>
+        <text x="350" y="316" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="600">Site 3</text>
+
+        <!-- Site 4 — Left -->
+        <line x1="280" y1="145" x2="155" y2="120" stroke="#3d4f70" stroke-width="1.5" stroke-dasharray="5,3"/>
+        <rect x="55" y="90" width="100" height="50" rx="6" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <rect x="70" y="96" width="70" height="18" rx="3" fill="#252d40" stroke="#3b82f6" stroke-width="0.8"/>
+        <rect x="81" y="118" width="48" height="20" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1"/>
+        <text x="105" y="133" text-anchor="middle" font-size="10" fill="#14b8a6" font-family="sans-serif">DB</text>
+        <text x="105" y="88" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="600">Site 4</text>
+
+        <!-- Fragment labels -->
+        <text x="350" y="42" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="sans-serif">Fragment F1</text>
+        <text x="595" y="113" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="sans-serif">Fragment F2</text>
+        <text x="350" y="274" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="sans-serif">Fragment F3</text>
+        <text x="105" y="113" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="sans-serif">Fragment F4</text>
+      </svg>
+    </div>
+    <div class="figure-caption"><strong>Figure 24.1</strong> (p. 788) — A DDBMS: 4 sites connected via a computer network, each holding a fragment of the distributed database. Users at any site can access data at any other site transparently.</div>
+  </div>
+
+  <h3>DDBMS vs Distributed Processing — a critical distinction <span class="pg-ref">p. 788</span></h3>
+
+  <div class="def-box">
+    <div class="def-term">Distributed Processing</div>
+    <div class="def-text">A <em>centralized</em> database that can be accessed over a network. Data is still in one place — only access is distributed.</div>
+  </div>
+
+  <div class="callout callout-amber">
+    <div class="callout-label">Key Point</div>
+    In a true DDBMS, data is <strong>physically</strong> distributed across sites. In distributed processing, data is centralized but users access it from multiple locations. The DDBMS is NOT just remote access to one DB.
+  </div>
+
+  <h3>Parallel DBMSs — also distinct <span class="pg-ref">p. 789–791</span></h3>
+  <p>A parallel DBMS links multiple processors/machines to improve performance, usually within the same physical site. Three architectures:</p>
+
+  <div class="grid3">
+    <div class="card card-blue">
+      <div class="card-title">Shared Memory</div>
+      Multiple processors share one memory pool. Fast but limited to ~64 processors before bottleneck.
+    </div>
+    <div class="card card-teal">
+      <div class="card-title">Shared Disk</div>
+      Each processor has private memory but can access all disks. Eliminates memory bottleneck. Also called <em>clusters</em>.
+    </div>
+    <div class="card card-amber">
+      <div class="card-title">Shared Nothing (MPP)</div>
+      Each processor has its own memory AND disk. Most scalable. Data partitioned across disks. Performance best when data is local.
+    </div>
+  </div>
+
+  <div class="callout callout-blue">
+    <div class="callout-label">Parallel vs Distributed</div>
+    Parallel DBMS nodes are typically at the <strong>same site</strong> with fast interconnects. DDBMS nodes are <strong>geographically distributed</strong>, separately administered, with slower network links.
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.2 ADVANTAGES & DISADVANTAGES
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s242">
+  <div class="section-num">Section 24.1.2</div>
+  <h2>Advantages &amp; Disadvantages <span class="pg-ref">p. 791–794</span></h2>
+
+  <div class="grid2">
+    <div class="card card-green">
+      <div class="card-title">✓ Advantages</div>
+      <ul class="bullet" style="margin-top:8px">
+        <li><strong>Reflects org structure</strong> — data lives where it's used (e.g. DreamHome branches)</li>
+        <li><strong>Improved shareability</strong> — local data can be accessed globally</li>
+        <li><strong>Improved availability</strong> — one site failing doesn't kill the system</li>
+        <li><strong>Improved reliability</strong> — replicated data survives node failures</li>
+        <li><strong>Better performance</strong> — data near users, parallel processing</li>
+        <li><strong>Economics</strong> — cheaper to add workstations than upgrade mainframes</li>
+        <li><strong>Modular growth</strong> — add new sites without disrupting existing ones</li>
+        <li><strong>Integration</strong> — legacy systems can coexist</li>
+      </ul>
+    </div>
+    <div class="card card-red" style="border-left-color: var(--red);">
+      <div class="card-title" style="color: #fca5a5;">✗ Disadvantages</div>
+      <ul class="bullet" style="margin-top:8px">
+        <li><strong>Complexity</strong> — much harder to manage than centralized</li>
+        <li><strong>Cost</strong> — higher procurement, maintenance, network costs</li>
+        <li><strong>Security</strong> — network adds attack surface; replicated data harder to control</li>
+        <li><strong>Integrity control harder</strong> — enforcing constraints across sites is expensive</li>
+        <li><strong>Lack of standards</strong> — no universal protocols yet</li>
+        <li><strong>Lack of experience</strong> — less industry knowledge than centralized systems</li>
+        <li><strong>Design more complex</strong> — fragmentation + allocation + replication = hard</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.3 HOMOGENEOUS vs HETEROGENEOUS
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s243">
+  <div class="section-num">Section 24.1.3</div>
+  <h2>Homogeneous vs Heterogeneous DDBMSs <span class="pg-ref">p. 794–797</span></h2>
+
+  <div class="grid2">
+    <div class="card card-teal">
+      <div class="card-title">Homogeneous DDBMS</div>
+      All sites run the <strong>same DBMS product</strong>. Easier to design and manage. Allows incremental growth. Can exploit parallelism easily.
+      <br><br><em>Example: 5 branches, all running SQL Server 2022</em>
+    </div>
+    <div class="card card-coral">
+      <div class="card-title">Heterogeneous DDBMS</div>
+      Sites run <strong>different DBMS products</strong>, possibly different data models (relational, network, hierarchical). Requires <em>translation</em> between systems. Usually results from independent legacy systems being integrated later.
+      <br><br><em>Example: Branch A on Oracle, Branch B on MySQL, Branch C on old COBOL flat files</em>
+    </div>
+  </div>
+
+  <h3>Multidatabase Systems (MDBS) <span class="pg-ref">p. 796</span></h3>
+
+  <div class="def-box">
+    <div class="def-term">Multidatabase System (MDBS)</div>
+    <div class="def-text">A distributed DBMS in which each site maintains <strong>complete autonomy</strong> — local DBMSs are not modified, an additional software layer sits on top.</div>
+  </div>
+
+  <p>An MDBS sits transparently on top of existing databases, presenting a single view to users. It maintains a <strong>global schema</strong> while local DBMSs maintain all user data. Two types exist:</p>
+
+  <!-- FIGURE 24.4 taxonomy — recreated -->
+  <div class="figure-wrap">
+    <div class="figure-body">
+      <svg width="100%" viewBox="0 0 680 220" xmlns="http://www.w3.org/2000/svg">
+        <!-- Axes labels -->
+        <text x="20" y="110" font-size="11" fill="#64748b" font-family="sans-serif" transform="rotate(-90,20,110)">Homogeneity →</text>
+        <text x="340" y="215" text-anchor="middle" font-size="11" fill="#64748b" font-family="sans-serif">← More Autonomy</text>
+
+        <!-- Central DBMS -->
+        <g>
+          <rect x="30" y="20" width="130" height="48" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+          <text x="95" y="40" text-anchor="middle" font-size="12" fill="#60a5fa" font-family="sans-serif" font-weight="600">Centralized</text>
+          <text x="95" y="56" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">DBMS</text>
+        </g>
+
+        <!-- Homogeneous DDBMS -->
+        <g>
+          <rect x="180" y="20" width="150" height="48" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1"/>
+          <text x="255" y="40" text-anchor="middle" font-size="12" fill="#2dd4bf" font-family="sans-serif" font-weight="600">Homogeneous</text>
+          <text x="255" y="56" text-anchor="middle" font-size="11" fill="#5eead4" font-family="sans-serif">DDBMS</text>
+        </g>
+
+        <!-- Homogeneous Federated DDBMS -->
+        <g>
+          <rect x="350" y="20" width="150" height="48" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1"/>
+          <text x="425" y="38" text-anchor="middle" font-size="11" fill="#2dd4bf" font-family="sans-serif" font-weight="600">Homogeneous</text>
+          <text x="425" y="52" text-anchor="middle" font-size="11" fill="#5eead4" font-family="sans-serif">Federated DDBMS</text>
+        </g>
+
+        <!-- Homogeneous MDBS -->
+        <g>
+          <rect x="520" y="20" width="140" height="48" rx="8" fill="#2d1b6b" stroke="#a78bfa" stroke-width="1"/>
+          <text x="590" y="38" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif" font-weight="600">Homogeneous</text>
+          <text x="590" y="54" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif">MDBS</text>
+        </g>
+
+        <!-- Heterogeneous DDBMS -->
+        <g>
+          <rect x="180" y="140" width="150" height="48" rx="8" fill="#3d1a08" stroke="#f97316" stroke-width="1"/>
+          <text x="255" y="158" text-anchor="middle" font-size="11" fill="#fb923c" font-family="sans-serif" font-weight="600">Heterogeneous</text>
+          <text x="255" y="174" text-anchor="middle" font-size="11" fill="#fdba74" font-family="sans-serif">DDBMS</text>
+        </g>
+
+        <!-- Heterogeneous Federated DDBMS -->
+        <g>
+          <rect x="350" y="140" width="150" height="48" rx="8" fill="#3d1a08" stroke="#f97316" stroke-width="1"/>
+          <text x="425" y="158" text-anchor="middle" font-size="11" fill="#fb923c" font-family="sans-serif" font-weight="600">Heterogeneous</text>
+          <text x="425" y="174" text-anchor="middle" font-size="11" fill="#fdba74" font-family="sans-serif">Federated DDBMS</text>
+        </g>
+
+        <!-- Heterogeneous MDBS -->
+        <g>
+          <rect x="520" y="140" width="140" height="48" rx="8" fill="#2d1b6b" stroke="#a78bfa" stroke-width="1"/>
+          <text x="590" y="158" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif" font-weight="600">Heterogeneous</text>
+          <text x="590" y="174" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif">MDBS</text>
+        </g>
+
+        <!-- Autonomy arrow -->
+        <line x1="160" y1="160" x2="670" y2="160" stroke="#475569" stroke-width="0.5" stroke-dasharray="4,3"/>
+        <text x="165" y="130" font-size="10" fill="#475569" font-family="sans-serif">← Increasing Autonomy</text>
+
+        <!-- Homogeneity label -->
+        <text x="94" y="108" text-anchor="middle" font-size="10" fill="#475569" font-family="sans-serif" transform="rotate(-90,94,108)">Homogeneous</text>
+        <text x="94" y="175" text-anchor="middle" font-size="10" fill="#475569" font-family="sans-serif" transform="rotate(-90,94,175)">Heterogeneous</text>
+      </svg>
+    </div>
+    <div class="figure-caption"><strong>Figure 24.4</strong> (p. 797) — Taxonomy of DBMS integration alternatives. Moving right = more site autonomy; moving down = more heterogeneity.</div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.4 FUNCTIONS & ARCHITECTURES
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s244">
+  <div class="section-num">Section 24.3</div>
+  <h2>Functions &amp; Architecture of a DDBMS <span class="pg-ref">p. 801–805</span></h2>
+
+  <h3>Additional functions a DDBMS must provide <span class="pg-ref">p. 801</span></h3>
+  <div class="grid2">
+    <div class="card card-blue"><div class="card-title">Extended Communication</div>Access remote sites; transfer queries and data across network.</div>
+    <div class="card card-blue"><div class="card-title">Extended System Catalog</div>Stores data distribution details — which fragment is where.</div>
+    <div class="card card-teal"><div class="card-title">Distributed Query Processing</div>Query optimization taking into account network costs and fragment locations.</div>
+    <div class="card card-teal"><div class="card-title">Extended Security</div>Authorization/access control for distributed and replicated data.</div>
+    <div class="card card-amber"><div class="card-title">Extended Concurrency Control</div>Maintain consistency of distributed and replicated data.</div>
+    <div class="card card-amber"><div class="card-title">Extended Recovery</div>Handle site failures and communication link failures.</div>
+  </div>
+
+  <h3>Reference Architecture (Figure 24.5) <span class="pg-ref">p. 801–804</span></h3>
+
+  <!-- Figure 24.5 recreated -->
+  <div class="figure-wrap">
+    <div class="figure-body">
+      <svg width="100%" viewBox="0 0 680 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Global External Schemas (top) -->
+        <rect x="60" y="16" width="130" height="40" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+        <text x="125" y="33" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">Global External</text>
+        <text x="125" y="48" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">Schema 1</text>
+        <rect x="260" y="16" width="130" height="40" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+        <text x="325" y="33" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">Global External</text>
+        <text x="325" y="48" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">Schema 2</text>
+        <rect x="460" y="16" width="150" height="40" rx="6" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1"/>
+        <text x="535" y="33" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">Global External</text>
+        <text x="535" y="48" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">Schema n</text>
+        <text x="400" y="12" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">. . .</text>
+
+        <!-- Arrow down to GCS -->
+        <line x1="340" y1="56" x2="340" y2="86" stroke="#475569" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- Global Conceptual Schema -->
+        <rect x="180" y="88" width="320" height="44" rx="8" fill="#0d3330" stroke="#14b8a6" stroke-width="1.5"/>
+        <text x="340" y="106" text-anchor="middle" font-size="13" fill="#2dd4bf" font-family="sans-serif" font-weight="700">Global Conceptual Schema</text>
+        <text x="340" y="122" text-anchor="middle" font-size="10" fill="#5eead4" font-family="sans-serif">Logical description of whole DB — as if not distributed</text>
+
+        <!-- Arrow down to Fragmentation Schema -->
+        <line x1="340" y1="132" x2="340" y2="162" stroke="#475569" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- Fragmentation Schema -->
+        <rect x="180" y="164" width="152" height="44" rx="8" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="256" y="182" text-anchor="middle" font-size="12" fill="#fcd34d" font-family="sans-serif" font-weight="600">Fragmentation</text>
+        <text x="256" y="197" text-anchor="middle" font-size="10" fill="#fde68a" font-family="sans-serif">Schema</text>
+
+        <!-- Allocation Schema -->
+        <rect x="348" y="164" width="152" height="44" rx="8" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="424" y="182" text-anchor="middle" font-size="12" fill="#fcd34d" font-family="sans-serif" font-weight="600">Allocation</text>
+        <text x="424" y="197" text-anchor="middle" font-size="10" fill="#fde68a" font-family="sans-serif">Schema</text>
+
+        <!-- Arrow down to Local schemas -->
+        <line x1="256" y1="208" x2="180" y2="238" stroke="#475569" stroke-width="1" marker-end="url(#arr)"/>
+        <line x1="424" y1="208" x2="500" y2="238" stroke="#475569" stroke-width="1" marker-end="url(#arr)"/>
+
+        <!-- Local DBMS boxes -->
+        <rect x="60" y="240" width="240" height="130" rx="8" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <text x="180" y="260" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="600">Local DBMS — Site 1</text>
+        <rect x="75" y="268" width="90" height="28" rx="4" fill="#252d40" stroke="#475569" stroke-width="0.8"/>
+        <text x="120" y="285" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Local External</text>
+        <rect x="175" y="268" width="108" height="28" rx="4" fill="#252d40" stroke="#475569" stroke-width="0.8"/>
+        <text x="229" y="285" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Local Conceptual</text>
+        <rect x="90" y="308" width="140" height="28" rx="4" fill="#252d40" stroke="#475569" stroke-width="0.8"/>
+        <text x="160" y="325" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Local Internal Schema</text>
+        <text x="160" y="348" text-anchor="middle" font-size="10" fill="#475569" font-family="sans-serif" font-style="italic">ANSI-SPARC 3-level</text>
+
+        <rect x="380" y="240" width="240" height="130" rx="8" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <text x="500" y="260" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="600">Local DBMS — Site n</text>
+        <rect x="395" y="268" width="90" height="28" rx="4" fill="#252d40" stroke="#475569" stroke-width="0.8"/>
+        <text x="440" y="285" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Local External</text>
+        <rect x="495" y="268" width="108" height="28" rx="4" fill="#252d40" stroke="#475569" stroke-width="0.8"/>
+        <text x="549" y="285" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Local Conceptual</text>
+        <rect x="410" y="308" width="140" height="28" rx="4" fill="#252d40" stroke="#475569" stroke-width="0.8"/>
+        <text x="480" y="325" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Local Internal Schema</text>
+        <text x="480" y="348" text-anchor="middle" font-size="10" fill="#475569" font-family="sans-serif" font-style="italic">ANSI-SPARC 3-level</text>
+
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+      </svg>
+    </div>
+    <div class="figure-caption"><strong>Figure 24.5</strong> (p. 802) — Reference architecture for a DDBMS. Global External Schemas → Global Conceptual Schema → Fragmentation &amp; Allocation Schemas → Local DBMS schemas at each site. Edges = mappings.</div>
+  </div>
+
+  <h3>4 Components of a DDBMS <span class="pg-ref">p. 804</span></h3>
+  <div class="grid2">
+    <div class="card card-blue">
+      <div class="card-title">Local DBMS (LDBMS)</div>
+      Standard DBMS at each site controlling local data. Has its own local system catalog.
+    </div>
+    <div class="card card-teal">
+      <div class="card-title">Data Communications (DC)</div>
+      Software enabling all sites to communicate. Knows network topology and links.
+    </div>
+    <div class="card card-amber">
+      <div class="card-title">Global System Catalog (GSC)</div>
+      Stores fragmentation, replication, and allocation schemas. Can itself be fragmented/replicated/centralized.
+    </div>
+    <div class="card card-purple">
+      <div class="card-title">DDBMS Component</div>
+      The controlling unit — handles distributed query processing, transaction coordination, and recovery.
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.5 DATA ALLOCATION
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s245">
+  <div class="section-num">Section 24.4.1</div>
+  <h2>Distributed DB Design: Data Allocation <span class="pg-ref">p. 805–808</span></h2>
+
+  <p>The three core problems in distributed DB design are <strong>Fragmentation</strong>, <strong>Allocation</strong>, and <strong>Replication</strong>. We first look at the four allocation strategies.</p>
+
+  <h3>Design Objectives <span class="pg-ref">p. 806</span></h3>
+  <div class="grid2">
+    <div class="card card-teal"><div class="card-title">Locality of Reference</div>Store data near where it's used most.</div>
+    <div class="card card-teal"><div class="card-title">Reliability &amp; Availability</div>Replication ensures another copy exists if one site fails.</div>
+    <div class="card card-blue"><div class="card-title">Acceptable Performance</div>Avoid bottlenecks from bad placement decisions.</div>
+    <div class="card card-blue"><div class="card-title">Minimal Communication Costs</div>Minimize data sent across the network.</div>
+    <div class="card card-amber"><div class="card-title">Balanced Storage Costs</div>Use cheap mass storage where possible.</div>
+  </div>
+
+  <h3>Four Allocation Strategies <span class="pg-ref">p. 806–807</span></h3>
+
+  <table class="styled-table" style="margin-top:16px">
+    <thead>
+      <tr>
+        <th>Strategy</th>
+        <th>Locality</th>
+        <th>Reliability</th>
+        <th>Performance</th>
+        <th>Storage Cost</th>
+        <th>Comm. Cost</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Centralized</strong><br><small>One DB, one site</small></td>
+        <td class="td-bad">Lowest</td>
+        <td class="td-bad">Lowest</td>
+        <td class="td-bad">Unsatisfactory</td>
+        <td class="td-good">Lowest</td>
+        <td class="td-bad">Highest</td>
+      </tr>
+      <tr>
+        <td><strong>Fragmented</strong><br><small>Disjoint, one copy each</small></td>
+        <td class="td-good">High*</td>
+        <td class="td-mid">Low/item, High/system</td>
+        <td class="td-mid">Satisfactory*</td>
+        <td class="td-good">Lowest</td>
+        <td class="td-good">Low*</td>
+      </tr>
+      <tr>
+        <td><strong>Complete Replication</strong><br><small>Full copy at every site</small></td>
+        <td class="td-good">Highest</td>
+        <td class="td-good">Highest</td>
+        <td class="td-good">Best for reads</td>
+        <td class="td-bad">Highest</td>
+        <td class="td-bad">High for updates</td>
+      </tr>
+      <tr>
+        <td><strong>Selective Replication</strong><br><small>Mix of all 3 — most common</small></td>
+        <td class="td-good">High*</td>
+        <td class="td-mid">Low/item, High/system</td>
+        <td class="td-mid">Satisfactory*</td>
+        <td class="td-mid">Average</td>
+        <td class="td-good">Low*</td>
+      </tr>
+    </tbody>
+  </table>
+  <p style="font-size:12px; color:var(--text3); font-family:sans-serif;">* Subject to good design</p>
+
+  <div class="callout callout-teal">
+    <div class="callout-label">Takeaway</div>
+    <strong>Selective replication</strong> is the most commonly used strategy because it combines the advantages of all others without the worst disadvantages of any single approach.
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.6 FRAGMENTATION
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s246">
+  <div class="section-num">Section 24.4.2</div>
+  <h2>Fragmentation — All 4 Types <span class="pg-ref">p. 807–815</span></h2>
+
+  <h3>Why Fragment? <span class="pg-ref">p. 807–808</span></h3>
+  <div class="grid2">
+    <div class="card card-blue"><div class="card-title">Usage</div>Apps work with views (subsets), not whole relations — so distribute subsets.</div>
+    <div class="card card-blue"><div class="card-title">Efficiency</div>Store data close to where it's used; don't store what's not needed locally.</div>
+    <div class="card card-teal"><div class="card-title">Parallelism</div>Subqueries on fragments can run concurrently at different sites.</div>
+    <div class="card card-teal"><div class="card-title">Security</div>Data not needed at a site isn't stored there — reduces exposure.</div>
+  </div>
+
+  <h3>3 Rules of Correct Fragmentation <span class="pg-ref">p. 808</span></h3>
+  <ul class="steps">
+    <li><span class="step-num">1</span><div><strong>Completeness</strong> — Every data item in relation R must appear in at least one fragment. No data loss.</div></li>
+    <li><span class="step-num">2</span><div><strong>Reconstruction</strong> — It must be possible to reconstruct the original relation R from its fragments using relational operations.</div></li>
+    <li><span class="step-num">3</span><div><strong>Disjointness</strong> — A data item in fragment Rᵢ should not appear in any other fragment. (Exception: vertical fragmentation must repeat the primary key for reconstruction.)</div></li>
+  </ul>
+
+  <!-- FRAGMENTATION TYPE OVERVIEW VISUAL -->
+  <div class="figure-wrap">
+    <div class="figure-body">
+      <svg width="100%" viewBox="0 0 680 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- Original Table -->
+        <rect x="20" y="40" width="90" height="120" rx="4" fill="#1e2535" stroke="#3d4f70" stroke-width="1"/>
+        <text x="65" y="30" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="sans-serif">Original R</text>
+        <!-- rows -->
+        <rect x="20" y="40" width="90" height="20" rx="0" fill="#252d40" stroke="#3d4f70" stroke-width="0.5"/>
+        <text x="65" y="54" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif">col1 col2 col3</text>
+        <rect x="20" y="60" width="90" height="20" fill="#1e2535" stroke="#3d4f70" stroke-width="0.5"/>
+        <text x="65" y="74" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">row 1</text>
+        <rect x="20" y="80" width="90" height="20" fill="#1e2535" stroke="#3d4f70" stroke-width="0.5"/>
+        <text x="65" y="94" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">row 2</text>
+        <rect x="20" y="100" width="90" height="20" fill="#1e2535" stroke="#3d4f70" stroke-width="0.5"/>
+        <text x="65" y="114" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">row 3</text>
+        <rect x="20" y="120" width="90" height="20" fill="#1e2535" stroke="#3d4f70" stroke-width="0.5"/>
+        <text x="65" y="134" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">row 4</text>
+        <rect x="20" y="140" width="90" height="20" fill="#1e2535" stroke="#3d4f70" stroke-width="0.5"/>
+        <text x="65" y="154" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">row 5</text>
+
+        <!-- HORIZONTAL -->
+        <text x="195" y="22" text-anchor="middle" font-size="12" fill="#3b82f6" font-family="sans-serif" font-weight="600">Horizontal</text>
+        <text x="195" y="36" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">σ(R) — split by rows</text>
+        <rect x="145" y="44" width="90" height="48" rx="4" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+        <rect x="145" y="44" width="90" height="16" fill="#252d40" stroke="#3b82f6" stroke-width="0.5" rx="4 4 0 0"/>
+        <text x="190" y="55" text-anchor="middle" font-size="9" fill="#60a5fa" font-family="sans-serif">Fragment H1</text>
+        <text x="190" y="71" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">rows 1–2</text>
+        <text x="190" y="84" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">(WHERE type='House')</text>
+        <rect x="145" y="104" width="90" height="48" rx="4" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+        <rect x="145" y="104" width="90" height="16" fill="#252d40" stroke="#3b82f6" stroke-width="0.5" rx="4 4 0 0"/>
+        <text x="190" y="115" text-anchor="middle" font-size="9" fill="#60a5fa" font-family="sans-serif">Fragment H2</text>
+        <text x="190" y="132" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">rows 3–5</text>
+        <text x="190" y="145" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">(WHERE type='Flat')</text>
+        <text x="190" y="170" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">Reconstruct: H1 ∪ H2</text>
+        <line x1="110" y1="100" x2="143" y2="80" stroke="#475569" stroke-width="0.8" marker-end="url(#arr2)"/>
+        <line x1="110" y1="100" x2="143" y2="130" stroke="#475569" stroke-width="0.8" marker-end="url(#arr2)"/>
+
+        <!-- VERTICAL -->
+        <text x="390" y="22" text-anchor="middle" font-size="12" fill="#14b8a6" font-family="sans-serif" font-weight="600">Vertical</text>
+        <text x="390" y="36" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">Π(R) — split by columns</text>
+        <rect x="290" y="44" width="80" height="100" rx="4" fill="#0d3330" stroke="#14b8a6" stroke-width="1.5"/>
+        <rect x="290" y="44" width="80" height="16" fill="#1e2535" stroke="#14b8a6" stroke-width="0.5" rx="4 4 0 0"/>
+        <text x="330" y="55" text-anchor="middle" font-size="9" fill="#2dd4bf" font-family="sans-serif">Fragment V1</text>
+        <text x="330" y="73" text-anchor="middle" font-size="9" fill="#5eead4" font-family="sans-serif">PK + col1</text>
+        <text x="330" y="87" text-anchor="middle" font-size="9" fill="#5eead4" font-family="sans-serif">(Payroll dept)</text>
+        <rect x="380" y="44" width="80" height="100" rx="4" fill="#0d3330" stroke="#14b8a6" stroke-width="1.5"/>
+        <rect x="380" y="44" width="80" height="16" fill="#1e2535" stroke="#14b8a6" stroke-width="0.5" rx="4 4 0 0"/>
+        <text x="420" y="55" text-anchor="middle" font-size="9" fill="#2dd4bf" font-family="sans-serif">Fragment V2</text>
+        <text x="420" y="73" text-anchor="middle" font-size="9" fill="#5eead4" font-family="sans-serif">PK + col2</text>
+        <text x="420" y="87" text-anchor="middle" font-size="9" fill="#5eead4" font-family="sans-serif">(HR dept)</text>
+        <text x="390" y="170" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">Reconstruct: V1 ⋈ V2 (Natural Join)</text>
+        <line x1="110" y1="100" x2="288" y2="80" stroke="#475569" stroke-width="0.8" marker-end="url(#arr2)"/>
+
+        <!-- MIXED label -->
+        <text x="560" y="22" text-anchor="middle" font-size="12" fill="#f59e0b" font-family="sans-serif" font-weight="600">Mixed</text>
+        <text x="560" y="36" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">Vertical then Horizontal</text>
+        <rect x="510" y="44" width="100" height="40" rx="4" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="560" y="62" text-anchor="middle" font-size="9" fill="#fcd34d" font-family="sans-serif">V1 then σ(V1)</text>
+        <text x="560" y="75" text-anchor="middle" font-size="9" fill="#fde68a" font-family="sans-serif">→ S21, S22, S23</text>
+        <rect x="510" y="100" width="100" height="28" rx="4" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="560" y="118" text-anchor="middle" font-size="9" fill="#fde68a" font-family="sans-serif">V2 (unchanged)</text>
+        <text x="560" y="155" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">Reconstruct: S1 ⋈ (S21 ∪ S22 ∪ S23)</text>
+        <line x1="110" y1="100" x2="508" y2="76" stroke="#475569" stroke-width="0.8" marker-end="url(#arr2)"/>
+      </svg>
+    </div>
+    <div class="figure-caption"><strong>Figure 24.8 / 24.9</strong> (p. 809) — Overview of fragmentation types. Horizontal splits rows; Vertical splits columns (keeping PK); Mixed combines both.</div>
+  </div>
+
+  <!-- ── HORIZONTAL ── -->
+  <h3>1. Horizontal Fragmentation <span class="pg-ref">p. 809–811</span></h3>
+
+  <div class="def-box">
+    <div class="def-term">Horizontal Fragment</div>
+    <div class="def-text">Consists of a subset of the <strong>tuples (rows)</strong> of a relation. Defined using the <em>Selection</em> operation: <code>σ<sub>p</sub>(R)</code> where p is a predicate.</div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example 24.2 — DreamHome PropertyForRent (p. 810)</div>
+    <p>Split PropertyForRent by property type (only 'House' or 'Flat' exist):</p>
+    <div class="code-block">P1: <span class="kw">σ</span><sub>type='House'</sub>(PropertyForRent)
+P2: <span class="kw">σ</span><sub>type='Flat'</sub>(PropertyForRent)</div>
+    <p>Correctness check:</p>
+    <ul class="bullet">
+      <li><strong>Completeness:</strong> Every property appears in P1 or P2 ✓</li>
+      <li><strong>Reconstruction:</strong> P1 <strong>∪</strong> P2 = PropertyForRent ✓</li>
+      <li><strong>Disjointness:</strong> No property is both 'House' and 'Flat' ✓</li>
+    </ul>
+    <div style="overflow-x:auto">
+      <table class="frag-table">
+        <thead><tr><th>Fragment P1 (Houses)</th><th>propertyNo</th><th>street</th><th>city</th><th>type</th><th>rent</th></tr></thead>
+        <tbody>
+          <tr class="h1"><td></td><td>PA14</td><td>16 Holhead</td><td>Aberdeen</td><td>House</td><td>650</td></tr>
+          <tr class="h1"><td></td><td>PG21</td><td>18 Dale Rd</td><td>Glasgow</td><td>House</td><td>600</td></tr>
+        </tbody>
+      </table>
+      <table class="frag-table" style="margin-top:8px">
+        <thead><tr><th>Fragment P2 (Flats)</th><th>propertyNo</th><th>street</th><th>city</th><th>type</th><th>rent</th></tr></thead>
+        <tbody>
+          <tr class="h2"><td></td><td>PL94</td><td>6 Argyll St</td><td>London</td><td>Flat</td><td>400</td></tr>
+          <tr class="h2"><td></td><td>PG4</td><td>6 Lawrence St</td><td>Glasgow</td><td>Flat</td><td>350</td></tr>
+          <tr class="h2"><td></td><td>PG36</td><td>2 Manor Rd</td><td>Glasgow</td><td>Flat</td><td>375</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── VERTICAL ── -->
+  <h3>2. Vertical Fragmentation <span class="pg-ref">p. 811–812</span></h3>
+
+  <div class="def-box">
+    <div class="def-term">Vertical Fragment</div>
+    <div class="def-text">Consists of a subset of the <strong>attributes (columns)</strong> of a relation. Defined using the <em>Projection</em> operation: <code>Π<sub>a1,...,an</sub>(R)</code>. Primary key must appear in every fragment.</div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example 24.3 — DreamHome Staff table (p. 811)</div>
+    <p>Payroll dept needs: staffNo, position, sex, DOB, salary. HR dept needs: staffNo, fName, lName, branchNo.</p>
+    <div class="code-block">S1: <span class="kw">Π</span><sub>staffNo, position, sex, DOB, salary</sub>(Staff)  <span class="cmt">→ Payroll site</span>
+S2: <span class="kw">Π</span><sub>staffNo, fName, lName, branchNo</sub>(Staff)   <span class="cmt">→ HR site</span></div>
+    <div style="overflow-x:auto;display:flex;gap:16px;flex-wrap:wrap">
+      <table class="frag-table">
+        <thead><tr><th colspan="5">Fragment S1 (Payroll)</th></tr><tr><th>staffNo</th><th>position</th><th>sex</th><th>DOB</th><th>salary</th></tr></thead>
+        <tbody>
+          <tr class="v1"><td>SL21</td><td>Manager</td><td>M</td><td>1-Oct-45</td><td>30000</td></tr>
+          <tr class="v1"><td>SG37</td><td>Assistant</td><td>F</td><td>10-Nov-60</td><td>12000</td></tr>
+          <tr class="v1"><td>SG14</td><td>Supervisor</td><td>M</td><td>24-Mar-58</td><td>18000</td></tr>
+        </tbody>
+      </table>
+      <table class="frag-table">
+        <thead><tr><th colspan="4">Fragment S2 (HR)</th></tr><tr><th>staffNo</th><th>fName</th><th>lName</th><th>branchNo</th></tr></thead>
+        <tbody>
+          <tr class="v2"><td>SL21</td><td>John</td><td>White</td><td>B005</td></tr>
+          <tr class="v2"><td>SG37</td><td>Ann</td><td>Beech</td><td>B003</td></tr>
+          <tr class="v2"><td>SG14</td><td>David</td><td>Ford</td><td>B003</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:10px">Reconstruction: <strong>S1 ⋈ S2 = Staff</strong> (Natural Join on staffNo)</p>
+    <div class="callout callout-amber" style="margin-top:10px">
+      <div class="callout-label">Key point</div>
+      staffNo appears in BOTH fragments — this violates disjointness but is <strong>necessary for reconstruction</strong>. The book explicitly notes this is the exception rule for vertical fragmentation.
+    </div>
+  </div>
+
+  <!-- ── MIXED ── -->
+  <h3>3. Mixed (Hybrid) Fragmentation <span class="pg-ref">p. 812–813</span></h3>
+
+  <div class="def-box">
+    <div class="def-term">Mixed Fragment</div>
+    <div class="def-text">A horizontal fragment that is then vertically fragmented, <em>or</em> a vertical fragment that is then horizontally fragmented. Uses both Selection and Projection operations.</div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example 24.4 — Continuing from Example 24.3 (p. 813)</div>
+    <p>Take S2 (HR fragment) and horizontally fragment it by branch:</p>
+    <div class="code-block">S21: <span class="kw">σ</span><sub>branchNo='B003'</sub>(S2)
+S22: <span class="kw">σ</span><sub>branchNo='B005'</sub>(S2)
+S23: <span class="kw">σ</span><sub>branchNo='B007'</sub>(S2)</div>
+    <p>Reconstruction: <strong>S1 ⋈ (S21 ∪ S22 ∪ S23) = Staff</strong></p>
+    <p>Each branch office only holds the HR data for its own staff. S1 (payroll) stays at one central payroll site.</p>
+  </div>
+
+  <!-- ── DERIVED ── -->
+  <h3>4. Derived Horizontal Fragmentation <span class="pg-ref">p. 814–815</span></h3>
+
+  <div class="def-box">
+    <div class="def-term">Derived Fragment</div>
+    <div class="def-text">A horizontal fragment of a <em>child</em> relation based on the horizontal fragmentation of a <em>parent</em> relation. Uses the <strong>Semijoin</strong> operation. Defined as: <code>Rᵢ = R ⋉<sub>f</sub> Sᵢ</code></div>
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example 24.5 — Staff and PropertyForRent (p. 814)</div>
+    <p>Staff is fragmented by branchNo (S3, S4, S5). To keep related properties with their managing staff, we derive PropertyForRent fragments:</p>
+    <div class="code-block"><span class="cmt">-- Staff fragments (parent):</span>
+S3: <span class="kw">σ</span><sub>branchNo='B003'</sub>(Staff)   <span class="cmt">→ Site 3</span>
+S4: <span class="kw">σ</span><sub>branchNo='B005'</sub>(Staff)   <span class="cmt">→ Site 4</span>
+S5: <span class="kw">σ</span><sub>branchNo='B007'</sub>(Staff)   <span class="cmt">→ Site 5</span>
+
+<span class="cmt">-- PropertyForRent derived fragments (child):</span>
+Pi = PropertyForRent ⋉<sub>staffNo</sub> Si   (for i = 3, 4, 5)</div>
+    <p>P3 = all properties managed by B003 staff, stored at Site 3. Join between Staff and PropertyForRent can now be performed <em>locally</em> at each site — no expensive cross-site joins needed.</p>
+  </div>
+
+  <div class="callout callout-purple">
+    <div class="callout-label">Why Derived Fragmentation Matters</div>
+    Applications that frequently join Staff and PropertyForRent benefit enormously — both child and parent fragments co-locate at the same site, making the join local (fast) rather than distributed (slow and expensive).
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.7 TRANSPARENCIES
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s247">
+  <div class="section-num">Section 24.5</div>
+  <h2>Transparencies in a DDBMS <span class="pg-ref">p. 816–824</span></h2>
+
+  <p>The fundamental principle: <em>"To the user, a distributed system should look exactly like a non-distributed system."</em> Transparency is how we achieve this.</p>
+
+  <h3>1. Distribution Transparency <span class="pg-ref">p. 816–819</span></h3>
+  <p>Three levels, ordered from highest (most hidden) to lowest (least hidden):</p>
+
+  <!-- Transparency ladder -->
+  <div class="figure-wrap">
+    <div class="figure-body">
+      <svg width="100%" viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+        <!-- Levels -->
+        <rect x="80" y="20" width="520" height="56" rx="8" fill="#0d3330" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="340" y="44" text-anchor="middle" font-size="14" fill="#86efac" font-family="sans-serif" font-weight="700">① Fragmentation Transparency</text>
+        <text x="340" y="64" text-anchor="middle" font-size="11" fill="#4ade80" font-family="sans-serif">User doesn't know data is fragmented. Uses global schema. Same SQL as centralized.</text>
+
+        <line x1="340" y1="76" x2="340" y2="100" stroke="#475569" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="400" y="92" font-size="10" fill="#64748b" font-family="sans-serif">more transparency ↑  less transparency ↓</text>
+
+        <rect x="80" y="102" width="520" height="56" rx="8" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="340" y="126" text-anchor="middle" font-size="14" fill="#60a5fa" font-family="sans-serif" font-weight="700">② Location Transparency</text>
+        <text x="340" y="146" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">User knows data is fragmented, but not WHERE fragments are. Must name fragments.</text>
+
+        <line x1="340" y1="158" x2="340" y2="182" stroke="#475569" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <rect x="80" y="184" width="520" height="56" rx="8" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="340" y="208" text-anchor="middle" font-size="14" fill="#fcd34d" font-family="sans-serif" font-weight="700">③ Local Mapping Transparency</text>
+        <text x="340" y="228" text-anchor="middle" font-size="11" fill="#fde68a" font-family="sans-serif">User must specify fragment names AND site locations. Most complex for user.</text>
+
+        <!-- Arrow on left -->
+        <text x="40" y="150" text-anchor="middle" font-size="11" fill="#475569" font-family="sans-serif" transform="rotate(-90,40,150)">← More transparent</text>
+        <line x1="60" y1="240" x2="60" y2="30" stroke="#475569" stroke-width="0.8" marker-end="url(#arr3)"/>
+      </svg>
+    </div>
+    <div class="figure-caption"><strong>Transparency Levels</strong> (p. 816–818) — Three levels of distribution transparency. Higher = simpler for users but harder to implement for the DDBMS.</div>
+  </div>
+
+  <h4>The Same Query at Three Levels <span class="pg-ref">p. 817–818</span></h4>
+  <p>Recall the mixed fragmentation: S1 at Site 5, S21 at Site 3, S22 at Site 5, S23 at Site 7. Query: "Get names of all Managers."</p>
+
+  <div class="code-block"><span class="cmt">-- ① Fragmentation Transparency (user writes normal SQL):</span>
+<span class="kw">SELECT</span> fName, lName <span class="kw">FROM</span> Staff <span class="kw">WHERE</span> position = <span class="str">'Manager'</span>;</div>
+
+  <div class="code-block"><span class="cmt">-- ② Location Transparency (user knows fragments, not locations):</span>
+<span class="kw">SELECT</span> fName, lName <span class="kw">FROM</span> S21
+  <span class="kw">WHERE</span> staffNo <span class="kw">IN</span> (<span class="kw">SELECT</span> staffNo <span class="kw">FROM</span> S1 <span class="kw">WHERE</span> position=<span class="str">'Manager'</span>)
+<span class="kw">UNION</span>
+<span class="kw">SELECT</span> fName, lName <span class="kw">FROM</span> S22
+  <span class="kw">WHERE</span> staffNo <span class="kw">IN</span> (<span class="kw">SELECT</span> staffNo <span class="kw">FROM</span> S1 <span class="kw">WHERE</span> position=<span class="str">'Manager'</span>)
+<span class="kw">UNION</span>
+<span class="kw">SELECT</span> fName, lName <span class="kw">FROM</span> S23
+  <span class="kw">WHERE</span> staffNo <span class="kw">IN</span> (<span class="kw">SELECT</span> staffNo <span class="kw">FROM</span> S1 <span class="kw">WHERE</span> position=<span class="str">'Manager'</span>);</div>
+
+  <div class="code-block"><span class="cmt">-- ③ Local Mapping Transparency (user specifies site numbers too):</span>
+<span class="kw">SELECT</span> fName, lName <span class="kw">FROM</span> S21 <span class="op">AT SITE 3</span>
+  <span class="kw">WHERE</span> staffNo <span class="kw">IN</span> (<span class="kw">SELECT</span> staffNo <span class="kw">FROM</span> S1 <span class="op">AT SITE 5</span>
+                     <span class="kw">WHERE</span> position=<span class="str">'Manager'</span>)
+<span class="kw">UNION</span> <span class="cmt">... (continues for each fragment/site)</span></div>
+
+  <div class="callout callout-coral">
+    <div class="callout-label">Why this matters for your quiz</div>
+    The teacher's hint about "nested queries across fragments" corresponds exactly to <strong>Location Transparency</strong> — the user must name fragments and use nested subqueries (UNION + WHERE staffNo IN ...) because data is split across multiple sites. This is the SQL pattern to know.
+  </div>
+
+  <h3>2. Transaction Transparency <span class="pg-ref">p. 819–821</span></h3>
+  <p>Ensures all distributed transactions maintain the database's integrity and consistency. A distributed transaction is divided into <strong>subtransactions</strong>, one per site, each represented by an <em>agent</em>.</p>
+
+  <div class="grid2">
+    <div class="card card-blue">
+      <div class="card-title">Concurrency Transparency</div>
+      Results of concurrent distributed transactions must be logically consistent with serial execution. More complex than centralized — global AND local transactions must not interfere.
+    </div>
+    <div class="card card-coral">
+      <div class="card-title">Failure Transparency</div>
+      Must handle: loss of a message, communication link failure, site failure, network partitioning. Global transaction must be fully committed or fully rolled back (ACID atomicity).
+    </div>
+  </div>
+
+  <h3>DRDA Transaction Classification <span class="pg-ref">p. 821</span></h3>
+  <div class="grid2">
+    <div class="card card-teal"><div class="card-title">Remote Request</div>One SQL statement sent to a remote site. Executes and references data only at that site.</div>
+    <div class="card card-teal"><div class="card-title">Remote Unit of Work</div>Multiple SQL statements (one transaction) sent to one remote site. Local site controls commit/rollback.</div>
+    <div class="card card-blue"><div class="card-title">Distributed Unit of Work</div>Transaction's SQL statements go to different sites, but each statement uses data from only one site.</div>
+    <div class="card card-purple"><div class="card-title">Distributed Request</div>Most complex. One SQL statement may join/union data from multiple sites simultaneously.</div>
+  </div>
+
+  <h3>3. Performance Transparency <span class="pg-ref">p. 822</span></h3>
+  <p>The DDBMS should perform as if it were centralized. The Distributed Query Processor (DQP) must consider: which fragment to access, which replica to use, and which location to use — optimizing against communication cost, I/O cost, and CPU cost.</p>
+
+  <h3>4. DBMS Transparency <span class="pg-ref">p. 824</span></h3>
+  <p>Hides the fact that local DBMSs may be different (heterogeneous). The hardest transparency to provide.</p>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.8 DISTRIBUTED QUERY PROCESSING
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s248">
+  <div class="section-num">Section 24.5.3</div>
+  <h2>Distributed Query Processing — Response Times <span class="pg-ref">p. 822–824</span></h2>
+
+  <p>This is one of the most important sections. The DQP must choose the right strategy — the wrong choice can mean the difference between <strong>1 second and 2.3 days</strong>.</p>
+
+  <div class="callout callout-blue">
+    <div class="callout-label">Communication Time Formula (p. 800)</div>
+    <strong>Time = C₀ + (bits_in_message / transmission_rate)</strong><br>
+    where C₀ = access delay (fixed cost per message). Small messages sent one-by-one are catastrophically slow because of repeated C₀.
+  </div>
+
+  <div class="example-box">
+    <div class="example-label">Example 24.7 — DreamHome query across London and Glasgow (p. 823)</div>
+    <p>Three tables: Property (10,000 rows, London), Client (100,000 rows, Glasgow), Viewing (1,000,000 rows, London).<br>
+    Transmission rate: 10,000 chars/sec. Access delay C₀ = 1 second per message.</p>
+    <p>Query: Properties in Aberdeen viewed by clients with maxPrice &gt; £200,000.</p>
+
+    <table class="styled-table">
+      <thead>
+        <tr><th>Strategy</th><th>Approach</th><th>Time</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>Move Client (100k rows) to London, process there</td><td class="td-mid">16.7 minutes</td></tr>
+        <tr><td>2</td><td>Move Property + Viewing (1M rows) to Glasgow</td><td class="td-bad">28 hours</td></tr>
+        <tr><td>3</td><td>Check Glasgow for each of 100k Aberdeen viewings</td><td class="td-bad">2.3 days</td></tr>
+        <tr><td>4</td><td>Get 10 matching clients from Glasgow, check London for each</td><td class="td-mid">20 seconds</td></tr>
+        <tr><td>5</td><td>Join at London, project result, move to Glasgow</td><td class="td-mid">16.7 minutes</td></tr>
+        <tr><td>6</td><td>Select 10 clients at Glasgow, move result to London ✓</td><td class="td-good">1 second</td></tr>
+      </tbody>
+    </table>
+    <div class="callout callout-green" style="margin-top:12px">
+      <div class="callout-label">The lesson</div>
+      Strategy 6 wins because it transfers only 10 rows (the small filtered set), not the entire large table. <strong>Filter first, transfer the smallest result set</strong>. Strategy 3 is catastrophic because it sends 100,000 individual messages — each with a 1-second access delay.
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     24.9 DATE'S 12 RULES
+════════════════════════════════════════════════════════════ -->
+<section class="section" id="s249">
+  <div class="section-num">Section 24.6</div>
+  <h2>Date's Twelve Rules for a DDBMS <span class="pg-ref">p. 825–826</span></h2>
+
+  <div class="def-box">
+    <div class="def-term">Fundamental Principle</div>
+    <div class="def-text">"To the user, a distributed system should look exactly like a non-distributed system."</div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:16px">
+    <div class="rule-badge"><span class="badge-num">1</span><div><strong>Local autonomy</strong> — each site controls its own data and local operations</div></div>
+    <div class="rule-badge"><span class="badge-num">2</span><div><strong>No central site reliance</strong> — no single point of failure; no central server</div></div>
+    <div class="rule-badge"><span class="badge-num">3</span><div><strong>Continuous operation</strong> — no planned shutdowns to add/remove sites</div></div>
+    <div class="rule-badge"><span class="badge-num">4</span><div><strong>Location independence</strong> — user can access any data as if it's local</div></div>
+    <div class="rule-badge"><span class="badge-num">5</span><div><strong>Fragmentation independence</strong> — user unaware of how data is fragmented</div></div>
+    <div class="rule-badge"><span class="badge-num">6</span><div><strong>Replication independence</strong> — user unaware of copies; can't address a specific copy</div></div>
+    <div class="rule-badge"><span class="badge-num">7</span><div><strong>Distributed query processing</strong> — queries referencing multiple sites work</div></div>
+    <div class="rule-badge"><span class="badge-num">8</span><div><strong>Distributed transaction processing</strong> — ACID properties hold globally</div></div>
+    <div class="rule-badge"><span class="badge-num">9</span><div><strong>Hardware independence</strong> — run on any hardware</div></div>
+    <div class="rule-badge"><span class="badge-num">10</span><div><strong>OS independence</strong> — run on any operating system</div></div>
+    <div class="rule-badge"><span class="badge-num">11</span><div><strong>Network independence</strong> — run on any communication network</div></div>
+    <div class="rule-badge"><span class="badge-num">12</span><div><strong>Database independence</strong> — support heterogeneous local DBMSs</div></div>
+  </div>
+
+  <div class="callout callout-amber" style="margin-top:20px">
+    <div class="callout-label">Note</div>
+    Rules 9–12 are ideals. No current system fully complies with all 12. The last 4 are especially hard because of the lack of universal hardware, OS, and DBMS standards.
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     QUIZ SECTION
+════════════════════════════════════════════════════════════ -->
+<section class="quiz-section" id="quiz">
+  <h2 style="color:#c4b5fd;border-color:#a78bfa">🎯 Quiz Drill — Chapter 24</h2>
+  <p style="font-family:sans-serif;font-size:14px;color:var(--text2);margin-bottom:20px">Based on the teacher's hint and the exam-likely content. Select an answer and click Check.</p>
+
+  <!-- Q1 -->
+  <div class="quiz-item" id="qi1">
+    <div class="quiz-q">Q1. A DDBMS is distinct from "distributed processing." What is the key difference? <span class="pg-ref">p. 788</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q1" value="a"> In distributed processing, data is physically split across sites</label>
+      <label><input type="radio" name="q1" value="b"> In a DDBMS, data is physically distributed; in distributed processing, there is a single centralized DB accessed over a network</label>
+      <label><input type="radio" name="q1" value="c"> They are the same thing — just different names</label>
+      <label><input type="radio" name="q1" value="d"> Distributed processing supports fragmentation; DDBMS does not</label>
+    </div>
+    <button class="quiz-btn" data-q="q1" data-ans="b" data-exp="The book explicitly defines this: distributed processing = a centralized database accessed over a network. A DDBMS actually distributes the data across physically separate sites. (p. 788)">Check</button>
+    <div class="quiz-result" id="res-q1"></div>
+  </div>
+
+  <!-- Q2 -->
+  <div class="quiz-item" id="qi2">
+    <div class="quiz-q">Q2. What are the THREE correctness rules for fragmentation? <span class="pg-ref">p. 808</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q2" value="a"> Uniqueness, Referential integrity, Normalization</label>
+      <label><input type="radio" name="q2" value="b"> Completeness, Reconstruction, Disjointness</label>
+      <label><input type="radio" name="q2" value="c"> Locality, Performance, Security</label>
+      <label><input type="radio" name="q2" value="d"> Atomicity, Consistency, Isolation</label>
+    </div>
+    <button class="quiz-btn" data-q="q2" data-ans="b" data-exp="Completeness = no data item lost; Reconstruction = original relation can be rebuilt from fragments; Disjointness = no data item in two fragments (except PK in vertical). (p. 808)">Check</button>
+    <div class="quiz-result" id="res-q2"></div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="quiz-item" id="qi3">
+    <div class="quiz-q">Q3. Vertical fragmentation of Staff produces S1 and S2. Both contain staffNo. Why? <span class="pg-ref">p. 812</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q3" value="a"> Because staffNo is used in queries at both sites</label>
+      <label><input type="radio" name="q3" value="b"> Because the disjointness rule requires it</label>
+      <label><input type="radio" name="q3" value="c"> Because the Primary Key must be repeated in vertical fragments to enable reconstruction via Natural Join</label>
+      <label><input type="radio" name="q3" value="d"> Because staffNo is a foreign key in both fragments</label>
+    </div>
+    <button class="quiz-btn" data-q="q3" data-ans="c" data-exp="Vertical fragments violate disjointness only for the primary key — which MUST appear in every fragment so the original relation can be reconstructed by Natural Join. (p. 812)">Check</button>
+    <div class="quiz-result" id="res-q3"></div>
+  </div>
+
+  <!-- Q4 -->
+  <div class="quiz-item" id="qi4">
+    <div class="quiz-q">Q4. (Teacher's hint question) Data is horizontally fragmented: S1 = B003 staff, S2 = B005 staff. To get all managers by name, what SQL construct do you need? <span class="pg-ref">p. 817</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q4" value="a"> A simple SELECT with a WHERE clause on the global Staff table</label>
+      <label><input type="radio" name="q4" value="b"> UNION of nested subqueries on each fragment, with the position filter as an inner subquery on the vertical fragment S_payroll</label>
+      <label><input type="radio" name="q4" value="c"> A CREATE VIEW statement to merge fragments first</label>
+      <label><input type="radio" name="q4" value="d"> A stored procedure that loops over all sites</label>
+    </div>
+    <button class="quiz-btn" data-q="q4" data-ans="b" data-exp="Location transparency requires you to name each fragment and UNION results across fragments. If names and positions are in different vertical fragments, you need nested subqueries: SELECT fName FROM S21 WHERE staffNo IN (SELECT staffNo FROM S1 WHERE position='Manager') UNION ... (p. 817)">Check</button>
+    <div class="quiz-result" id="res-q4"></div>
+  </div>
+
+  <!-- Q5 -->
+  <div class="quiz-item" id="qi5">
+    <div class="quiz-q">Q5. Which data allocation strategy provides the highest read performance and availability, but the highest storage and update communication costs? <span class="pg-ref">p. 807</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q5" value="a"> Centralized</label>
+      <label><input type="radio" name="q5" value="b"> Fragmented</label>
+      <label><input type="radio" name="q5" value="c"> Complete Replication</label>
+      <label><input type="radio" name="q5" value="d"> Selective Replication</label>
+    </div>
+    <button class="quiz-btn" data-q="q5" data-ans="c" data-exp="Complete replication = full copy of DB at every site. Best reads (data is always local) and highest availability. But every update must be written to ALL sites — maximum storage and communication cost. (Table 24.3, p. 808)">Check</button>
+    <div class="quiz-result" id="res-q5"></div>
+  </div>
+
+  <!-- Q6 -->
+  <div class="quiz-item" id="qi6">
+    <div class="quiz-q">Q6. In Example 24.7, why was Strategy 6 (1 second) so much faster than Strategy 3 (2.3 days)? <span class="pg-ref">p. 823–824</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q6" value="a"> Strategy 6 used a faster network link</label>
+      <label><input type="radio" name="q6" value="b"> Strategy 6 transferred only 10 rows (pre-filtered at Glasgow); Strategy 3 sent 100,000 individual messages, each incurring a 1-second access delay</label>
+      <label><input type="radio" name="q6" value="c"> Strategy 3 moved large tables; Strategy 6 used an index</label>
+      <label><input type="radio" name="q6" value="d"> Strategy 6 used parallel processing across multiple sites</label>
+    </div>
+    <button class="quiz-btn" data-q="q6" data-ans="b" data-exp="Each message carries a 1-second fixed access delay (C₀). Strategy 3 sent 100,000 separate messages = 100,000 seconds ≈ 2.3 days. Strategy 6 filtered at Glasgow first (10 matching clients), then sent 1 message with 10 rows = 1 second total. The lesson: minimize number of messages, not just data volume. (p. 824)">Check</button>
+    <div class="quiz-result" id="res-q6"></div>
+  </div>
+
+  <!-- Q7 -->
+  <div class="quiz-item" id="qi7">
+    <div class="quiz-q">Q7. Derived horizontal fragmentation of PropertyForRent based on Staff fragmentation is defined using which relational algebra operation? <span class="pg-ref">p. 814</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q7" value="a"> Selection (σ)</label>
+      <label><input type="radio" name="q7" value="b"> Projection (Π)</label>
+      <label><input type="radio" name="q7" value="c"> Semijoin (⋉)</label>
+      <label><input type="radio" name="q7" value="d"> Natural Join (⋈)</label>
+    </div>
+    <button class="quiz-btn" data-q="q7" data-ans="c" data-exp="Derived fragmentation uses the Semijoin: Rᵢ = R ⋉_f Sᵢ where R is the child (PropertyForRent), S is the parent (Staff), and f is the join attribute (staffNo). The result contains only tuples in R that have a matching tuple in Sᵢ. (p. 814)">Check</button>
+    <div class="quiz-result" id="res-q7"></div>
+  </div>
+
+  <!-- Q8 -->
+  <div class="quiz-item" id="qi8">
+    <div class="quiz-q">Q8. Which of Date's 12 rules states that a site should be able to manage its own data without needing permission from or coordination with other sites? <span class="pg-ref">p. 825</span></div>
+    <div class="quiz-opts">
+      <label><input type="radio" name="q8" value="a"> Rule 2 — No central site reliance</label>
+      <label><input type="radio" name="q8" value="b"> Rule 4 — Location independence</label>
+      <label><input type="radio" name="q8" value="c"> Rule 1 — Local autonomy</label>
+      <label><input type="radio" name="q8" value="d"> Rule 5 — Fragmentation independence</label>
+    </div>
+    <button class="quiz-btn" data-q="q8" data-ans="c" data-exp="Rule 1 — Local autonomy: local data is locally owned and managed; local operations remain purely local; all operations at a site are controlled by that site. (p. 825)">Check</button>
+    <div class="quiz-result" id="res-q8"></div>
+  </div>
+</section>
+
+<footer class="chapter-footer">
+  Chapter 24 — Connolly &amp; Begg, <em>Database Systems</em>, 6th Edition · Pages 785–829<br>
+  Study guide built from the original text. All page references verified.
+</footer>
+
+</div><!-- /wrapper -->
+
+<script>
+document.querySelectorAll('.quiz-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const q = btn.dataset.q;
+    const correct = btn.dataset.ans;
+    const exp = btn.dataset.exp;
+    const sel = document.querySelector(`input[name="${q}"]:checked`);
+    const res = document.getElementById(`res-${q}`);
+    if (!sel) { res.textContent = 'Please select an answer first.'; res.style.display = 'block'; res.className = 'quiz-result'; res.style.background='var(--bg3)'; res.style.color='var(--text2)'; return; }
+    res.style.display = 'block';
+    if (sel.value === correct) {
+      res.className = 'quiz-result result-correct';
+      res.textContent = '✓ Correct! ' + exp;
+    } else {
+      res.className = 'quiz-result result-wrong';
+      res.textContent = '✗ Not quite. ' + exp;
+    }
+  });
+});
+</script>
+</body>
+</html>

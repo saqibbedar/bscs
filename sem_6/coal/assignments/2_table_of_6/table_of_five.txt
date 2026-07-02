@@ -1,0 +1,86 @@
+; Muhammad Saqib (037)
+
+; Assignment
+;
+; Display table of 6 using loop.
+; 6x1=6
+; 6x2=12
+; :
+; :
+; 6x10=60
+
+
+.model small
+.stack 100h
+.data
+    msg1 db '6 x $'
+    msg2 db ' = $'
+    newline db 13, 10, '$' 
+    count db 1             
+
+.code
+main proc
+    mov ax, @data
+    mov ds, ax
+
+    mov cx, 10             
+
+    L1:
+    ; 1. Print "6 x "
+    lea dx, msg1
+    mov ah, 09h
+    int 21h
+
+  
+    mov al, count
+    aam                    
+    mov bx, ax              
+    
+    ; Print tens digit (if any)
+    mov dl, bh
+    add dl, 48              ; Convert to ASCII
+    mov ah, 02h
+    int 21h
+    
+    ; Print ones digit
+    mov dl, bl
+    add dl, 48              ; Convert to ASCII
+    mov ah, 02h
+    int 21h
+
+    ; 3. Print " = "
+    lea dx, msg2
+    mov ah, 09h
+    int 21h
+
+    ; 4. Calculate 6 * count
+    mov al, 6
+    mul count               ; AX = 6 * count
+    
+    ; 5. Print the result (6, 12, 18...)
+    aam                     ; Splits result (e.g., 12) into AH=1, AL=2
+    mov bx, ax
+    
+    mov dl, bh
+    add dl, 48              
+    mov ah, 02h
+    int 21h
+    
+    mov dl, bl
+    add dl, 48             
+    mov ah, 02h
+    int 21h
+
+    ; 6. Print Newline
+    lea dx, newline
+    mov ah, 09h
+    int 21h
+
+    inc count               ; Move to next number (6x2, 6x3...)
+    loop L1                 
+
+    ; Exit Program
+    mov ah, 4ch
+    int 21h
+main endp
+end main

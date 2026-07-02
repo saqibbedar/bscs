@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Link Layer — Complete Teaching Guide</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:#f3f4f6;color:#1a1a1a;line-height:1.7;font-size:15px}
+.wrapper{max-width:900px;margin:0 auto;padding:2rem 1.5rem 5rem}
+.page-header{background:linear-gradient(135deg,#1e3a5f 0%,#2d5986 100%);border-radius:12px;padding:1.8rem 2rem;margin-bottom:1.5rem;color:#fff}
+.page-header h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.page-header p{color:#a8c4e0;font-size:13px}
+.badge-row{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.badge{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:20px;padding:2px 10px;font-size:11px;color:#dce8f5}
+.tab-row{display:flex;gap:4px;margin-bottom:1.2rem;flex-wrap:wrap}
+.tab-btn{padding:8px 18px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:500;background:#fff;color:#555;box-shadow:0 1px 3px rgba(0,0,0,0.1);transition:all 0.15s}
+.tab-btn.active{background:#1e3a5f;color:#fff}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+.part-header{border-radius:10px;padding:0.9rem 1.4rem;margin-bottom:1rem;color:#fff}
+.part1-bg{background:#1e3a5f}
+.part2-bg{background:#1a3a2a}
+.slide-card{background:#fff;border-radius:10px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);overflow:hidden}
+.slide-toggle{width:100%;text-align:left;padding:1rem 1.3rem;background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.slide-toggle:hover{background:#fafafa}
+.slide-lbl{font-size:11px;color:#999;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:3px}
+.slide-title{font-size:15px;font-weight:600;color:#1a1a1a}
+.chevron{font-size:16px;color:#999;flex-shrink:0}
+.slide-body{padding:0 1.3rem 1.3rem;display:none}
+.slide-body.open{display:block}
+.quote-block{background:#f0f7ff;border-left:3px solid #2563eb;border-radius:0 6px 6px 0;padding:0.6rem 0.9rem;margin-bottom:0.9rem;font-size:13.5px;color:#374151;font-style:italic}
+.explain-block{font-size:14px;line-height:1.85;margin-bottom:0.9rem;color:#1f2937;white-space:pre-line}
+.diagram{background:#1e293b;color:#e2e8f0;border-radius:8px;padding:0.9rem 1rem;font-size:12px;line-height:1.7;overflow-x:auto;margin-bottom:0.9rem;font-family:'Courier New',monospace;white-space:pre}
+.confusion{background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:0.7rem 0.9rem;font-size:13.5px;color:#9a3412}
+.rev-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.rev-card{background:#fff;border-radius:10px;padding:1rem 1.2rem;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.rev-card h4{font-size:12px;font-weight:700;color:#1e3a5f;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:8px;border-bottom:2px solid #dbeafe;padding-bottom:6px}
+.rev-card ul{padding-left:1.1rem;margin:0}
+.rev-card li{font-size:13px;line-height:1.7;margin-bottom:3px;color:#374151}
+.q-item{background:#fff;border-radius:10px;padding:1rem 1.3rem;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.08);display:flex;gap:14px;align-items:flex-start}
+.q-num{width:28px;height:28px;background:#1e3a5f;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;margin-top:2px}
+.q-text{font-size:14px;line-height:1.75;color:#1f2937}
+.scenario{background:#fff;border-radius:10px;padding:1.2rem 1.4rem;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.scenario h4{font-size:15px;font-weight:600;color:#1e3a5f;margin-bottom:8px}
+.scenario p{font-size:14px;line-height:1.8;color:#374151}
+.bigpicture{background:#fff;border-radius:10px;padding:1.2rem 1.4rem;margin-top:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,0.08);border-left:4px solid #1e3a5f}
+.bigpicture h3{font-size:14px;font-weight:700;color:#1e3a5f;margin-bottom:10px}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<div class="page-header">
+  <div style="font-size:12px;color:#7aabdc;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;margin-bottom:6px">Complete Teaching Guide</div>
+  <h1>Data Link Layer &amp; DLC Protocols</h1>
+  <p>Lectures 10&ndash;11 (DLL Fundamentals) + Lectures 12&ndash;13 (DLC Protocols) &mdash; Dr. Muazzam A. Khan</p>
+  <div class="badge-row">
+    <span class="badge">Framing</span><span class="badge">MAC</span><span class="badge">Error Detection</span><span class="badge">Flow Control</span><span class="badge">ARQ</span><span class="badge">HDLC</span><span class="badge">Ethernet</span><span class="badge">Wi-Fi</span>
+  </div>
+</div>
+
+<div class="tab-row">
+  <button class="tab-btn active" onclick="switchTab('content',this)">Slide-by-Slide</button>
+  <button class="tab-btn" onclick="switchTab('revision',this)">Revision Sheet</button>
+  <button class="tab-btn" onclick="switchTab('questions',this)">Questions</button>
+  <button class="tab-btn" onclick="switchTab('scenarios',this)">Real-World</button>
+</div>
+
+<!-- CONTENT TAB -->
+<div id="tab-content" class="tab-pane active">
+
+<div class="part-header part1-bg">
+  <div style="font-size:11px;color:#7aabdc;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Lectures 10&ndash;11</div>
+  <div style="font-size:18px;font-weight:600">Data Link Layer Fundamentals</div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 5&ndash;7</div><div class="slide-title">Why the Data Link Layer Exists</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"For network layer packets to be transferred from source to destination, they must traverse different physical networks consisting of copper wires, microwaves, optical fibers, and satellite links. The data link layer prepares network layer packets for transmission and controls access to the physical media. At each hop: (1) Accept frame from medium, (2) Decapsulate into packet, (3) Construct new frame for next medium, (4) Forward."</div>
+    <div class="explain-block">The Network Layer (Layer 3) thinks in IP addresses. It does not care about physical wires. But packets cannot travel on air — they must be physically transmitted. The Data Link Layer (Layer 2) bridges the logical world of packets and the physical world of signals.
+
+A packet hopping from Islamabad to New York crosses many different physical links: Wi-Fi, fiber, satellite, Ethernet. At every hop, the DLL re-wraps the packet in a new frame suited to that link's medium. The packet stays the same; only the envelope changes.</div>
+    <div class="diagram">[PC] --[Wi-Fi Frame 802.11]--> [AP] --> [Router]
+                                               |
+                                     [Ethernet Frame] --> [Server]
+
+At every hop: Strip old frame --> Extract IP packet --> Build new frame --> Forward</div>
+    <div class="confusion">&#9888; Common Confusion: Packet != Frame. A packet is Layer 3 (has IP addresses). A frame is Layer 2 (has MAC addresses). A frame carries a packet inside it like an envelope carries a letter. The envelope changes at every router; the letter inside is untouched.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slide 8</div><div class="slide-title">The Two Core DLL Services</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"Two basic services: (1) Allows upper layers to access the media using framing. (2) Controls how data is placed onto and received from the media using media access control and error detection."</div>
+    <div class="explain-block">Service 1 = packaging: wrap the IP packet in a frame so it can be placed on the wire.
+Service 2 = discipline: decide when to transmit, and catch errors on arrival.</div>
+    <div class="diagram">Network Layer (IP Packet)
+        | encapsulate
+[ Header | IP Packet | Trailer ]  <-- Frame
+        | transmit
+Physical Layer (Bits on wire)</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 11, 35&ndash;37</div><div class="slide-title">Frame Structure &mdash; Every Field Explained</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"The frame includes: Data (packet from Network layer), Header (control info, addressing, at beginning), Trailer (control info at end). The FCS field contains the CRC (cyclic redundancy check). Header fields: Start Frame, Source/Destination address, Priority/QoS, Type, Flow control, Congestion control."</div>
+    <div class="explain-block">A frame has three parts. Think of it as a parcel: address label at the front (header), the contents in the middle (IP packet), and a tamper-evident seal at the back (trailer with CRC).
+
+Header fields:
+  Start Frame: signals "a frame begins here" -- receiver scans until it sees this pattern
+  Src/Dst Address: MAC addresses (hardware addresses of NICs, not IP addresses)
+  Type: which upper-layer protocol is inside (IPv4=0x0800, IPv6=0x86DD, ARP=0x0806)
+  Priority/QoS: VoIP frames jump the queue over file download frames
+  Flow/Congestion control: slow or stop sender when receiver is overwhelmed
+
+Trailer:
+  FCS (Frame Check Sequence): the CRC value.
+  Sender computes a mathematical checksum over all frame bits and appends it.
+  Receiver recomputes -- if values don't match, frame is corrupted -- drop it.</div>
+    <div class="diagram">+------------------+----------------------+-----------+
+|      HEADER      |   DATA (IP Packet)   |  TRAILER  |
+| Start+Addr+Type  |  Network Layer PDU   |  FCS/CRC  |
+|  + Ctrl Fields   |  (unchanged at hops) |  4 bytes  |
++------------------+----------------------+-----------+</div>
+    <div class="confusion">&#9888; CRC is at the END (trailer) because you cannot compute it until all data bits exist. You calculate over the whole frame, then append the result at the end.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 13&ndash;14</div><div class="slide-title">NIC, LLC, and MAC Sublayers</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"An adapter manages the framing and media access method. The NIC (Network Interface Card) connects the PC to the media."</div>
+    <div class="explain-block">The NIC physically implements the Data Link Layer. Its firmware builds frames, applies MAC addresses, and computes CRCs automatically -- you never do this manually.
+
+The DLL is split into two sublayers:
+  LLC (Logical Link Control): talks upward to the Network Layer; identifies which network protocol is inside the frame (IPv4, IPv6, etc.)
+  MAC (Media Access Control): talks downward to the Physical Layer; handles addressing and controls when/how to access the medium</div>
+    <div class="diagram">   Network Layer (IP)
+         |
+   +--------------+
+   | LLC Sublayer |  <-- Interface to Network Layer above
+   +--------------+
+   | MAC Sublayer |  <-- Interface to Physical Layer below
+   +--------------+
+         |
+   Physical Layer (signals)</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 16&ndash;25</div><div class="slide-title">Media Access Control Techniques</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"Two MAC methods for shared media: Controlled (each node has its own time) and Contention-based (all nodes compete). CSMA/CD: device monitors media; if no signal, transmits. CSMA/CA: device examines media; if free, sends a notification of intent, then sends data."</div>
+    <div class="explain-block">If multiple devices share one wire, only one can transmit at a time -- otherwise signals collide and corrupt each other. MAC is the ruleset preventing this.
+
+POLLING (Controlled / Deterministic):
+A master device asks each node in turn "do you have data?" Orderly, no collisions, but the master is a bottleneck. Used in mainframe and industrial networks.
+
+CSMA/CD (Wired Ethernet, Half-Duplex):
+1. Listen to wire -- is it idle?
+2. If idle --> transmit. Keep monitoring while transmitting.
+3. Detect collision mid-transmission --> stop, send jam signal
+4. Both stations wait a RANDOM backoff time --> retry from step 1
+Random backoff prevents re-collision: if both waited identical time, they'd collide again.
+
+CSMA/CA (Wi-Fi 802.11):
+In wireless, you CANNOT detect your own collision (your signal drowns everything out). So Wi-Fi AVOIDS collisions before they happen: check if idle, announce intent, wait random backoff even when idle, then transmit.
+
+Half-Duplex vs Full-Duplex:
+  Half-duplex: transmit OR receive, not both simultaneously (walkie-talkie model)
+  Full-duplex: simultaneous transmit and receive (telephone model)
+Modern switched Ethernet is full-duplex -- no shared medium, no CSMA/CD needed, zero collisions.</div>
+    <div class="diagram">CSMA/CD:  Listen --> Idle? --> Transmit --> Collision? --> Jam --> Random Backoff --> Retry
+CSMA/CA:  Listen --> Idle? --> Announce Intent --> Random Wait --> Transmit
+
+Half-Duplex:  A ---> B  (then)  A <--- B   (take turns)
+Full-Duplex:  A ---> B  AND  A <--- B  simultaneously</div>
+    <div class="confusion">&#9888; CD = Collision DETECT (wired: you can physically hear two signals at once). CA = Collision AVOID (wireless: you cannot detect your own collision because your signal drowns out all others). This is the fundamental reason they differ -- not just naming.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 26&ndash;32</div><div class="slide-title">Physical vs Logical Topology</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"Physical Topology: arrangement of nodes and physical connections. Logical Topology: the way a network transfers frames from one node to the next. NOTE: The physical or cabled topology will most likely NOT be the same as the logical topology."</div>
+    <div class="explain-block">Physical topology = what you see with your eyes (cables going into a switch in a star shape).
+Logical topology = the conceptual model of how data flows, which determines which MAC method is used.
+
+Logical Bus (Multi-Access): Every device receives every frame. Only the device matching the destination MAC address processes it; all others discard. MAC methods used: CSMA/CD, CSMA/CA, Token Passing.
+
+Logical Ring: Frames travel around the ring. Each node checks the address -- if not mine, forward it. Uses TOKEN PASSING: a token frame circulates; a node must hold the token to transmit. Fully deterministic -- guaranteed turn for every node, no collisions possible.
+
+Logical Point-to-Point: Virtual circuit between exactly two nodes, even if physically connected through many devices. Used by PPP, Frame Relay, HDLC.</div>
+    <div class="diagram">Example: Star Physical, Bus Logical
+
+Physical (star):          Logical (bus -- all share one channel):
+       PC                 PC --- PC --- PC --- PC
+       |                  Every device sees every frame.
+    [Switch]              Only correct MAC address processes it.
+    / | | \
+  PC PC PC PC</div>
+    <div class="confusion">&#9888; A modern office with all PCs into a switch looks physically like a star. But logically, Ethernet still uses MAC addresses in a shared address space -- logically it behaves like a bus. Physical != Logical.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 38&ndash;47</div><div class="slide-title">Layer 2 Protocols: Ethernet, PPP, Wi-Fi</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"Ethernet: IEEE 802.2/802.3, 10/100/1000/10000 Mbps, CSMA/CD, 48-bit MAC, unacknowledged connectionless service. PPP: WAN protocol, supports authentication, compression, multilink. 802.11: CSMA/CA, 48-bit addressing, four address fields, data link acknowledgements."</div>
+    <div class="explain-block">ETHERNET (LAN):
+  48-bit MAC = OUI (24-bit vendor identifier) + device unique (24-bit)
+  "Unacknowledged connectionless" -- fires frames, does NOT confirm receipt. Reliability left to TCP.
+  Ethernet II frame: Preamble | Dst MAC | Src MAC | Type | Data | FCS
+
+PPP (WAN):
+  For serial WAN links between two routers
+  Adds: authentication (verify identity), compression (reduce data size), multilink (bond multiple physical links)
+  PPP frame: Flag | Address | Control | Protocol | Data | FCS | Flag
+
+WI-FI 802.11 (Wireless LAN):
+  Uses CSMA/CA with random backoff
+  Uses DATA LINK ACKs (unlike Ethernet!) -- receiver must explicitly acknowledge each frame. No ACK = retransmit.
+  Four MAC address fields (vs Ethernet's two): Receiver, Transmitter, Destination, Source -- needed because frames hop through an Access Point
+  Key fields: WEP (legacy encryption), Retry bit (marks retransmissions to avoid duplicates), Power Management (device sleeps, AP buffers frames)</div>
+    <div class="diagram">Protocol     | Use Case          | MAC Method
+-------------|-------------------|-------------------
+Ethernet     | LAN (wired)       | CSMA/CD
+Wi-Fi 802.11 | LAN (wireless)    | CSMA/CA
+PPP          | WAN serial link   | N/A (point-to-point)
+HDLC         | WAN point-to-point| N/A (point-to-point)
+
+Ethernet II Frame:
++----------+----------+----------+------+----------+-----+
+| Preamble | Dst MAC  | Src MAC  | Type |   Data   | FCS |
+|  8 bytes | 6 bytes  | 6 bytes  | 2 B  | 46-1500B | 4 B |
++----------+----------+----------+------+----------+-----+
+
+MAC Address (48-bit): AA:BB:CC:DD:EE:FF
+                      |--------| |--------|
+                      OUI/Vendor  Device-unique</div>
+  </div>
+</div>
+
+<!-- Part 2 -->
+<div class="part-header part2-bg" style="margin-top:2rem">
+  <div style="font-size:11px;color:#7acca0;font-weight:600;letter-spacing:0.08em;text-transform:uppercase">Lectures 12&ndash;13</div>
+  <div style="font-size:18px;font-weight:600">Data Link Control Protocols</div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 2&ndash;3</div><div class="slide-title">Three DLC Functions + Polling vs Contention</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"A data link protocol provides three functions: Controls when computers transmit (media access control). Detects and corrects transmission errors (error control). Identifies the start and end of a message (message delineation). Two types of MAC: Polling, Contention."</div>
+    <div class="explain-block">Three fundamental problems of putting bits on a wire, and how DLC solves each:
+
+1. Media Access Control: the wire is shared -- who goes first?
+   Solved by: polling (master grants permission) or contention (CSMA)
+
+2. Error Control: electromagnetic interference corrupts bits.
+   Solved by: error detection (CRC) + retransmission (ARQ)
+
+3. Message Delineation: the physical layer is a continuous bit stream with no natural boundaries.
+   Solved by: special start/stop flag patterns or bit stuffing
+
+POLLING (Controlled/Deterministic):
+Master asks each node: "do you have data?" Orderly, no collisions, but master is the bottleneck.
+Used in: mainframe networks, industrial systems.
+
+CONTENTION (Competitive/Non-Deterministic):
+Any device transmits when it wants to. Collision -> both back off randomly -> retry.
+Used in: Ethernet (CSMA/CD), Wi-Fi (CSMA/CA).</div>
+    <div class="diagram">Problem               --> DLC Solution
+-------------------------------------------------------
+Who transmits when?   --> MAC (polling or CSMA)
+Corrupted bits?       --> Error detection (CRC) + ARQ retransmit
+Where does frame end? --> Start/stop flags, bit stuffing</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 4&ndash;10</div><div class="slide-title">Error Detection: Burst Errors and the Four Methods</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"Normally errors occur in bursts. In a burst error, more than one data bit is changed by the error-causing condition. The only way to do error detection is to send extra data with each message -- the larger the amount, the greater the ability to detect. Three common error detection methods: Parity Checking, Longitudinal Redundancy Checking, Polynomial Checking (Checksum, CRC)."</div>
+    <div class="explain-block">Burst errors are the norm in real networks. A lightning strike or electromagnetic pulse corrupts a cluster of consecutive bits -- not random isolated single-bit flips.
+
+Good news: long error-free periods between bursts.
+Bad news: a burst destroys many consecutive bits, making recovery harder.
+
+Fundamental trade-off: more redundancy = better error detection BUT lower efficiency (more overhead).
+
+The four methods in increasing order of power:
+
+1. PARITY: Add 1 bit so total number of 1s in the word is even (even parity).
+   Detects SINGLE-bit errors only. Two-bit errors cancel out and go undetected.
+
+2. LRC (Longitudinal Redundancy Check): Parity across both rows AND columns of a data block.
+   Detects burst errors significantly better than simple parity.
+
+3. CHECKSUM: Sum all data bytes, append the sum.
+   Receiver recomputes and compares. Used in IP header, UDP, ICMP.
+
+4. CRC (Cyclic Redundancy Check): Treat data as a binary polynomial, divide by generator polynomial, append remainder.
+   Receiver divides -- non-zero remainder = error. MOST POWERFUL. Used in Ethernet, HDLC, Wi-Fi.</div>
+    <div class="diagram">1. PARITY:
+   Data: 1010001 (three 1s = odd) --> parity bit = 1 --> send: 10100011
+   Receiver: count 1s. If odd total --> error detected.
+   Cannot catch 2-bit errors (two flips cancel each other out).
+
+2. LRC (2D parity):
+   Row 1: 1 0 1 1 0 | parity: 1
+   Row 2: 0 1 1 0 1 | parity: 1
+   Col P: 1 1 0 1 1  <-- column parity appended as extra row
+
+3. CRC (most powerful):
+   Sender:   Data / Generator Polynomial = Quotient, Remainder (CRC)
+             Transmit: [Data][CRC appended]
+   Receiver: (Data+CRC) / Generator --> remainder != 0? --> ERROR!</div>
+    <div class="confusion">&#9888; CRC does NOT fix errors -- it only DETECTS them. Error CORRECTION requires either retransmission (ARQ) or forward error correction codes (FEC). Detection and correction are separate concepts.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 11&ndash;16</div><div class="slide-title">Flow Control: Stop-and-Wait vs Sliding Window</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"When data is being sent faster than it can be processed by receiver. Preventing buffer overflow. Transmission time: time taken to emit all bits into medium. Propagation time: time for a bit to traverse the link. Sliding Window: allow multiple frames to be in transit. Receiver has buffer W long. Transmitter can send up to W frames without ACK. Each frame is numbered. ACK includes number of next frame expected."</div>
+    <div class="explain-block">Without flow control, a fast sender floods a slow receiver's buffer --> overflow --> data silently lost.
+
+Two timing concepts you must know for efficiency calculations:
+  Transmission time = Frame_size (bits) / Data_rate (bps)
+  Propagation time  = Distance / Signal_speed
+
+STOP-AND-WAIT:
+Send one frame. Wait for ACK. Send next frame. Simple but terrible for high-delay links.
+Example: propagation = 20ms, transmission = 1ms --> sender is idle 97% of the time!
+Receiver can STOP flow simply by not sending the ACK.
+
+FRAGMENTATION: Large messages split into small frames.
+Benefits: early error detection, smaller retransmissions on error, fairer channel sharing.
+Downside: makes Stop-and-Wait even more inadequate (many tiny windows = many waits).
+
+SLIDING WINDOW:
+Sender can have up to W frames outstanding simultaneously without ACK.
+Frames are numbered sequentially. ACK says "next frame I expect is N" -- CUMULATIVE (implicitly ACKs all frames before N).
+Window slides right as ACKs arrive. The pipeline stays full.
+
+RNR (Receiver Not Ready): Receiver sends RNR to say "stop, my buffer is filling up." Sender freezes until a normal RR (Receive Ready) ACK arrives to resume.
+
+PIGGYBACKING: In full-duplex, both directions have data. A node bundles its ACK onto its data frame going the other direction -- saves one full frame of overhead. If no data to send but ACK needed, send a standalone ACK frame. If data but no new ACK to send, resend the last ACK number.</div>
+    <div class="diagram">Stop-and-Wait (W=1):
+Sender:   [0]------->       [1]------->       IDLE MOST OF THE TIME!
+Receiver:        <---[ACK1]       <---[ACK0]
+
+Sliding Window (W=4):
+Sender:   [0][1][2][3]------>  (4 frames in flight simultaneously)
+ACK0 arrives --> window slides --> can now send [4]
+Sender:      [1][2][3][4]------>  ... pipeline stays full
+
+Efficiency (Stop-and-Wait) = T_tx / (T_tx + 2 * T_prop)
+Efficiency (Sliding Window) = W / (1 + 2a)  where a = T_prop / T_tx</div>
+    <div class="confusion">&#9888; ACKs in sliding window are CUMULATIVE. ACK5 means "I correctly received ALL frames up to and including 4 -- send frame 5 next." One ACK can acknowledge multiple frames at once. You don't need a separate ACK for every single frame.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 18&ndash;30</div><div class="slide-title">ARQ: Stop-and-Wait, Go-Back-N, Selective Reject</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"ARQ types: Stop and wait, Go back N, Selective reject. Go-Back-N: if error, discard that frame and all future frames until error frame received correctly; transmitter must go back and retransmit that frame and all subsequent. Selective reject: only rejected frames retransmitted; subsequent frames accepted and buffered. Minimizes retransmission. Receiver must maintain large enough buffer. More complex logic in transmitter."</div>
+    <div class="explain-block">ARQ (Automatic Repeat reQuest) handles errors by retransmission. Three strategies:
+
+=== 1. STOP-AND-WAIT ARQ ===
+Send frame 0 --> wait for ACK1 (means "got frame 0, send frame 1").
+ACKs alternate between ACK0 and ACK1 to detect duplicates.
+(If ACK is lost, sender retransmits -- receiver uses ACK number to tell duplicate from new frame.)
+On timeout: retransmit.  On damaged ACK: retransmit.
+Pros: Simple.  Cons: Extremely inefficient.
+
+=== 2. GO-BACK-N ARQ (sliding window) ===
+Four specific cases:
+
+a) Damaged frame i:
+   Receiver detects error --> sends REJ-i --> Sender retransmits i AND ALL frames after i.
+
+b) Lost frame i (subsequent frames arriving):
+   Receiver gets i+1 out of sequence --> sends REJ-i --> Sender goes back to frame i.
+
+c) Lost frame i (no subsequent frames sent):
+   Sender times out --> sends ACK frame with P-bit=1 (poll) --> Receiver responds with
+   next expected frame number (i) --> Sender retransmits from i.
+
+d) Damaged ACK:
+   ACKs are cumulative, so next ACK (i+n) implicitly covers the missed one.
+   If timer expires before that: poll with P-bit, repeat before initiating full reset.
+
+Pros: Simple receiver (no buffering needed for out-of-order frames).
+Cons: Wastes bandwidth retransmitting correct frames after the error.
+
+=== 3. SELECTIVE REJECT ARQ ===
+Only the bad frame is retransmitted. Receiver BUFFERS subsequent correct frames.
+After retransmitted frame arrives, receiver reassembles in order and delivers to upper layer.
+Pros: Most efficient, minimal retransmission.
+Cons: Large receiver buffer needed; complex sender logic.</div>
+    <div class="diagram">Go-Back-N (W=4), frame 2 damaged:
+Sender:  [0][1][2][3][4][5]...
+                  ^ REJ-2 received
+Sender retransmits: [2][3][4][5]...   (2 + everything after it)
+Receiver: DISCARDS frames 3,4,5 even though they were correct
+
+Selective Reject (W=4), frame 2 damaged:
+Sender:  [0][1][2][3][4][5]...
+                  ^ SREJ-2 received
+Sender retransmits: [2] ONLY
+Receiver: BUFFERS 3,4,5 --> after [2] arrives --> delivers: 0,1,2,3,4,5
+
+Comparison:
+Method           | Retransmits            | Rx Buffer | Efficiency
+-----------------|------------------------|-----------|------------
+Stop-and-Wait    | 1 frame                | 1 frame   | Very Low
+Go-Back-N        | Error frame + all after| 1 frame   | Medium
+Selective Reject | Error frame only       | W frames  | Highest</div>
+    <div class="confusion">&#9888; In Go-Back-N, the receiver DISCARDS correct frames received after the error because it has no buffer for out-of-order frames. In Selective Reject, the receiver KEEPS them in a buffer. This single mechanical difference drives all the trade-offs between the two protocols.</div>
+  </div>
+</div>
+
+<div class="slide-card">
+  <button class="slide-toggle" onclick="toggleSlide(this)">
+    <div><div class="slide-lbl">Slides 31&ndash;47</div><div class="slide-title">HDLC: Complete Protocol Reference</div></div>
+    <span class="chevron">&#9650;</span>
+  </button>
+  <div class="slide-body open">
+    <div class="quote-block">"HDLC defined by ISO for point-to-point and multipoint links. Full-duplex. Bit-oriented protocol. Reliable (selective repeat or go-back-N). Three station types: Primary (commands), Secondary (responses), Combined. Three modes: NRM, ARM, ABM. Three frame types: I (information), S (supervisory), U (unnumbered)."</div>
+    <div class="explain-block">HDLC is the reference protocol that implements all DLC concepts: ARQ, sliding window flow control, and bit-stuffed framing. "Bit-oriented" means every field works at the bit level (not character-level like older protocols).
+
+STATION TYPES:
+  Primary:  controls the link, handles error recovery, sends COMMANDS
+  Secondary: controlled by primary, sends RESPONSES
+  Combined: acts as both (used in balanced peer-to-peer configurations)
+
+LINK CONFIGURATIONS:
+  Unbalanced: 1 primary + 1 or more secondaries (master-slave)
+  Balanced:   2 combined stations (peer-to-peer, full-duplex)
+
+TRANSFER MODES:
+  NRM (Normal Response Mode): secondaries transmit ONLY when polled by primary.
+    Unbalanced config. Good for multipoint (hub) topologies.
+  ARM (Async Response Mode): secondaries CAN initiate without being asked, but still unbalanced.
+    Reduces polling overhead. Used in point-to-point links.
+  ABM (Async Balanced Mode): either combined station initiates transmissions.
+    Used in point-to-point WANs. Most common mode today.
+
+FRAME TYPES:
+  I-frame (Information): carries user data + N(S) send sequence + N(R) receive seq (= implicit ACK)
+  S-frame (Supervisory): flow/error control only, NO user data.
+    Types: RR (Receive Ready = ACK), RNR (stop sending), REJ (Go-Back-N), SREJ (Selective Reject)
+  U-frame (Unnumbered): link management, NO sequence numbers.
+    Commands: SABM (set ABM), SNRM (set NRM), DISC (disconnect), UA (unnumbered ACK),
+              FRMR (frame reject), DM (disconnect mode)
+
+BIT STUFFING:
+  HDLC uses 01111110 as the frame flag delimiter.
+  Problem: user data might contain 01111110, causing a false frame boundary.
+  Solution: sender inserts a 0 after every 5 consecutive 1s in the data.
+  Receiver removes the 0 after every 5 ones.
+  The flag pattern 01111110 can NEVER appear naturally in the stuffed data.
+
+OPERATION PHASES:
+  1. Initialization: send SABM --> receive UA --> link established in ABM
+  2. Data Transfer: I-frames (data+ACK), S-frames (flow/error control), P-bit for lost frame polling
+  3. Disconnect: send DISC --> receive UA --> link cleanly terminated</div>
+    <div class="diagram">HDLC Frame:
++--------+---------+--------+--------------+-------+--------+
+|  Flag  | Address |Control |     Data     |  FCS  |  Flag  |
+|01111110|         |        |  (optional)  |       |01111110|
++--------+---------+--------+--------------+-------+--------+
+
+Control field identifies frame type:
+  I-frame:  0 | N(S) | P/F | N(R)    <-- data + piggybacked ACK
+  S-frame: 10 | type | P/F | N(R)    <-- RR / RNR / REJ / SREJ
+  U-frame: 11 |  M   | P/F |  M      <-- SABM / DISC / UA / FRMR
+
+Bit Stuffing:
+  Original:  0 1 1 1 1 1 0 1 1 0      <-- 5 consecutive 1s
+  Stuffed:   0 1 1 1 1 1[0]0 1 1 0   <-- 0 inserted after the 5th one
+  Receiver:  sees 5 ones -> removes next bit -> original data restored
+
+HDLC Session Example:
+  A -----SABM-----> B     (Set ABM: initialize link)
+  A <----UA--------- B    (Unnumbered ACK: mode accepted)
+  A -----I(0,0)----> B    (I-frame: N(S)=0, N(R)=0)
+  A <----I(0,1)------ B   (Data back + piggybacked ACK N(R)=1)
+  A -----DISC-----> B     (Disconnect request)
+  A <----UA--------- B    (Acknowledged, link terminated)
+
+Mode Comparison:
+Mode | Who initiates?     | Config      | Use Case
+-----|--------------------+-------------|------------------
+NRM  | Only primary       | Unbalanced  | Multipoint
+ARM  | Secondary too      | Unbalanced  | Point-to-point
+ABM  | Either combined    | Balanced    | Point-to-point WAN</div>
+    <div class="confusion">&#9888; S-frames carry NO user data -- they are pure control frames. I-frames carry BOTH user data AND acknowledgement (the N(R) field). This built-in piggybacking is one of HDLC's core efficiencies. Don't confuse them.</div>
+  </div>
+</div>
+
+<div class="bigpicture">
+  <h3>Big Picture &mdash; Where the DLL Sits in the OSI Stack</h3>
+  <div class="diagram" style="margin-bottom:0">  [ Application  ]  HTTP, DNS, SMTP
+  [ Transport    ]  TCP/UDP -- end-to-end reliability
+  [ Network      ]  IP -- logical addressing, routing
+  +==============+
+  | DATA LINK    |  <-- Framing, MAC, Error Detection (hop-by-hop)
+  +==============+
+  [ Physical     ]  Bits --> electrical/optical/radio signals
+
+DLL operates HOP-BY-HOP. TCP operates END-TO-END. They are complementary:
+  DLL catches most link errors locally and quickly (at each individual hop).
+  TCP catches anything that slips through, from original source to final destination.</div>
+</div>
+
+</div><!-- end content tab -->
+
+<!-- REVISION TAB -->
+<div id="tab-revision" class="tab-pane">
+<div class="part-header part1-bg"><div style="font-size:18px;font-weight:600">Revision Sheet &mdash; Quick Reference</div></div>
+<div class="rev-grid">
+  <div class="rev-card"><h4>DLL Core Functions</h4><ul>
+    <li>Media access control (who transmits when)</li>
+    <li>Error detection (FCS/CRC in trailer)</li>
+    <li>Message delineation (start/stop flags)</li>
+    <li>Framing: Header + Data + Trailer</li>
+    <li>Operates hop-by-hop (not end-to-end)</li>
+  </ul></div>
+  <div class="rev-card"><h4>MAC Methods</h4><ul>
+    <li>Polling: deterministic, no collisions, master controls</li>
+    <li>CSMA/CD: detect collision after it happens (wired)</li>
+    <li>CSMA/CA: avoid collision before it happens (wireless)</li>
+    <li>Token Passing: hold token = permission to transmit</li>
+    <li>Full-duplex switch links: no MAC contention at all</li>
+  </ul></div>
+  <div class="rev-card"><h4>Topologies</h4><ul>
+    <li>Physical != Logical topology</li>
+    <li>Bus: all see all frames, filter by MAC address</li>
+    <li>Ring: token passing, sequential forwarding</li>
+    <li>Point-to-Point: virtual circuit, exactly 2 nodes</li>
+    <li>Star physical + bus logical = switched Ethernet</li>
+  </ul></div>
+  <div class="rev-card"><h4>Error Detection</h4><ul>
+    <li>Parity: 1 extra bit, single-bit errors only</li>
+    <li>LRC: 2D parity, handles burst errors better</li>
+    <li>Checksum: byte sum, used in IP/UDP headers</li>
+    <li>CRC: polynomial division, most powerful method</li>
+    <li>CRC used in Ethernet, HDLC, Wi-Fi (CRC-32)</li>
+  </ul></div>
+  <div class="rev-card"><h4>Flow Control</h4><ul>
+    <li>Stop-and-Wait: 1 frame at a time, ACK required</li>
+    <li>Sliding Window: W frames outstanding simultaneously</li>
+    <li>RNR = Receiver Not Ready (tells sender to pause)</li>
+    <li>Piggybacking: ACK bundled onto data going other way</li>
+    <li>Efficiency = W / (1 + 2a), a = T_prop / T_tx</li>
+  </ul></div>
+  <div class="rev-card"><h4>ARQ Protocols</h4><ul>
+    <li>Stop-and-Wait: simple, extremely inefficient</li>
+    <li>Go-Back-N: retransmit error frame + all subsequent</li>
+    <li>Selective Reject: retransmit ONLY the bad frame</li>
+    <li>Go-Back-N receiver needs no buffer (discards out-of-order)</li>
+    <li>P-bit (poll bit): used when sender timer expires</li>
+  </ul></div>
+  <div class="rev-card"><h4>HDLC</h4><ul>
+    <li>3 stations: Primary (commands), Secondary (responses), Combined</li>
+    <li>3 modes: NRM (polled only), ARM (secondary initiates), ABM (either)</li>
+    <li>3 frame types: I (data+ACK), S (RR/RNR/REJ/SREJ), U (management)</li>
+    <li>Bit stuffing: insert 0 after every 5 consecutive 1s</li>
+    <li>3 phases: Init (SABM&rarr;UA), Data Transfer, Disconnect (DISC&rarr;UA)</li>
+  </ul></div>
+  <div class="rev-card"><h4>L2 Protocol Map</h4><ul>
+    <li>Ethernet 802.3: LAN, CSMA/CD, 48-bit MAC, CRC-32</li>
+    <li>Wi-Fi 802.11: WLAN, CSMA/CA, 4 address fields, DL ACKs</li>
+    <li>PPP: WAN serial links, auth + compression + multilink</li>
+    <li>HDLC: WAN point-to-point, reliable, bit-oriented</li>
+    <li>All L2 protocols independent of upper-layer protocol used</li>
+  </ul></div>
+</div>
+</div>
+
+<!-- QUESTIONS TAB -->
+<div id="tab-questions" class="tab-pane">
+<div class="part-header part1-bg"><div style="font-size:18px;font-weight:600">Conceptual Questions &mdash; Self Test</div></div>
+<div class="q-item"><div class="q-num">1</div><div class="q-text">A packet travels Lahore &rarr; London via Wi-Fi &rarr; fiber &rarr; satellite &rarr; Ethernet. How many times does the frame change, and why does the IP packet inside remain unchanged at every hop?</div></div>
+<div class="q-item"><div class="q-num">2</div><div class="q-text">Why does CSMA/CD not work for wireless networks? What specific property of the wireless medium forces the use of CSMA/CA instead?</div></div>
+<div class="q-item"><div class="q-num">3</div><div class="q-text">You have a 10,000-bit frame on a 1 Mbps link with 20 ms propagation delay. Calculate the transmission time. In Stop-and-Wait, what percentage of the time is the sender actually transmitting data?</div></div>
+<div class="q-item"><div class="q-num">4</div><div class="q-text">Explain why burst errors are simultaneously "good" (long error-free periods) and "bad" (harder to correct). Which error detection method handles burst errors best and why?</div></div>
+<div class="q-item"><div class="q-num">5</div><div class="q-text">In Go-Back-N with W=6, frame 3 is lost. Frames 4, 5, 6, 7, 8 have already been transmitted. What does the receiver do with frames 4&ndash;8? What does the sender do when it receives REJ-3?</div></div>
+<div class="q-item"><div class="q-num">6</div><div class="q-text">Why does Selective Reject require a larger receiver buffer than Go-Back-N? Why does Go-Back-N require less complex receiver logic?</div></div>
+<div class="q-item"><div class="q-num">7</div><div class="q-text">In HDLC, what is the difference between an I-frame and an S-frame? Give a specific scenario where you would send an RNR S-frame instead of a regular RR.</div></div>
+<div class="q-item"><div class="q-num">8</div><div class="q-text">Explain bit stuffing in HDLC: why is it necessary, and what would happen if the flag pattern 01111110 appeared naturally in user data without stuffing?</div></div>
+<div class="q-item"><div class="q-num">9</div><div class="q-text">What is the difference between physical topology and logical topology? Give a real example of a network with a star physical topology but a bus logical topology.</div></div>
+<div class="q-item"><div class="q-num">10</div><div class="q-text">Piggybacking improves efficiency in full-duplex links. Explain exactly what is being piggybacked, why it reduces overhead, and what a station does when it has no data to send but still needs to acknowledge received frames.</div></div>
+</div>
+
+<!-- SCENARIOS TAB -->
+<div id="tab-scenarios" class="tab-pane">
+<div class="part-header part1-bg"><div style="font-size:18px;font-weight:600">Real-World Scenarios</div></div>
+<div class="scenario">
+  <h4>Scenario 1: Your Wi-Fi Crawls in a Crowded Office</h4>
+  <p>50 devices share one Wi-Fi AP. All use CSMA/CA on a single shared medium. Many devices transmit simultaneously, triggering random backoffs that themselves collide repeatedly. Each data frame also requires an explicit 802.11 Data Link ACK, effectively doubling the number of transmissions required. Each device must additionally announce intent before transmitting. This is CSMA/CA, exponential backoff, and DL acknowledgements all working simultaneously at their limits. Enterprise fixes: 5 GHz band (less congestion), beam-forming APs (direct signal to device), band steering (distribute load across bands) &mdash; all designed to reduce MAC-layer contention.</p>
+</div>
+<div class="scenario">
+  <h4>Scenario 2: Satellite Internet Uses 10% of Its Advertised Speed</h4>
+  <p>You have a 10 Mbps geostationary satellite link but downloads crawl at &lt;1 Mbps. Root cause: 600 ms round-trip propagation delay. If the link uses Stop-and-Wait: transmit a 1500-byte frame in ~1.2 ms, then wait 600 ms for ACK before sending the next frame. Efficiency = 1.2 / 601.2 = 0.2%. The fix: large sliding window keeps the pipeline full &mdash; the sender continuously pumps frames without waiting. This is exactly why satellite protocols and TCP use large window sizes, and why TCP includes a "window scaling" option for high-bandwidth-delay-product links.</p>
+</div>
+<div class="scenario">
+  <h4>Scenario 3: Why a Switch Destroys a Hub in Performance</h4>
+  <p>An old hub broadcasts every incoming frame out all ports &mdash; a shared bus topology in hardware. Every device receives every frame and must discard those not addressed to it. CSMA/CD is critical: only one device can transmit at a time, and collisions are frequent under load. A modern switch learns which MAC address is on which port (the MAC address table) and forwards frames only to the correct port. Each port becomes a full-duplex point-to-point link &mdash; no shared medium, no CSMA/CD needed, zero collisions. Layer 2 MAC addressing and framing directly determine whether you buy a hub or a switch, and the performance difference is enormous.</p>
+</div>
+</div>
+
+</div><!-- end wrapper -->
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-pane').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('tab-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+function toggleSlide(btn) {
+  var body = btn.nextElementSibling;
+  var chevron = btn.querySelector('.chevron');
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open', !isOpen);
+  chevron.innerHTML = isOpen ? '&#9650;' : '&#9660;';
+}
+</script>
+</body>
+</html>

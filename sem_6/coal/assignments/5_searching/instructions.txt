@@ -1,0 +1,6 @@
+Write a program that searches a number from array of 10 numbers. And display the messages found and not found respectively. Use procedure.
+
+
+1 The assignment must be submitted as an .ASM file only.
+2 Do not submit a .ZIP file.
+3 If any student uploads a .ZIP file or any other format, their submission will be considered incorrect, and their marks will be zero.

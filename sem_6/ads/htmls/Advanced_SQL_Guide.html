@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced SQL Guide — ADS Midterm</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Mono:wght@400;500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
+:root{--bg:#0d0d0d;--sf:#141414;--sf2:#1c1c1c;--sf3:#242424;--bd:#2a2a2a;--tx:#e8e4dc;--mu:#666;--ac:#f0a500;--ac2:#3ecf8e;--ac3:#5b8dee;--ac4:#e05c5c;--ac5:#c084fc;--cb:#050505;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--tx);font-size:15px;line-height:1.75;}
+nav{position:sticky;top:0;z-index:200;background:rgba(13,13,13,.97);backdrop-filter:blur(12px);border-bottom:1px solid var(--bd);display:flex;flex-wrap:wrap;align-items:center;padding:0 10px;gap:2px;}
+.nb{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:var(--ac4);padding:10px;border-right:1px solid var(--bd);margin-right:4px;white-space:nowrap;}
+nav a{color:var(--mu);text-decoration:none;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.04em;padding:7px 8px;border-radius:4px;transition:all .15s;white-space:nowrap;}
+nav a:hover{color:var(--tx);background:var(--sf2);}
+nav a.active{color:var(--ac);background:rgba(240,165,0,.1);}
+.page{display:none;max-width:860px;margin:0 auto;padding:36px 22px 100px;}
+.page.active{display:block;}
+.hero{margin-bottom:40px;padding:28px 0 26px;border-bottom:1px solid var(--bd);}
+.hbadge{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ac4);background:rgba(224,92,92,.1);border:1px solid rgba(224,92,92,.25);display:inline-block;padding:3px 10px;border-radius:20px;margin-bottom:12px;}
+.hero h1{font-family:'Syne',sans-serif;font-size:clamp(1.7em,4.5vw,2.8em);font-weight:800;line-height:1.1;color:#fff;margin-bottom:10px;}
+.hero p{color:var(--mu);font-size:14px;max-width:600px;}
+h2{font-family:'Syne',sans-serif;font-size:1.3em;font-weight:700;color:#fff;margin:44px 0 13px;display:flex;align-items:center;gap:10px;}
+h2::before{content:'';display:inline-block;width:4px;height:1.1em;background:var(--ac);border-radius:2px;flex-shrink:0;}
+h3{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac2);margin:26px 0 8px;}
+h4{font-size:15px;font-weight:500;color:var(--ac);margin:18px 0 5px;}
+p{margin-bottom:11px;color:var(--tx);}
+.def{background:var(--sf2);border-left:3px solid var(--ac);padding:14px 18px;margin:13px 0;border-radius:0 8px 8px 0;}
+.def .lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac);margin-bottom:5px;display:block;}
+.def p{margin:0;}
+.ok{background:rgba(62,207,142,.08);border:1px solid rgba(62,207,142,.2);border-radius:8px;padding:14px 18px;margin:13px 0;}
+.ok .lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac2);margin-bottom:7px;display:block;}
+.ok p,.ok li{color:var(--tx);margin-bottom:5px;}
+.ok ul{padding-left:18px;}
+.warn{background:rgba(224,92,92,.08);border:1px solid rgba(224,92,92,.2);border-radius:8px;padding:14px 18px;margin:13px 0;}
+.warn .lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac4);margin-bottom:7px;display:block;}
+.warn p,.warn li{color:var(--tx);margin-bottom:4px;}
+.warn ul{padding-left:18px;}
+.info{background:rgba(91,141,238,.08);border:1px solid rgba(91,141,238,.2);border-radius:8px;padding:14px 18px;margin:13px 0;}
+.info .lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac3);margin-bottom:7px;display:block;}
+.info p,.info li{color:var(--tx);margin-bottom:4px;}
+.info ul{padding-left:18px;}
+.purple{background:rgba(192,132,252,.08);border:1px solid rgba(192,132,252,.2);border-radius:8px;padding:14px 18px;margin:13px 0;}
+.purple .lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ac5);margin-bottom:7px;display:block;}
+.purple p,.purple li{color:var(--tx);margin-bottom:4px;}
+.purple ul{padding-left:18px;}
+pre{background:var(--cb);border:1px solid var(--bd);border-radius:8px;padding:20px;overflow-x:auto;margin:12px 0;font-family:'DM Mono',monospace;font-size:12.5px;line-height:1.75;position:relative;}
+.pretitle{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--mu);background:var(--sf2);padding:3px 10px;border-radius:4px;display:inline-block;margin-bottom:8px;border:1px solid var(--bd);}
+/* SQL syntax colours */
+.k{color:#5b8dee;font-weight:600;}
+.f{color:#f0a500;}
+.s{color:#3ecf8e;}
+.cm{color:#444;font-style:italic;}
+.n{color:#c084fc;}
+.hl{background:rgba(240,165,0,.12);border-radius:3px;padding:1px 3px;}
+code{font-family:'DM Mono',monospace;font-size:12px;background:var(--sf3);color:var(--ac);padding:2px 6px;border-radius:4px;}
+.tw{overflow-x:auto;margin:13px 0;}
+table{width:100%;border-collapse:collapse;font-size:13.5px;}
+th{background:var(--sf2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mu);padding:9px 12px;text-align:left;border-bottom:1px solid var(--bd);}
+td{padding:9px 12px;border-bottom:1px solid var(--bd);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--sf2);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0;}
+.card{background:var(--sf2);border:1px solid var(--bd);border-radius:8px;padding:14px;}
+.card .ct{font-family:'DM Mono',monospace;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ac);margin-bottom:7px;display:block;}
+.card p{margin:0;font-size:13.5px;color:var(--mu);}
+.card p strong{color:var(--tx);}
+ul.cl{padding-left:20px;margin:7px 0 11px;}
+ul.cl li{margin-bottom:6px;}
+ul.cl li::marker{color:var(--ac);}
+.res{background:#080808;border:1px solid #1e2a1e;border-radius:6px;padding:14px;margin:8px 0 14px;font-family:'DM Mono',monospace;font-size:12px;}
+.res table{font-size:12px;}
+.res th{background:#0f1a0f;color:var(--ac2);font-size:10px;}
+.res td{color:var(--tx);}
+.res td:first-child{color:var(--tx);}
+.hl-r td{background:rgba(240,165,0,.09)!important;}
+.hl-b td{background:rgba(91,141,238,.09)!important;}
+.hl-g td{background:rgba(62,207,142,.09)!important;}
+.hl-v td{background:rgba(192,132,252,.09)!important;}
+.hl-3 td{background:rgba(240,165,0,.16)!important;}
+details{border:1px solid var(--bd);border-radius:8px;margin-bottom:8px;overflow:hidden;}
+summary{cursor:pointer;padding:12px 14px;list-style:none;font-family:'DM Mono',monospace;font-size:11px;background:var(--sf2);color:var(--tx);display:flex;align-items:center;gap:8px;}
+summary::before{content:'▶';color:var(--ac);font-size:9px;}
+details[open] summary::before{content:'▼';}
+details[open]{border-color:var(--ac2);}
+.ans{padding:14px 16px;font-size:14px;line-height:1.7;background:var(--sf);}
+.ans pre{font-size:11.5px;padding:14px;margin:8px 0;}
+.ans ul{padding-left:17px;margin:5px 0;}
+.ans li{margin-bottom:5px;}
+hr{border:none;border-top:1px solid var(--bd);margin:34px 0;}
+.badge{display:inline-block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-right:3px;}
+.bc{background:rgba(240,165,0,.15);color:var(--ac);border:1px solid rgba(240,165,0,.3);}
+.bt{background:rgba(224,92,92,.15);color:var(--ac4);border:1px solid rgba(224,92,92,.3);}
+.bq{background:rgba(62,207,142,.15);color:var(--ac2);border:1px solid rgba(62,207,142,.3);}
+.bhot{background:rgba(255,140,0,.15);color:orange;border:1px solid rgba(255,140,0,.3);}
+@media(max-width:600px){.g2{grid-template-columns:1fr;}nav a{font-size:9px;padding:5px 5px;}}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nb">Advanced SQL</div>
+  <a href="#" class="active" onclick="show('home',this)">Home</a>
+  <a href="#" onclick="show('window',this)">Window Fns</a>
+  <a href="#" onclick="show('rownum',this)">ROW_NUMBER</a>
+  <a href="#" onclick="show('rank',this)">RANK / DENSE</a>
+  <a href="#" onclick="show('rollup',this)">ROLLUP</a>
+  <a href="#" onclick="show('cube',this)">CUBE</a>
+  <a href="#" onclick="show('case',this)">CASE WHEN</a>
+  <a href="#" onclick="show('cte',this)">CTE / Subqueries</a>
+  <a href="#" onclick="show('project',this)">Project SQL</a>
+  <a href="#" onclick="show('qbank',this)">Q Bank</a>
+</nav>
+
+<!-- ═══ HOME ═══ -->
+<div id="home" class="page active">
+<div class="hero">
+  <div class="hbadge">Advanced SQL · ADS Midterm · Khalid Saleem</div>
+  <h1>Advanced SQL<br>Master Guide</h1>
+  <p>Every advanced SQL concept you need for the paper — from your book (Ch 33), your TA's quiz (ROW_NUMBER), your project SQL (CASE WHEN, NULLIF, conditional aggregation), and beyond. Built on your actual QHUTS data.</p>
+</div>
+
+<div class="warn"><span class="lbl">🔥 What "Advanced SQL" Means in This Context</span>
+<ul>
+  <li><strong>Your TA used ROW_NUMBER() in the quiz</strong> → window functions are definitely tested</li>
+  <li><strong>Khalid said advanced SQL will be in the paper</strong> → ROLLUP, CUBE, RANK, DENSE_RANK (Ch 33 book)</li>
+  <li><strong>Your project used:</strong> CASE WHEN, NULLIF, DATEDIFF, CAST, INSERT...SELECT, conditional aggregation, SUM/AVG with CASE</li>
+  <li><strong>MySQL vs T-SQL:</strong> Your notes are MySQL. Khalid uses T-SQL (SQL Server). Minor syntax differences noted throughout.</li>
+</ul></div>
+
+<h2>What's in Each Tab</h2>
+<div class="g2">
+  <div class="card"><span class="ct">Window Functions</span><p>The foundation concept behind RANK, ROW_NUMBER, DENSE_RANK, NTILE, LAG, LEAD. How OVER() and PARTITION BY work. Why they're different from GROUP BY.</p></div>
+  <div class="card"><span class="ct">ROW_NUMBER</span><p>The function your TA tested in the quiz. How it assigns sequential numbers within partitions. Pagination use case. Full examples on QHUTS data.</p></div>
+  <div class="card"><span class="ct">RANK / DENSE_RANK</span><p>From your book Ch 33. RANK leaves gaps on ties. DENSE_RANK doesn't. Full explanation with the book's Edinburgh example adapted to your hut data.</p></div>
+  <div class="card"><span class="ct">ROLLUP</span><p>Your actual lab SQL file. n+1 levels, hierarchical aggregation, what NULL means in each row. Country → Region → City on your sales_dataset.</p></div>
+  <div class="card"><span class="ct">CUBE</span><p>Your actual lab SQL file. 2ⁿ combinations. All cross-dimensional subtotals. Product_Category × Region × Year with full annotated output.</p></div>
+  <div class="card"><span class="ct">CASE WHEN</span><p>Used heavily in your QHUTS project. Conditional aggregation (SUM of only certain rows). NULLIF. COALESCE. IIF. The pattern Khalid loves to test.</p></div>
+  <div class="card"><span class="ct">CTE / Subqueries</span><p>Common Table Expressions (WITH...AS). Correlated subqueries. Derived tables. How to write multi-step queries cleanly.</p></div>
+  <div class="card"><span class="ct">Project SQL</span><p>Every advanced pattern from your QHUTS_DataMarts.sql — INSERT...SELECT, CAST, DATEDIFF, NULLIF, conditional aggregation — explained with your own code.</p></div>
+</div>
+
+<div class="ok"><span class="lbl">Your syntax baseline</span><p>You know MySQL. Key T-SQL differences you'll encounter: <code>TOP n</code> instead of <code>LIMIT n</code>, <code>GETDATE()</code> instead of <code>NOW()</code>, <code>DATEDIFF(unit, start, end)</code>, <code>NVARCHAR</code> instead of <code>VARCHAR</code>, <code>GO</code> as batch separator, <code>IDENTITY(1,1)</code> instead of <code>AUTO_INCREMENT</code>. Everything else is standard SQL that works in both.</p></div>
+</div>
+
+<!-- ═══ WINDOW FUNCTIONS ═══ -->
+<div id="window" class="page">
+<div class="hero">
+  <div class="hbadge">Core Concept</div>
+  <h1>Window Functions</h1>
+  <p>The foundation behind ROW_NUMBER, RANK, DENSE_RANK, NTILE, LAG, LEAD, and moving averages. Understand this first and the rest becomes obvious.</p>
+</div>
+
+<h2>What is a Window Function?</h2>
+<div class="def"><span class="lbl">Window Function</span><p>A function that performs a calculation across a <strong>set of rows related to the current row</strong> (called the "window"), without collapsing those rows into a single output row. Unlike GROUP BY which collapses rows, window functions return one output row for every input row.</p></div>
+
+<div class="g2">
+  <div class="card"><span class="ct">GROUP BY</span><p>Collapses multiple rows into one per group. You <strong>lose the individual rows</strong>. Good for: totals, counts per category.</p></div>
+  <div class="card"><span class="ct">Window Function</span><p>Calculates across a set of rows but <strong>keeps every row intact.</strong> Good for: rankings, running totals, comparing each row to its group total.</p></div>
+</div>
+
+<h3>The OVER() Clause — The Key Ingredient</h3>
+<p>Every window function requires the <code>OVER()</code> clause. This is what makes it a window function:</p>
+<pre>
+<span class="cm">-- OVER() with nothing = entire result set is the window</span>
+<span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> ()
+
+<span class="cm">-- OVER(ORDER BY) = rank rows by this column</span>
+<span class="f">RANK</span>() <span class="k">OVER</span> (<span class="k">ORDER BY</span> sales <span class="k">DESC</span>)
+
+<span class="cm">-- OVER(PARTITION BY) = separate window per group, reset within each group</span>
+<span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (<span class="k">PARTITION BY</span> region)
+
+<span class="cm">-- OVER(PARTITION BY ... ORDER BY ...) = rank WITHIN each group</span>
+<span class="f">RANK</span>() <span class="k">OVER</span> (<span class="k">PARTITION BY</span> region <span class="k">ORDER BY</span> sales <span class="k">DESC</span>)
+
+<span class="cm">-- OVER(ORDER BY ... ROWS ...) = moving window</span>
+<span class="f">AVG</span>(<span class="f">SUM</span>(sales)) <span class="k">OVER</span> (<span class="k">ORDER BY</span> month <span class="k">ROWS</span> <span class="n">2</span> <span class="k">PRECEDING</span>)
+</pre>
+
+<h3>The Three Parts of OVER()</h3>
+<div class="tw"><table>
+<tr><th>Clause</th><th>Purpose</th><th>Effect when missing</th></tr>
+<tr><td>PARTITION BY col</td><td>Divide rows into groups. Function resets within each group.</td><td>Entire result set is one window</td></tr>
+<tr><td>ORDER BY col</td><td>Define sort order within each window. Required for ranking functions.</td><td>Undefined order (or error for ranking)</td></tr>
+<tr><td>ROWS/RANGE frame</td><td>Define which rows to include in the calculation relative to current row.</td><td>Default frame (varies by function)</td></tr>
+</table></div>
+
+<h3>All Window Functions — Quick Reference</h3>
+<div class="tw"><table>
+<tr><th>Category</th><th>Function</th><th>What it does</th></tr>
+<tr><td>Numbering</td><td>ROW_NUMBER()</td><td>Sequential integer per row — no ties (always unique)</td></tr>
+<tr><td>Ranking</td><td>RANK()</td><td>Rank with gaps on ties (1,2,2,4)</td></tr>
+<tr><td>Ranking</td><td>DENSE_RANK()</td><td>Rank without gaps on ties (1,2,2,3)</td></tr>
+<tr><td>Ranking</td><td>NTILE(n)</td><td>Divide rows into n equal buckets</td></tr>
+<tr><td>Navigation</td><td>LAG(col, n)</td><td>Value from n rows BEFORE the current row</td></tr>
+<tr><td>Navigation</td><td>LEAD(col, n)</td><td>Value from n rows AFTER the current row</td></tr>
+<tr><td>Navigation</td><td>FIRST_VALUE(col)</td><td>First value in the window</td></tr>
+<tr><td>Navigation</td><td>LAST_VALUE(col)</td><td>Last value in the window</td></tr>
+<tr><td>Aggregate</td><td>SUM() OVER(...)</td><td>Running or partitioned sum</td></tr>
+<tr><td>Aggregate</td><td>AVG() OVER(...)</td><td>Running or partitioned average</td></tr>
+<tr><td>Aggregate</td><td>COUNT() OVER(...)</td><td>Running or partitioned count</td></tr>
+</table></div>
+
+<h2>The Critical Difference — Visualised</h2>
+<p>Using your QHUTS sales data. Imagine you want each hut's sales AND the grand total in the same row:</p>
+
+<div class="pretitle">Problem with GROUP BY</div>
+<pre>
+<span class="cm">-- GROUP BY collapses to one row per hut — you LOSE individual rows</span>
+<span class="k">SELECT</span> hut_id, <span class="f">SUM</span>(total_amount) <span class="k">AS</span> hut_sales
+<span class="k">FROM</span> [ORDER]
+<span class="k">GROUP BY</span> hut_id;
+
+<span class="cm">-- Result: 5 rows (one per hut). Cannot see individual orders.</span>
+<span class="cm">-- Cannot compare each ORDER to the hut total in the same query.</span>
+</pre>
+
+<div class="pretitle">Solution with Window Function</div>
+<pre>
+<span class="cm">-- Window function: keeps all rows, adds computed column alongside</span>
+<span class="k">SELECT</span>
+    order_id,
+    buyer_id,
+    hut_id,
+    total_amount,
+    <span class="f">SUM</span>(total_amount) <span class="k">OVER</span> ()                              <span class="k">AS</span> grand_total,
+    <span class="f">SUM</span>(total_amount) <span class="k">OVER</span> (<span class="k">PARTITION BY</span> hut_id)            <span class="k">AS</span> hut_total,
+    <span class="n">100.0</span> * total_amount / <span class="f">SUM</span>(total_amount) <span class="k">OVER</span> (
+        <span class="k">PARTITION BY</span> hut_id
+    )                                                          <span class="k">AS</span> pct_of_hut
+<span class="k">FROM</span> [ORDER]
+<span class="k">WHERE</span> status = <span class="s">'Delivered'</span>;
+
+<span class="cm">-- Result: 45 rows (one per delivered order). Each row shows:
+--   its own amount, the grand total, the hut total, and its % of hut sales.</span>
+</pre>
+
+<div class="res"><table>
+<tr><th>order_id</th><th>hut_id</th><th>total_amount</th><th>grand_total</th><th>hut_total</th><th>pct_of_hut</th></tr>
+<tr><td>1</td><td>1</td><td>170.00</td><td>5,750.00</td><td>1,000.00</td><td>17.0%</td></tr>
+<tr><td>2</td><td>1</td><td>80.00</td><td>5,750.00</td><td>1,000.00</td><td>8.0%</td></tr>
+<tr><td>3</td><td>2</td><td>420.00</td><td>5,750.00</td><td>2,730.00</td><td>15.4%</td></tr>
+<tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+</table></div>
+
+<p>This is what window functions give you — aggregate results computed alongside each individual row.</p>
+</div>
+
+<!-- ═══ ROW_NUMBER ═══ -->
+<div id="rownum" class="page">
+<div class="hero">
+  <div class="hbadge">TA Quiz · Most Likely to Appear</div>
+  <h1>ROW_NUMBER()</h1>
+  <p>The function your TA used in the quiz. Assigns a unique sequential integer to each row. Never produces ties — always 1, 2, 3, 4... even when values are equal.</p>
+</div>
+
+<h2>What ROW_NUMBER Does</h2>
+<div class="def"><span class="lbl">ROW_NUMBER()</span><p>Assigns a <strong>unique sequential integer (1, 2, 3...) to each row</strong> within the partition defined by OVER(). Even when two rows have identical values, they get different numbers. This makes it useful for pagination, deduplication, and picking one row per group.</p></div>
+
+<h3>Syntax</h3>
+<pre>
+<span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (
+    [<span class="k">PARTITION BY</span> column]     <span class="cm">-- optional: reset numbering within each group</span>
+    <span class="k">ORDER BY</span> column [<span class="k">ASC</span>|<span class="k">DESC</span>] <span class="cm">-- required: defines the ordering</span>
+)
+</pre>
+
+<h2>Example 1 — Basic: Rank All Orders by Amount</h2>
+<pre>
+<span class="cm">-- Assign a row number to every order, ordered by total amount descending</span>
+<span class="k">SELECT</span>
+    order_id,
+    buyer_id,
+    hut_id,
+    total_amount,
+    <span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (
+        <span class="k">ORDER BY</span> total_amount <span class="k">DESC</span>
+    ) <span class="k">AS</span> row_num
+<span class="k">FROM</span> [ORDER]
+<span class="k">WHERE</span> status = <span class="s">'Delivered'</span>;
+</pre>
+<div class="res"><table>
+<tr><th>order_id</th><th>buyer_id</th><th>hut_id</th><th>total_amount</th><th>row_num</th></tr>
+<tr><td>23</td><td>4</td><td>2</td><td>650.00</td><td>1</td></tr>
+<tr><td>7</td><td>2</td><td>2</td><td>420.00</td><td>2</td></tr>
+<tr><td>15</td><td>5</td><td>2</td><td>380.00</td><td>3</td></tr>
+<tr><td>3</td><td>1</td><td>2</td><td>420.00</td><td>4 ← SAME VALUE AS ROW 2 BUT DIFFERENT NUMBER</td></tr>
+<tr><td>...</td><td>...</td><td>...</td><td>...</td><td>...</td></tr>
+</table></div>
+<div class="ok"><span class="lbl">Key point</span><p>Notice row 2 and row 4 both have total_amount = 420.00 but they get different row numbers (2 and 4). <strong>ROW_NUMBER never ties</strong> — that's what makes it different from RANK.</p></div>
+
+<h2>Example 2 — With PARTITION BY: Row Number Per Hut</h2>
+<pre>
+<span class="cm">-- Assign row number WITHIN each hut (numbering resets for each hut)</span>
+<span class="k">SELECT</span>
+    order_id,
+    hut_id,
+    total_amount,
+    <span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (
+        <span class="k">PARTITION BY</span> hut_id          <span class="cm">-- reset row number for each hut</span>
+        <span class="k">ORDER BY</span> total_amount <span class="k">DESC</span>   <span class="cm">-- largest order gets row 1 within each hut</span>
+    ) <span class="k">AS</span> rn_within_hut
+<span class="k">FROM</span> [ORDER]
+<span class="k">WHERE</span> status = <span class="s">'Delivered'</span>;
+</pre>
+<div class="res"><table>
+<tr><th>order_id</th><th>hut_id</th><th>total_amount</th><th>rn_within_hut</th></tr>
+<tr><td>7</td><td>1</td><td>250.00</td><td>1 ← largest order in Hut 1</td></tr>
+<tr><td>12</td><td>1</td><td>200.00</td><td>2</td></tr>
+<tr><td>3</td><td>1</td><td>80.00</td><td>3</td></tr>
+<tr class="hl-r"><td>23</td><td>2</td><td>650.00</td><td>1 ← resets for Hut 2</td></tr>
+<tr class="hl-r"><td>15</td><td>2</td><td>420.00</td><td>2</td></tr>
+<tr class="hl-r"><td>9</td><td>2</td><td>380.00</td><td>3</td></tr>
+<tr class="hl-b"><td>5</td><td>3</td><td>150.00</td><td>1 ← resets for Hut 3</td></tr>
+</table></div>
+
+<h2>Example 3 — The Classic Use Case: Pick Top 1 Per Group</h2>
+<p>This is the most common exam question pattern with ROW_NUMBER — <strong>get the highest-spending buyer per hut</strong>:</p>
+<pre>
+<span class="cm">-- Step 1: Number buyers within each hut by total spend</span>
+<span class="k">WITH</span> ranked_buyers <span class="k">AS</span> (
+    <span class="k">SELECT</span>
+        o.hut_id,
+        o.buyer_id,
+        <span class="f">SUM</span>(o.total_amount) <span class="k">AS</span> total_spent,
+        <span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (
+            <span class="k">PARTITION BY</span> o.hut_id
+            <span class="k">ORDER BY</span> <span class="f">SUM</span>(o.total_amount) <span class="k">DESC</span>
+        ) <span class="k">AS</span> rn
+    <span class="k">FROM</span> [ORDER] o
+    <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+    <span class="k">GROUP BY</span> o.hut_id, o.buyer_id
+)
+<span class="cm">-- Step 2: Keep only rank 1 (top buyer per hut)</span>
+<span class="k">SELECT</span> rb.hut_id, u.name <span class="k">AS</span> top_buyer, rb.total_spent
+<span class="k">FROM</span> ranked_buyers rb
+<span class="k">JOIN</span> [USER] u <span class="k">ON</span> rb.buyer_id = u.user_id
+<span class="k">WHERE</span> rb.rn = <span class="n">1</span>
+<span class="k">ORDER BY</span> rb.hut_id;
+</pre>
+<div class="res"><table>
+<tr><th>hut_id</th><th>top_buyer</th><th>total_spent</th></tr>
+<tr><td>1</td><td>Ayesha Noor</td><td>250.00</td></tr>
+<tr><td>2</td><td>Sara Malik</td><td>650.00</td></tr>
+<tr><td>3</td><td>Ali Hassan</td><td>270.00</td></tr>
+<tr><td>4</td><td>Bilal Ahmed</td><td>380.00</td></tr>
+<tr><td>5</td><td>Usman Khan</td><td>220.00</td></tr>
+</table></div>
+
+<div class="ok"><span class="lbl">Why ROW_NUMBER is perfect for "top 1 per group"</span><p>RANK would fail here if two buyers had equal spend — both would get rank 1 and you'd return two rows for that hut. ROW_NUMBER always picks exactly one, making it reliable for deduplication and "get one per group" queries.</p></div>
+
+<h2>Example 4 — Pagination (OFFSET/FETCH)</h2>
+<p>Another common use: showing page 2 of results (rows 6-10):</p>
+<pre>
+<span class="cm">-- T-SQL pagination: skip first 5 rows, take next 5</span>
+<span class="k">SELECT</span> order_id, buyer_id, total_amount
+<span class="k">FROM</span> [ORDER]
+<span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+<span class="k">ORDER BY</span> total_amount <span class="k">DESC</span>
+<span class="k">OFFSET</span> <span class="n">5</span> <span class="k">ROWS</span>             <span class="cm">-- skip 5 rows</span>
+<span class="k">FETCH NEXT</span> <span class="n">5</span> <span class="k">ROWS ONLY</span>;  <span class="cm">-- take next 5</span>
+
+<span class="cm">-- Alternative using ROW_NUMBER in a CTE:</span>
+<span class="k">WITH</span> paged <span class="k">AS</span> (
+    <span class="k">SELECT</span> order_id, buyer_id, total_amount,
+           <span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (<span class="k">ORDER BY</span> total_amount <span class="k">DESC</span>) <span class="k">AS</span> rn
+    <span class="k">FROM</span> [ORDER]
+    <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+)
+<span class="k">SELECT</span> * <span class="k">FROM</span> paged
+<span class="k">WHERE</span> rn <span class="k">BETWEEN</span> <span class="n">6</span> <span class="k">AND</span> <span class="n">10</span>;  <span class="cm">-- page 2</span>
+</pre>
+
+<h2>ROW_NUMBER vs RANK vs DENSE_RANK — Side by Side</h2>
+<pre>
+<span class="k">SELECT</span>
+    hut_name,
+    total_revenue,
+    <span class="f">ROW_NUMBER</span>()   <span class="k">OVER</span> (<span class="k">ORDER BY</span> total_revenue <span class="k">DESC</span>) <span class="k">AS</span> row_num,
+    <span class="f">RANK</span>()         <span class="k">OVER</span> (<span class="k">ORDER BY</span> total_revenue <span class="k">DESC</span>) <span class="k">AS</span> rnk,
+    <span class="f">DENSE_RANK</span>()   <span class="k">OVER</span> (<span class="k">ORDER BY</span> total_revenue <span class="k">DESC</span>) <span class="k">AS</span> d_rnk
+<span class="k">FROM</span> (
+    <span class="k">SELECT</span> h.name <span class="k">AS</span> hut_name, <span class="f">SUM</span>(o.total_amount) <span class="k">AS</span> total_revenue
+    <span class="k">FROM</span> [ORDER] o <span class="k">JOIN</span> HUT h <span class="k">ON</span> o.hut_id = h.hut_id
+    <span class="k">WHERE</span> o.status = <span class="s">'Delivered'</span>
+    <span class="k">GROUP BY</span> h.name
+) ranked;
+</pre>
+<div class="res"><table>
+<tr><th>hut_name</th><th>total_revenue</th><th>row_num</th><th>RANK()</th><th>DENSE_RANK()</th></tr>
+<tr><td>Faculty Block</td><td>2,730.00</td><td>1</td><td>1</td><td>1</td></tr>
+<tr><td>Main Gate</td><td>1,000.00</td><td>2</td><td>2</td><td>2</td></tr>
+<tr><td>Hostel Block 3</td><td>1,000.00</td><td>3</td><td>2</td><td>2 ← no gap</td></tr>
+<tr class="hl-r"><td>Sports Complex</td><td>560.00</td><td>4</td><td>4 ← gap</td><td>3 ← no gap</td></tr>
+<tr><td>Library</td><td>300.00</td><td>5</td><td>5</td><td>4</td></tr>
+</table></div>
+<div class="warn"><span class="lbl">The critical distinction — memorise this</span>
+<ul>
+  <li><strong>ROW_NUMBER:</strong> Always unique. Two tied rows get different numbers. 1, 2, 3, 4, 5. No concept of ties.</li>
+  <li><strong>RANK:</strong> Tied rows get the same rank, next rank SKIPS. 1, 2, 2, 4, 5. Gap after ties.</li>
+  <li><strong>DENSE_RANK:</strong> Tied rows get the same rank, next rank does NOT skip. 1, 2, 2, 3, 4. No gaps.</li>
+</ul></div>
+</div>
+
+<!-- ═══ RANK / DENSE_RANK ═══ -->
+<div id="rank" class="page">
+<div class="hero">
+  <div class="hbadge">Ch 33 · Book Coverage · Will Appear in Paper</div>
+  <h1>RANK() and DENSE_RANK()</h1>
+  <p>Directly from Chapter 33 of Connolly &amp; Begg. Your book uses the Edinburgh branch example — here adapted to your QHUTS huts.</p>
+</div>
+
+<h2>Definition and Syntax</h2>
+<div class="def"><span class="lbl">Ranking Functions</span><p>Compute the rank of a record compared to other records in the dataset based on the values of a set of measures. <code>RANK()</code> leaves gaps in the ranking sequence when there are ties. <code>DENSE_RANK()</code> does not leave gaps.</p></div>
+
+<pre>
+<span class="cm">-- Exact syntax from Connolly & Begg Ch 33:</span>
+<span class="f">RANK</span>()       <span class="k">OVER</span> (<span class="k">ORDER BY</span> columnList)
+<span class="f">DENSE_RANK</span>() <span class="k">OVER</span> (<span class="k">ORDER BY</span> columnList)
+
+<span class="cm">-- Can also partition within groups:</span>
+<span class="f">RANK</span>()       <span class="k">OVER</span> (<span class="k">PARTITION BY</span> col <span class="k">ORDER BY</span> measure <span class="k">DESC</span>)
+<span class="f">DENSE_RANK</span>() <span class="k">OVER</span> (<span class="k">PARTITION BY</span> col <span class="k">ORDER BY</span> measure <span class="k">DESC</span>)
+</pre>
+
+<h2>Book Example — Adapted to Your Project</h2>
+<p>The book (Ch 33, Example 33.3) uses Edinburgh branch offices. Here is the exact same pattern applied to your QHUTS huts:</p>
+
+<pre>
+<span class="cm">-- Book Example 33.3 adapted: rank huts by total sales revenue</span>
+<span class="k">SELECT</span>
+    h.hut_id,
+    h.name <span class="k">AS</span> hut_name,
+    <span class="f">SUM</span>(o.total_amount) <span class="k">AS</span> sales,
+    <span class="f">RANK</span>()       <span class="k">OVER</span> (<span class="k">ORDER BY</span> <span class="f">SUM</span>(o.total_amount) <span class="k">DESC</span>) <span class="k">AS</span> ranking,
+    <span class="f">DENSE_RANK</span>() <span class="k">OVER</span> (<span class="k">ORDER BY</span> <span class="f">SUM</span>(o.total_amount) <span class="k">DESC</span>) <span class="k">AS</span> dense_ranking
+<span class="k">FROM</span> [ORDER] o
+<span class="k">JOIN</span> HUT h <span class="k">ON</span> o.hut_id = h.hut_id
+<span class="k">WHERE</span> o.status = <span class="s">'Delivered'</span>
+<span class="k">GROUP BY</span> h.hut_id, h.name;
+</pre>
+
+<p>From your report data — Main Gate and Hostel Block both have revenue close to each other. Suppose two huts tie:</p>
+<div class="res"><table>
+<tr><th>hut_id</th><th>hut_name</th><th>sales</th><th>ranking</th><th>dense_ranking</th></tr>
+<tr><td>2</td><td>Faculty Block</td><td>2,730.00</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>Main Gate</td><td>1,000.00</td><td>2</td><td>2</td></tr>
+<tr><td>5</td><td>Hostel Block 3</td><td>1,000.00</td><td>2</td><td>2</td></tr>
+<tr class="hl-r"><td>4</td><td>Sports Complex</td><td>560.00</td><td style="color:var(--ac4)">4 ← skips 3</td><td style="color:var(--ac2)">3 ← no skip</td></tr>
+<tr><td>3</td><td>Library</td><td>300.00</td><td>5</td><td>4</td></tr>
+</table></div>
+
+<div class="ok"><span class="lbl">Exactly from the book (Table 33.5 equivalent)</span>
+<ul>
+  <li>Main Gate and Hostel Block both get ranking = 2 (tied)</li>
+  <li><strong>RANK:</strong> Sports Complex gets 4 (skips 3, because positions 2 AND 3 were both used by the tie)</li>
+  <li><strong>DENSE_RANK:</strong> Sports Complex gets 3 (no skip — tied rows used only ONE rank number)</li>
+</ul></div>
+
+<h2>Ranking Within Groups — PARTITION BY</h2>
+<pre>
+<span class="cm">-- Rank products BY CATEGORY — ranking resets for each category</span>
+<span class="k">SELECT</span>
+    c.category_name,
+    p.item_name,
+    <span class="f">SUM</span>(oi.quantity * oi.unit_price) <span class="k">AS</span> revenue,
+    <span class="f">RANK</span>()       <span class="k">OVER</span> (
+        <span class="k">PARTITION BY</span> c.category_name
+        <span class="k">ORDER BY</span> <span class="f">SUM</span>(oi.quantity * oi.unit_price) <span class="k">DESC</span>
+    ) <span class="k">AS</span> rank_in_category,
+    <span class="f">DENSE_RANK</span>() <span class="k">OVER</span> (
+        <span class="k">PARTITION BY</span> c.category_name
+        <span class="k">ORDER BY</span> <span class="f">SUM</span>(oi.quantity * oi.unit_price) <span class="k">DESC</span>
+    ) <span class="k">AS</span> dense_rank_in_category
+<span class="k">FROM</span> ORDER_ITEM oi
+<span class="k">JOIN</span> PRODUCT  p  <span class="k">ON</span> oi.product_id = p.product_id
+<span class="k">JOIN</span> CATEGORY c  <span class="k">ON</span> p.cat_id = c.cat_id
+<span class="k">GROUP BY</span> c.category_name, p.item_name;
+</pre>
+<div class="res"><table>
+<tr><th>category_name</th><th>item_name</th><th>revenue</th><th>rank_in_cat</th><th>dense_rank_in_cat</th></tr>
+<tr><td>Beverages</td><td>Chai</td><td>660.00</td><td>1</td><td>1</td></tr>
+<tr><td>Beverages</td><td>Juice</td><td>320.00</td><td>2</td><td>2</td></tr>
+<tr class="hl-r"><td>Main Course</td><td>Biryani</td><td>2,100.00</td><td>1 ← resets</td><td>1 ← resets</td></tr>
+<tr class="hl-r"><td>Main Course</td><td>Chicken Karahi</td><td>1,440.00</td><td>2</td><td>2</td></tr>
+<tr class="hl-b"><td>Snacks</td><td>Samosa</td><td>320.00</td><td>1 ← resets</td><td>1 ← resets</td></tr>
+</table></div>
+<p><strong>PARTITION BY category_name</strong> means: rank within each category separately. The rank counter resets every time the category changes.</p>
+
+<h2>Finding Top N per Group Using RANK</h2>
+<pre>
+<span class="cm">-- Top 2 products per category by revenue</span>
+<span class="k">WITH</span> product_ranks <span class="k">AS</span> (
+    <span class="k">SELECT</span>
+        c.category_name,
+        p.item_name,
+        <span class="f">SUM</span>(oi.quantity * oi.unit_price) <span class="k">AS</span> revenue,
+        <span class="f">DENSE_RANK</span>() <span class="k">OVER</span> (
+            <span class="k">PARTITION BY</span> c.category_name
+            <span class="k">ORDER BY</span> <span class="f">SUM</span>(oi.quantity * oi.unit_price) <span class="k">DESC</span>
+        ) <span class="k">AS</span> dr
+    <span class="k">FROM</span> ORDER_ITEM oi
+    <span class="k">JOIN</span> PRODUCT p <span class="k">ON</span> oi.product_id = p.product_id
+    <span class="k">JOIN</span> CATEGORY c <span class="k">ON</span> p.cat_id = c.cat_id
+    <span class="k">GROUP BY</span> c.category_name, p.item_name
+)
+<span class="k">SELECT</span> category_name, item_name, revenue, dr
+<span class="k">FROM</span> product_ranks
+<span class="k">WHERE</span> dr <= <span class="n">2</span>    <span class="cm">-- top 2 per category</span>
+<span class="k">ORDER BY</span> category_name, dr;
+</pre>
+</div>
+
+<!-- ═══ ROLLUP ═══ -->
+<div id="rollup" class="page">
+<div class="hero">
+  <div class="hbadge">Your Lab Task 4 · Ch 33 · Will Appear in Paper</div>
+  <h1>GROUP BY ROLLUP</h1>
+  <p>Your exact lab SQL. Hierarchical subtotals. Country → Region → City. The n+1 formula. What NULL means in every row.</p>
+</div>
+
+<h2>What ROLLUP Does</h2>
+<div class="def"><span class="lbl">ROLLUP Extension to GROUP BY</span><p>Creates subtotals that roll up from the most detailed level to a grand total, following the column list specified. ROLLUP creates subtotals at <strong>n+1 levels</strong> where n is the number of grouping columns. (From Connolly &amp; Begg Ch 33.)</p></div>
+
+<h3>Your Exact Lab Query</h3>
+<pre>
+<span class="k">USE</span> SalesDB;
+
+<span class="k">SELECT</span>
+    Country,
+    Region,
+    City,
+    <span class="f">SUM</span>(Sales_Amount) <span class="k">AS</span> Total_Sales,
+    <span class="f">SUM</span>(Quantity)     <span class="k">AS</span> Total_Quantity
+<span class="k">FROM</span> dbo.sales_dataset
+<span class="k">GROUP BY ROLLUP</span> (Country, Region, City)
+<span class="k">ORDER BY</span> Country, Region, City;
+</pre>
+
+<div class="ok"><span class="lbl">What ROLLUP(Country, Region, City) produces — n=3, so n+1=4 levels</span>
+<ul>
+  <li><strong>Level 1:</strong> GROUP BY Country + Region + City → full detail (each city row)</li>
+  <li><strong>Level 2:</strong> GROUP BY Country + Region → subtotal across all cities per region (City becomes NULL)</li>
+  <li><strong>Level 3:</strong> GROUP BY Country → subtotal across all regions (Region AND City become NULL)</li>
+  <li><strong>Level 4:</strong> GROUP BY nothing → grand total (all three columns are NULL)</li>
+</ul></div>
+
+<h3>Annotated Output</h3>
+<div class="res"><table>
+<tr><th>Country</th><th>Region</th><th>City</th><th>Total_Sales</th><th>Total_Qty</th><th>→ Level</th></tr>
+<tr><td>Pakistan</td><td>KPK</td><td>Peshawar</td><td>123,000</td><td>28</td><td style="color:var(--ac2);font-size:10px">Level 1: city detail</td></tr>
+<tr class="hl-r"><td>Pakistan</td><td>KPK</td><td>NULL</td><td>123,000</td><td>28</td><td style="color:var(--ac);font-size:10px">Level 2: all KPK cities</td></tr>
+<tr><td>Pakistan</td><td>Punjab</td><td>Faisalabad</td><td>55,000</td><td>9</td><td style="color:var(--ac2);font-size:10px">Level 1: city detail</td></tr>
+<tr><td>Pakistan</td><td>Punjab</td><td>Lahore</td><td>290,000</td><td>15</td><td style="color:var(--ac2);font-size:10px">Level 1: city detail</td></tr>
+<tr><td>Pakistan</td><td>Punjab</td><td>Multan</td><td>125,000</td><td>14</td><td style="color:var(--ac2);font-size:10px">Level 1: city detail</td></tr>
+<tr class="hl-r"><td>Pakistan</td><td>Punjab</td><td>NULL</td><td>470,000</td><td>38</td><td style="color:var(--ac);font-size:10px">Level 2: all Punjab cities (55K+290K+125K)</td></tr>
+<tr><td>Pakistan</td><td>Sindh</td><td>Karachi</td><td>115,000</td><td>36</td><td style="color:var(--ac2);font-size:10px">Level 1: city detail</td></tr>
+<tr class="hl-r"><td>Pakistan</td><td>Sindh</td><td>NULL</td><td>115,000</td><td>36</td><td style="color:var(--ac);font-size:10px">Level 2: all Sindh cities</td></tr>
+<tr class="hl-r"><td>Pakistan</td><td>NULL</td><td>NULL</td><td>708,000</td><td>102</td><td style="color:var(--ac);font-size:10px">Level 3: all Pakistan regions</td></tr>
+<tr class="hl-3"><td>NULL</td><td>NULL</td><td>NULL</td><td>708,000</td><td>102</td><td style="color:var(--ac);font-size:10px">Level 4: GRAND TOTAL</td></tr>
+</table></div>
+
+<div class="warn"><span class="lbl">The NULL Rule — He Will Ask This</span>
+<ul>
+  <li><strong>NULL in City only</strong> → subtotal across all cities within that Region</li>
+  <li><strong>NULL in City + Region</strong> → subtotal across all regions within that Country</li>
+  <li><strong>NULL in all three columns</strong> → GRAND TOTAL (entire table)</li>
+  <li>ROLLUP drops columns <strong>from the RIGHT side first</strong> at each level</li>
+  <li>Since all rows are Pakistan, Level 3 and Level 4 show the same number — in a real multi-country dataset they would differ</li>
+</ul></div>
+
+<h2>Making ROLLUP Output Readable — COALESCE</h2>
+<pre>
+<span class="cm">-- Replace NULLs with meaningful labels</span>
+<span class="k">SELECT</span>
+    <span class="f">COALESCE</span>(Country, <span class="s">'ALL COUNTRIES'</span>) <span class="k">AS</span> Country,
+    <span class="f">COALESCE</span>(Region,  <span class="s">'ALL REGIONS'</span>)   <span class="k">AS</span> Region,
+    <span class="f">COALESCE</span>(City,    <span class="s">'ALL CITIES'</span>)    <span class="k">AS</span> City,
+    <span class="f">SUM</span>(Sales_Amount)                   <span class="k">AS</span> Total_Sales
+<span class="k">FROM</span> dbo.sales_dataset
+<span class="k">GROUP BY ROLLUP</span> (Country, Region, City);
+
+<span class="cm">-- Now subtotal rows show "ALL REGIONS" instead of NULL</span>
+</pre>
+
+<h2>ROLLUP on Your QHUTS Project Data</h2>
+<pre>
+<span class="cm">-- Monthly revenue rollup: Hut → Category → Month</span>
+<span class="k">SELECT</span>
+    h.name          <span class="k">AS</span> hut_name,
+    c.category_name,
+    t.month_name,
+    <span class="f">SUM</span>(f.total_revenue) <span class="k">AS</span> revenue
+<span class="k">FROM</span> QHUTS_DataWarehouse.dbo.DM1_FACT_ORDER_SALES f
+<span class="k">JOIN</span> QHUTS_DataWarehouse.dbo.DIM_TIME          t <span class="k">ON</span> f.time_key      = t.time_key
+<span class="k">JOIN</span> QHUTS_DataWarehouse.dbo.DM1_DIM_HUT       h <span class="k">ON</span> f.hut_key       = h.hut_key
+<span class="k">JOIN</span> QHUTS_DataWarehouse.dbo.DM1_DIM_CATEGORY  c <span class="k">ON</span> f.category_key  = c.category_key
+<span class="k">GROUP BY ROLLUP</span> (h.name, c.category_name, t.month_name)
+<span class="k">ORDER BY</span> h.name, c.category_name, t.month_name;
+
+<span class="cm">-- n=3 → 4 levels:
+-- Level 1: per hut + category + month
+-- Level 2: per hut + category (all months)  
+-- Level 3: per hut (all categories + months)
+-- Level 4: grand total</span>
+</pre>
+
+<h2>The Formula</h2>
+<pre>
+ROLLUP(A, B, C)  →  n = 3  →  n+1 = <span class="hl">4 levels</span>
+ROLLUP(A, B)     →  n = 2  →  n+1 = <span class="hl">3 levels</span>
+ROLLUP(A)        →  n = 1  →  n+1 = <span class="hl">2 levels</span>
+
+Levels drop columns RIGHT-TO-LEFT:
+(A, B, C)   → detail
+(A, B)      → subtotal, C is NULL
+(A)         → subtotal, B and C are NULL
+()          → grand total, all NULL
+</pre>
+</div>
+
+<!-- ═══ CUBE ═══ -->
+<div id="cube" class="page">
+<div class="hero">
+  <div class="hbadge">Your Lab Task 3 · Ch 33 · Will Appear in Paper</div>
+  <h1>GROUP BY CUBE</h1>
+  <p>Your exact lab SQL. All 2ⁿ combinations. Cross-dimensional subtotals that ROLLUP cannot produce. Full annotated output.</p>
+</div>
+
+<h2>What CUBE Does</h2>
+<div class="def"><span class="lbl">CUBE Extension to GROUP BY</span><p>Takes a set of grouping columns and creates subtotals for <strong>ALL possible combinations</strong>. If n columns are specified, CUBE produces <strong>2ⁿ combinations</strong> of subtotals. (From Connolly &amp; Begg Ch 33.) CUBE is typically most suitable for queries involving columns from multiple independent dimensions.</p></div>
+
+<h3>Your Exact Lab Query</h3>
+<pre>
+<span class="k">USE</span> SalesDB;
+
+<span class="k">SELECT</span>
+    Product_Category,
+    Region,
+    <span class="f">YEAR</span>(Date) <span class="k">AS</span> Year,
+    <span class="f">SUM</span>(Sales_Amount) <span class="k">AS</span> Total_Sales,
+    <span class="f">SUM</span>(Quantity)     <span class="k">AS</span> Total_Quantity
+<span class="k">FROM</span> dbo.sales_dataset
+<span class="k">GROUP BY CUBE</span> (Product_Category, Region, <span class="f">YEAR</span>(Date));
+</pre>
+
+<div class="ok"><span class="lbl">What CUBE(Product_Category, Region, YEAR) produces — n=3, so 2³=8 combinations</span>
+<div class="tw"><table>
+<tr><th>#</th><th>Combination</th><th>Cat NULL?</th><th>Region NULL?</th><th>Year NULL?</th><th>Meaning</th></tr>
+<tr><td>1</td><td>(Cat, Reg, Yr)</td><td>No</td><td>No</td><td>No</td><td>Full detail</td></tr>
+<tr><td>2</td><td>(Cat, Reg)</td><td>No</td><td>No</td><td>Yes</td><td>Category + Region, all years</td></tr>
+<tr><td>3</td><td>(Cat, Yr)</td><td>No</td><td>Yes</td><td>No</td><td>Category + Year, all regions</td></tr>
+<tr><td>4</td><td>(Reg, Yr)</td><td>Yes</td><td>No</td><td>No</td><td>Region + Year, all categories</td></tr>
+<tr><td>5</td><td>(Cat)</td><td>No</td><td>Yes</td><td>Yes</td><td>Category total</td></tr>
+<tr><td>6</td><td>(Reg)</td><td>Yes</td><td>No</td><td>Yes</td><td>Region total</td></tr>
+<tr><td>7</td><td>(Yr)</td><td>Yes</td><td>Yes</td><td>No</td><td>Year total</td></tr>
+<tr><td>8</td><td>()</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Grand total</td></tr>
+</table></div></div>
+
+<h3>Selected Output Rows — Annotated</h3>
+<div class="res"><table>
+<tr><th>Product_Category</th><th>Region</th><th>Year</th><th>Total_Sales</th><th>→ Combination</th></tr>
+<tr><td>Clothing</td><td>KPK</td><td>2024</td><td>8,000</td><td style="color:var(--ac2);font-size:10px">#1 (Cat,Reg,Yr) — full detail</td></tr>
+<tr><td>Clothing</td><td>Punjab</td><td>2024</td><td>45,000</td><td style="color:var(--ac2);font-size:10px">#1 (Cat,Reg,Yr) — full detail</td></tr>
+<tr class="hl-r"><td>Clothing</td><td>NULL</td><td>2024</td><td>63,000</td><td style="color:var(--ac);font-size:10px">#3 (Cat,Yr) — Clothing 2024, all regions</td></tr>
+<tr class="hl-r"><td>Clothing</td><td>KPK</td><td>NULL</td><td>8,000</td><td style="color:var(--ac);font-size:10px">#2 (Cat,Reg) — Clothing KPK, all years</td></tr>
+<tr class="hl-r"><td>Clothing</td><td>NULL</td><td>NULL</td><td>63,000</td><td style="color:var(--ac);font-size:10px">#5 (Cat) — Clothing total, all regions+years</td></tr>
+<tr class="hl-b"><td>NULL</td><td>Punjab</td><td>2024</td><td>470,000</td><td style="color:var(--ac3);font-size:10px">#4 (Reg,Yr) — Punjab 2024, all categories ← CUBE ONLY</td></tr>
+<tr class="hl-b"><td>NULL</td><td>Punjab</td><td>NULL</td><td>470,000</td><td style="color:var(--ac3);font-size:10px">#6 (Reg) — Punjab total, all cats+years ← CUBE ONLY</td></tr>
+<tr class="hl-b"><td>NULL</td><td>NULL</td><td>2024</td><td>708,000</td><td style="color:var(--ac3);font-size:10px">#7 (Yr) — 2024 total, all cats+regions ← CUBE ONLY</td></tr>
+<tr class="hl-3"><td>NULL</td><td>NULL</td><td>NULL</td><td>708,000</td><td style="color:var(--ac);font-size:10px">#8 () — GRAND TOTAL</td></tr>
+</table></div>
+
+<div class="warn"><span class="lbl">What CUBE has that ROLLUP doesn't — critical distinction</span>
+<ul>
+  <li>ROLLUP(Cat, Region, Year) gives combinations: (Cat,Reg,Yr), (Cat,Reg), (Cat), () — only 4 levels</li>
+  <li>CUBE gives ALL 8. The <strong>blue rows</strong> are CUBE-ONLY — ROLLUP cannot produce them</li>
+  <li>Specifically: (Region,Year), (Region), (Year) subtotals — these show region totals regardless of category, which ROLLUP misses</li>
+  <li>This matters for the lab task: "Create dimensions (time, product, location), query the cube for insights" — CUBE gives you all cross-dimensional totals at once</li>
+</ul></div>
+
+<h2>CUBE on Your QHUTS Data</h2>
+<pre>
+<span class="cm">-- CUBE analysis on DM2: product performance across all dimensions</span>
+<span class="k">SELECT</span>
+    <span class="f">COALESCE</span>(p.category,    <span class="s">'ALL CATEGORIES'</span>) <span class="k">AS</span> Category,
+    <span class="f">COALESCE</span>(h.hut_name,    <span class="s">'ALL HUTS'</span>)       <span class="k">AS</span> Hut,
+    <span class="f">COALESCE</span>(<span class="f">CAST</span>(t.month_num <span class="k">AS</span> VARCHAR), <span class="s">'ALL MONTHS'</span>) <span class="k">AS</span> Month,
+    <span class="f">SUM</span>(f.qty_sold)  <span class="k">AS</span> total_qty,
+    <span class="f">SUM</span>(f.revenue)   <span class="k">AS</span> total_revenue
+<span class="k">FROM</span> DM2_FACT_PRODUCT_PERFORMANCE f
+<span class="k">JOIN</span> DM2_DIM_PRODUCT p  <span class="k">ON</span> f.product_key = p.product_key
+<span class="k">JOIN</span> DM2_DIM_HUT     h  <span class="k">ON</span> f.hut_key     = h.hut_key
+<span class="k">JOIN</span> DIM_TIME        t  <span class="k">ON</span> f.time_key    = t.time_key
+<span class="k">GROUP BY CUBE</span> (p.category, h.hut_name, t.month_num)
+<span class="k">ORDER BY</span> Category, Hut, Month;
+</pre>
+
+<h2>ROLLUP vs CUBE — The Formula</h2>
+<pre>
+ROLLUP(A, B, C)  →  n = 3  →  n+1 = <span class="hl">4 levels</span>  (hierarchical)
+CUBE(A, B, C)    →  n = 3  →  2³  = <span class="hl">8 combos</span>  (all combinations)
+
+CUBE always produces MORE rows than ROLLUP for the same columns.
+
+USE ROLLUP when: natural hierarchy exists (Country→Region→City)
+USE CUBE when:   dimensions are independent (Category × Region × Year)
+</pre>
+</div>
+
+<!-- ═══ CASE WHEN ═══ -->
+<div id="case" class="page">
+<div class="hero">
+  <div class="hbadge">Used Heavily in Your QHUTS Project</div>
+  <h1>CASE WHEN, NULLIF,<br>and Conditional Aggregation</h1>
+  <p>You used these extensively in your QHUTS_DataMarts.sql. These patterns appear in DM4 (ratings breakdown), DM5 (operational performance), and DM1 (cancellation rate). Khalid can ask you to write these.</p>
+</div>
+
+<h2>CASE WHEN — Basic Syntax</h2>
+<div class="def"><span class="lbl">CASE WHEN</span><p>SQL's conditional expression. Evaluates conditions in order, returns the first matching result. Like an if-else chain inside a SQL expression. Works in SELECT, WHERE, ORDER BY, GROUP BY, and inside aggregate functions.</p></div>
+
+<pre>
+<span class="cm">-- Simple CASE (compare one value)</span>
+<span class="k">CASE</span> column_name
+    <span class="k">WHEN</span> value1 <span class="k">THEN</span> result1
+    <span class="k">WHEN</span> value2 <span class="k">THEN</span> result2
+    <span class="k">ELSE</span> default_result
+<span class="k">END</span>
+
+<span class="cm">-- Searched CASE (any condition)</span>
+<span class="k">CASE</span>
+    <span class="k">WHEN</span> condition1 <span class="k">THEN</span> result1
+    <span class="k">WHEN</span> condition2 <span class="k">THEN</span> result2
+    <span class="k">ELSE</span> default_result
+<span class="k">END</span>
+</pre>
+
+<h2>Conditional Aggregation — The Pattern Khalid Tests</h2>
+<p>This is the most important pattern from your project. <strong>SUM with CASE WHEN inside it</strong> — count or sum only rows meeting a condition:</p>
+
+<pre>
+<span class="cm">-- From your QHUTS DM4 (Feedback fact table population):</span>
+<span class="k">SELECT</span>
+    <span class="f">COUNT</span>(f.feedback_id)                             <span class="k">AS</span> num_feedbacks,
+    <span class="f">AVG</span>(<span class="f">CAST</span>(f.rating <span class="k">AS</span> <span class="k">DECIMAL</span>(<span class="n">4</span>,<span class="n">2</span>)))              <span class="k">AS</span> avg_rating,
+
+    <span class="cm">-- Count only 5-star ratings:</span>
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating = <span class="n">5</span> <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)   <span class="k">AS</span> five_star_count,
+
+    <span class="cm">-- Count only 4-star ratings:</span>
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating = <span class="n">4</span> <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)   <span class="k">AS</span> four_star_count,
+
+    <span class="cm">-- Count only 3-star ratings:</span>
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating = <span class="n">3</span> <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)   <span class="k">AS</span> three_star_count,
+
+    <span class="cm">-- Count 1 or 2 star (low ratings):</span>
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating <= <span class="n">2</span> <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)  <span class="k">AS</span> low_rating_count
+
+<span class="k">FROM</span> FEEDBACK f;
+
+<span class="cm">-- Pattern: SUM(CASE WHEN condition THEN 1 ELSE 0 END) = conditional COUNT
+-- Pattern: SUM(CASE WHEN condition THEN value ELSE 0 END) = conditional SUM</span>
+</pre>
+
+<h2>Conditional Aggregation — DM5 (Cancellation Rate)</h2>
+<p>From your actual DM5 fact table population in QHUTS_DataMarts.sql:</p>
+<pre>
+<span class="cm">-- From your project — EXACTLY as written in QHUTS_DataMarts.sql:</span>
+<span class="k">SELECT</span>
+    <span class="f">COUNT</span>(o.order_id)                                               <span class="k">AS</span> total_orders,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Delivered'</span>  <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)     <span class="k">AS</span> delivered_orders,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Cancelled'</span>  <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)     <span class="k">AS</span> cancelled_orders,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status <span class="k">IN</span> (<span class="s">'Pending'</span>,<span class="s">'Preparing'</span>,<span class="s">'OutForDelivery'</span>)
+             <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)                                    <span class="k">AS</span> pending_orders,
+    <span class="f">CAST</span>(
+        <span class="n">100.0</span> * <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Cancelled'</span> <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)
+        / <span class="f">NULLIF</span>(<span class="f">COUNT</span>(o.order_id), <span class="n">0</span>)
+    <span class="k">AS</span> <span class="k">DECIMAL</span>(<span class="n">5</span>,<span class="n">2</span>))                                                 <span class="k">AS</span> cancellation_rate
+<span class="k">FROM</span> [ORDER] o;
+</pre>
+
+<h2>NULLIF — Preventing Division by Zero</h2>
+<div class="def"><span class="lbl">NULLIF(expr1, expr2)</span><p>Returns NULL if expr1 = expr2, otherwise returns expr1. The classic use is <strong>preventing division by zero</strong>: if the denominator is 0, return NULL instead of crashing.</p></div>
+<pre>
+<span class="cm">-- Without NULLIF: if COUNT = 0, this CRASHES with division by zero error</span>
+100.0 * cancelled / <span class="f">COUNT</span>(order_id)
+
+<span class="cm">-- With NULLIF: if COUNT = 0, NULLIF returns NULL, and NULL/anything = NULL (safe)</span>
+100.0 * cancelled / <span class="f">NULLIF</span>(<span class="f">COUNT</span>(order_id), <span class="n">0</span>)
+
+<span class="cm">-- General pattern:</span>
+numerator / <span class="f">NULLIF</span>(denominator, <span class="n">0</span>)
+</pre>
+
+<h2>COALESCE — Handle NULLs Elegantly</h2>
+<div class="def"><span class="lbl">COALESCE(val1, val2, val3...)</span><p>Returns the <strong>first non-NULL value</strong> from its argument list. More flexible than ISNULL (which only takes 2 arguments).</p></div>
+<pre>
+<span class="cm">-- Replace NULL with a default</span>
+<span class="f">COALESCE</span>(cancellation_reason, <span class="s">'No reason given'</span>)
+
+<span class="cm">-- Replace NULLs in ROLLUP output</span>
+<span class="f">COALESCE</span>(Region, <span class="s">'ALL REGIONS'</span>)
+
+<span class="cm">-- Use first non-null of multiple columns</span>
+<span class="f">COALESCE</span>(actual_delivery_time, estimated_delivery_time, order_time)
+</pre>
+
+<h2>CAST — Type Conversion</h2>
+<div class="def"><span class="lbl">CAST(expression AS datatype)</span><p>Converts a value from one data type to another. Common uses: converting INT to DECIMAL for division precision, converting DATE to VARCHAR for display.</p></div>
+<pre>
+<span class="cm">-- Used in your DM4 — convert INT rating to DECIMAL for AVG precision:</span>
+<span class="f">AVG</span>(<span class="f">CAST</span>(f.rating <span class="k">AS</span> <span class="k">DECIMAL</span>(<span class="n">4</span>,<span class="n">2</span>)))
+
+<span class="cm">-- Used in your DM5 — ensure percentage is decimal not integer division:</span>
+<span class="f">CAST</span>(<span class="n">100.0</span> * cancelled / total <span class="k">AS</span> <span class="k">DECIMAL</span>(<span class="n">5</span>,<span class="n">2</span>))
+
+<span class="cm">-- Used in DM1 — convert DATETIME to DATE for joining to DIM_TIME:</span>
+<span class="f">CAST</span>(o.order_time <span class="k">AS</span> DATE) = dt.full_date
+
+<span class="cm">-- T-SQL alternative: CONVERT(DECIMAL(5,2), expression)</span>
+</pre>
+
+<h2>DATEDIFF — Date Arithmetic</h2>
+<div class="def"><span class="lbl">DATEDIFF(unit, start, end)</span><p>Returns the number of specified units (MINUTE, HOUR, DAY, MONTH, YEAR) between two dates. Used in your DM5 to calculate delivery time in minutes.</p></div>
+<pre>
+<span class="cm">-- From your DM5 — calculate average delivery time in minutes:</span>
+<span class="f">AVG</span>(<span class="k">CASE WHEN</span> o.actual_delivery_time <span class="k">IS NOT NULL</span>
+         <span class="k">THEN</span> <span class="f">DATEDIFF</span>(MINUTE, o.order_time, o.actual_delivery_time)
+         <span class="k">ELSE NULL</span>
+    <span class="k">END</span>) <span class="k">AS</span> avg_delivery_mins
+
+<span class="cm">-- Other units:</span>
+<span class="f">DATEDIFF</span>(DAY,   start_date, end_date)   <span class="cm">-- number of days</span>
+<span class="f">DATEDIFF</span>(MONTH, start_date, end_date)   <span class="cm">-- number of months</span>
+<span class="f">DATEDIFF</span>(YEAR,  start_date, end_date)   <span class="cm">-- number of years</span>
+
+<span class="cm">-- MySQL equivalent (different syntax):</span>
+<span class="cm">-- TIMESTAMPDIFF(MINUTE, start, end)</span>
+<span class="cm">-- DATEDIFF(end, start)  -- MySQL only gives days</span>
+</pre>
+
+<h2>IIF — Shorthand CASE WHEN</h2>
+<pre>
+<span class="cm">-- IIF(condition, true_value, false_value) = simplified CASE WHEN</span>
+<span class="f">IIF</span>(rating >= <span class="n">4</span>, <span class="s">'Good'</span>, <span class="s">'Poor'</span>)
+
+<span class="cm">-- Equivalent CASE WHEN:</span>
+<span class="k">CASE WHEN</span> rating >= <span class="n">4</span> <span class="k">THEN</span> <span class="s">'Good'</span> <span class="k">ELSE</span> <span class="s">'Poor'</span> <span class="k">END</span>
+
+<span class="cm">-- Note: IIF is T-SQL specific. Standard SQL uses CASE WHEN.</span>
+</pre>
+
+<h2>CASE WHEN in ORDER BY</h2>
+<pre>
+<span class="cm">-- Custom sort order: Delivered first, then Pending, then Cancelled</span>
+<span class="k">SELECT</span> order_id, status, total_amount
+<span class="k">FROM</span> [ORDER]
+<span class="k">ORDER BY</span>
+    <span class="k">CASE</span> status
+        <span class="k">WHEN</span> <span class="s">'Delivered'</span>  <span class="k">THEN</span> <span class="n">1</span>
+        <span class="k">WHEN</span> <span class="s">'Pending'</span>    <span class="k">THEN</span> <span class="n">2</span>
+        <span class="k">WHEN</span> <span class="s">'Cancelled'</span>  <span class="k">THEN</span> <span class="n">3</span>
+        <span class="k">ELSE</span> <span class="n">4</span>
+    <span class="k">END</span>;
+</pre>
+</div>
+
+<!-- ═══ CTE / SUBQUERIES ═══ -->
+<div id="cte" class="page">
+<div class="hero">
+  <div class="hbadge">Advanced Query Structure</div>
+  <h1>CTEs, Subqueries,<br>and Derived Tables</h1>
+  <p>Common Table Expressions (WITH...AS), correlated subqueries, and derived tables. How to write multi-step analytical queries cleanly. Your project used CTEs for window function queries.</p>
+</div>
+
+<h2>What is a CTE?</h2>
+<div class="def"><span class="lbl">Common Table Expression (CTE)</span><p>A named temporary result set defined within a WITH clause that you can reference in the subsequent SELECT, INSERT, UPDATE, or DELETE statement. Think of it as a "named subquery" — it runs once and can be referenced multiple times. Syntax: <code>WITH name AS (query) SELECT ... FROM name</code></p></div>
+
+<h3>Syntax</h3>
+<pre>
+<span class="cm">-- Single CTE</span>
+<span class="k">WITH</span> cte_name <span class="k">AS</span> (
+    <span class="k">SELECT</span> ...
+    <span class="k">FROM</span> ...
+    <span class="k">WHERE</span> ...
+)
+<span class="k">SELECT</span> * <span class="k">FROM</span> cte_name;
+
+<span class="cm">-- Multiple CTEs (chain them with commas)</span>
+<span class="k">WITH</span>
+    cte1 <span class="k">AS</span> (
+        <span class="k">SELECT</span> ... <span class="k">FROM</span> ...
+    ),
+    cte2 <span class="k">AS</span> (
+        <span class="k">SELECT</span> ... <span class="k">FROM</span> cte1   <span class="cm">-- cte2 can reference cte1</span>
+    )
+<span class="k">SELECT</span> * <span class="k">FROM</span> cte2;
+</pre>
+
+<h2>CTE vs Subquery vs Derived Table</h2>
+<div class="tw"><table>
+<tr><th>Approach</th><th>Syntax</th><th>Readability</th><th>Reusable?</th></tr>
+<tr><td>Subquery</td><td>Nested inside another query with ()</td><td>Poor for complex logic</td><td>No — write it again</td></tr>
+<tr><td>Derived Table</td><td>Subquery in FROM clause with alias</td><td>Medium</td><td>No — write it again</td></tr>
+<tr><td>CTE</td><td>WITH name AS (...) before main query</td><td>Best — reads top to bottom</td><td>Yes — reference by name</td></tr>
+</table></div>
+
+<h2>Example 1 — Same Query Three Ways</h2>
+<p>Goal: Find buyers who spent more than the average order amount on their orders:</p>
+
+<div class="pretitle">Method 1: Subquery (nested)</div>
+<pre>
+<span class="k">SELECT</span> buyer_id, <span class="f">SUM</span>(total_amount) <span class="k">AS</span> total_spent
+<span class="k">FROM</span> [ORDER]
+<span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+<span class="k">GROUP BY</span> buyer_id
+<span class="k">HAVING</span> <span class="f">SUM</span>(total_amount) > (
+    <span class="k">SELECT</span> <span class="f">AVG</span>(total_amount)
+    <span class="k">FROM</span> [ORDER]
+    <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+);
+</pre>
+
+<div class="pretitle">Method 2: Derived Table</div>
+<pre>
+<span class="k">SELECT</span> buyer_id, total_spent
+<span class="k">FROM</span> (
+    <span class="k">SELECT</span> buyer_id, <span class="f">SUM</span>(total_amount) <span class="k">AS</span> total_spent
+    <span class="k">FROM</span> [ORDER]
+    <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+    <span class="k">GROUP BY</span> buyer_id
+) buyer_totals
+<span class="k">WHERE</span> total_spent > (
+    <span class="k">SELECT</span> <span class="f">AVG</span>(total_amount) <span class="k">FROM</span> [ORDER] <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+);
+</pre>
+
+<div class="pretitle">Method 3: CTE (cleanest)</div>
+<pre>
+<span class="k">WITH</span>
+    buyer_totals <span class="k">AS</span> (
+        <span class="k">SELECT</span> buyer_id, <span class="f">SUM</span>(total_amount) <span class="k">AS</span> total_spent
+        <span class="k">FROM</span> [ORDER]
+        <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+        <span class="k">GROUP BY</span> buyer_id
+    ),
+    avg_spend <span class="k">AS</span> (
+        <span class="k">SELECT</span> <span class="f">AVG</span>(total_amount) <span class="k">AS</span> avg_order
+        <span class="k">FROM</span> [ORDER]
+        <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+    )
+<span class="k">SELECT</span> bt.buyer_id, u.name, bt.total_spent
+<span class="k">FROM</span> buyer_totals bt
+<span class="k">JOIN</span> avg_spend a <span class="k">ON</span> bt.total_spent > a.avg_order
+<span class="k">JOIN</span> [USER] u   <span class="k">ON</span> bt.buyer_id = u.user_id
+<span class="k">ORDER BY</span> bt.total_spent <span class="k">DESC</span>;
+</pre>
+
+<h2>CTE + Window Function — The Classic Combo</h2>
+<p>You MUST use a CTE (or subquery) to filter on window function results. You cannot use WHERE on a window function in the same query level:</p>
+<pre>
+<span class="cm">-- WRONG: you cannot filter on ROW_NUMBER in the same SELECT</span>
+<span class="k">SELECT</span> hut_id, buyer_id, total_amount,
+       <span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (...) <span class="k">AS</span> rn
+<span class="k">FROM</span> [ORDER]
+<span class="k">WHERE</span> rn = <span class="n">1</span>;  <span class="cm">-- ❌ ERROR: rn not available in WHERE</span>
+
+<span class="cm">-- CORRECT: compute in CTE, then filter in outer query</span>
+<span class="k">WITH</span> ranked <span class="k">AS</span> (
+    <span class="k">SELECT</span> hut_id, buyer_id, total_amount,
+           <span class="f">ROW_NUMBER</span>() <span class="k">OVER</span> (<span class="k">PARTITION BY</span> hut_id <span class="k">ORDER BY</span> total_amount <span class="k">DESC</span>) <span class="k">AS</span> rn
+    <span class="k">FROM</span> [ORDER]
+    <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+)
+<span class="k">SELECT</span> hut_id, buyer_id, total_amount
+<span class="k">FROM</span> ranked
+<span class="k">WHERE</span> rn = <span class="n">1</span>;  <span class="cm">-- ✅ Works — we're filtering from the CTE</span>
+</pre>
+<div class="warn"><span class="lbl">Rule: Window functions in WHERE → always use CTE or subquery</span><p>You cannot reference a window function alias (rn, row_num, ranking) in a WHERE or HAVING clause in the same query level. Always wrap it in a CTE or subquery first, then filter in the outer query.</p></div>
+
+<h2>Correlated Subquery — Advanced Pattern</h2>
+<p>A subquery that references columns from the outer query. Runs once per row of the outer query:</p>
+<pre>
+<span class="cm">-- For each hut, show its name and whether its revenue is above average</span>
+<span class="k">SELECT</span>
+    h.name <span class="k">AS</span> hut_name,
+    <span class="f">SUM</span>(o.total_amount) <span class="k">AS</span> revenue,
+    <span class="k">CASE WHEN</span>
+        <span class="f">SUM</span>(o.total_amount) > (
+            <span class="k">SELECT</span> <span class="f">AVG</span>(sub_total)
+            <span class="k">FROM</span> (
+                <span class="k">SELECT</span> <span class="f">SUM</span>(total_amount) <span class="k">AS</span> sub_total
+                <span class="k">FROM</span> [ORDER]
+                <span class="k">WHERE</span> status = <span class="s">'Delivered'</span>
+                <span class="k">GROUP BY</span> hut_id
+            ) avg_calc
+        )
+    <span class="k">THEN</span> <span class="s">'Above Average'</span>
+    <span class="k">ELSE</span> <span class="s">'Below Average'</span>
+    <span class="k">END</span> <span class="k">AS</span> performance
+<span class="k">FROM</span> [ORDER] o
+<span class="k">JOIN</span> HUT h <span class="k">ON</span> o.hut_id = h.hut_id
+<span class="k">WHERE</span> o.status = <span class="s">'Delivered'</span>
+<span class="k">GROUP BY</span> h.hut_id, h.name;
+</pre>
+
+<h2>INSERT...SELECT — ETL Pattern from Your Project</h2>
+<p>Your entire QHUTS project ETL used this pattern — populate fact tables directly from OLTP source:</p>
+<pre>
+<span class="cm">-- Exact pattern from your QHUTS_DataMarts.sql:</span>
+<span class="k">INSERT INTO</span> DM1_FACT_ORDER_SALES (time_key, hut_key, category_key,
+                                   total_orders, total_revenue, avg_order_value)
+<span class="k">SELECT</span>
+    dt.time_key,
+    dh.hut_key,
+    dc.category_key,
+    <span class="f">COUNT</span>(<span class="k">DISTINCT</span> o.order_id)             <span class="k">AS</span> total_orders,
+    <span class="f">SUM</span>(oi.quantity * oi.unit_price)       <span class="k">AS</span> total_revenue,
+    <span class="f">AVG</span>(oi.quantity * oi.unit_price)       <span class="k">AS</span> avg_order_value
+<span class="k">FROM</span> QHUTS_OLTP.dbo.[ORDER] o
+<span class="k">JOIN</span> QHUTS_OLTP.dbo.ORDER_ITEM  oi <span class="k">ON</span> o.order_id   = oi.order_id
+<span class="k">JOIN</span> QHUTS_OLTP.dbo.PRODUCT     p  <span class="k">ON</span> oi.product_id = p.product_id
+<span class="k">JOIN</span> QHUTS_OLTP.dbo.CATEGORY    c  <span class="k">ON</span> p.cat_id      = c.cat_id
+<span class="k">JOIN</span> DIM_TIME    dt <span class="k">ON</span> <span class="f">CAST</span>(o.order_time <span class="k">AS</span> DATE) = dt.full_date
+<span class="k">JOIN</span> DM1_DIM_HUT dh <span class="k">ON</span> o.hut_id = dh.hut_id
+<span class="k">JOIN</span> DM1_DIM_CATEGORY dc <span class="k">ON</span> c.cat_id = dc.cat_id
+<span class="k">WHERE</span> o.status = <span class="s">'Delivered'</span>
+<span class="k">GROUP BY</span> dt.time_key, dh.hut_key, dc.category_key;
+</pre>
+<p><strong>This is ETL in pure SQL.</strong> No external tool — extract from OLTP, transform (GROUP BY, CAST, CASE), and load directly into the data warehouse fact table in one statement.</p>
+
+<h2>LAG and LEAD — Compare Rows</h2>
+<pre>
+<span class="cm">-- LAG: access value from a PREVIOUS row</span>
+<span class="cm">-- LEAD: access value from a NEXT row</span>
+
+<span class="k">SELECT</span>
+    t.month_name,
+    <span class="f">SUM</span>(f.total_revenue) <span class="k">AS</span> this_month,
+
+    <span class="cm">-- Previous month revenue (1 row back)</span>
+    <span class="f">LAG</span>(<span class="f">SUM</span>(f.total_revenue), <span class="n">1</span>, <span class="n">0</span>) <span class="k">OVER</span> (
+        <span class="k">ORDER BY</span> t.month_num
+    ) <span class="k">AS</span> prev_month,
+
+    <span class="cm">-- Month-over-month change</span>
+    <span class="f">SUM</span>(f.total_revenue) - <span class="f">LAG</span>(<span class="f">SUM</span>(f.total_revenue), <span class="n">1</span>, <span class="n">0</span>) <span class="k">OVER</span> (
+        <span class="k">ORDER BY</span> t.month_num
+    ) <span class="k">AS</span> month_change,
+
+    <span class="cm">-- Next month revenue (1 row ahead)</span>
+    <span class="f">LEAD</span>(<span class="f">SUM</span>(f.total_revenue), <span class="n">1</span>, <span class="n">0</span>) <span class="k">OVER</span> (
+        <span class="k">ORDER BY</span> t.month_num
+    ) <span class="k">AS</span> next_month
+
+<span class="k">FROM</span> DM1_FACT_ORDER_SALES f
+<span class="k">JOIN</span> DIM_TIME t <span class="k">ON</span> f.time_key = t.time_key
+<span class="k">GROUP BY</span> t.month_num, t.month_name
+<span class="k">ORDER BY</span> t.month_num;
+
+<span class="cm">-- Syntax: LAG(column, offset, default_if_null)
+-- offset: how many rows back (default 1)
+-- default: what to return if no row exists at that offset</span>
+</pre>
+</div>
+
+<!-- ═══ PROJECT SQL ═══ -->
+<div id="project" class="page">
+<div class="hero">
+  <div class="hbadge">QHUTS Project · Your Actual Code</div>
+  <h1>Advanced SQL<br>from Your Project</h1>
+  <p>Every advanced SQL pattern extracted from QHUTS_DataMarts.sql — explained in the context of what it does and why it was written that way.</p>
+</div>
+
+<h2>Pattern 1 — WHILE Loop for DIM_TIME Population</h2>
+<pre>
+<span class="cm">-- Populate all dates Jan–Aug 2024 without manually inserting 244 rows</span>
+<span class="k">DECLARE</span> @d <span class="k">DATE</span> = <span class="s">'2024-01-01'</span>;
+<span class="k">WHILE</span> @d <= <span class="s">'2024-08-31'</span>
+<span class="k">BEGIN</span>
+    <span class="k">INSERT INTO</span> DIM_TIME (full_date, day_of_week, day_num, week_num,
+                           month_num, month_name, quarter, year_num, is_weekend)
+    <span class="k">VALUES</span> (
+        @d,
+        <span class="f">DATENAME</span>(WEEKDAY, @d),          <span class="cm">-- 'Monday', 'Tuesday'...</span>
+        <span class="f">DAY</span>(@d),                         <span class="cm">-- day number in month (1-31)</span>
+        <span class="f">DATEPART</span>(WEEK, @d),              <span class="cm">-- week number in year (1-52)</span>
+        <span class="f">MONTH</span>(@d),                       <span class="cm">-- month number (1-12)</span>
+        <span class="f">DATENAME</span>(MONTH, @d),             <span class="cm">-- 'January', 'February'...</span>
+        <span class="f">DATEPART</span>(QUARTER, @d),           <span class="cm">-- quarter (1-4)</span>
+        <span class="f">YEAR</span>(@d),                        <span class="cm">-- year (2024)</span>
+        <span class="k">CASE WHEN</span> <span class="f">DATEPART</span>(WEEKDAY, @d) <span class="k">IN</span> (<span class="n">1</span>,<span class="n">7</span>)
+             <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>          <span class="cm">-- is_weekend: 1=Sat/Sun, 0=weekday</span>
+    );
+    <span class="k">SET</span> @d = <span class="f">DATEADD</span>(DAY, <span class="n">1</span>, @d);       <span class="cm">-- advance by 1 day</span>
+<span class="k">END</span>
+</pre>
+<div class="ok"><span class="lbl">What this demonstrates</span><ul>
+  <li><strong>DECLARE</strong> — T-SQL variable declaration (@variable_name syntax)</li>
+  <li><strong>WHILE loop</strong> — procedural programming in SQL</li>
+  <li><strong>DATENAME</strong> — returns named part of a date as string</li>
+  <li><strong>DATEPART</strong> — returns numeric part of a date</li>
+  <li><strong>DATEADD</strong> — add a number of units to a date</li>
+  <li><strong>CASE WHEN inside INSERT VALUES</strong> — conditional value at insert time</li>
+</ul></div>
+
+<h2>Pattern 2 — Multi-Table JOIN for Fact Table Population</h2>
+<pre>
+<span class="cm">-- DM1: Load fact table by joining across OLTP + DW dimension tables</span>
+<span class="k">INSERT INTO</span> DM1_FACT_ORDER_SALES (time_key, hut_key, category_key,
+                                   total_orders, total_revenue, avg_order_value)
+<span class="k">SELECT</span>
+    dt.time_key,           <span class="cm">-- surrogate key from DIM_TIME</span>
+    dh.hut_key,            <span class="cm">-- surrogate key from DM1_DIM_HUT</span>
+    dc.category_key,       <span class="cm">-- surrogate key from DM1_DIM_CATEGORY</span>
+
+    <span class="f">COUNT</span>(<span class="k">DISTINCT</span> o.order_id)          <span class="k">AS</span> total_orders,
+    <span class="f">SUM</span>(oi.quantity * oi.unit_price)    <span class="k">AS</span> total_revenue,
+    <span class="f">AVG</span>(oi.quantity * oi.unit_price)    <span class="k">AS</span> avg_order_value
+
+<span class="k">FROM</span> QHUTS_OLTP.dbo.[ORDER] o            <span class="cm">-- cross-database reference</span>
+<span class="k">JOIN</span> QHUTS_OLTP.dbo.ORDER_ITEM  oi <span class="k">ON</span> o.order_id   = oi.order_id
+<span class="k">JOIN</span> QHUTS_OLTP.dbo.PRODUCT     p  <span class="k">ON</span> oi.product_id = p.product_id
+<span class="k">JOIN</span> QHUTS_OLTP.dbo.CATEGORY    c  <span class="k">ON</span> p.cat_id      = c.cat_id
+<span class="k">JOIN</span> DIM_TIME          dt <span class="k">ON</span> <span class="f">CAST</span>(o.order_time <span class="k">AS</span> DATE) = dt.full_date
+<span class="k">JOIN</span> DM1_DIM_HUT       dh <span class="k">ON</span> o.hut_id = dh.hut_id
+<span class="k">JOIN</span> DM1_DIM_CATEGORY  dc <span class="k">ON</span> c.cat_id = dc.cat_id
+<span class="k">WHERE</span> o.status = <span class="s">'Delivered'</span>
+<span class="k">GROUP BY</span> dt.time_key, dh.hut_key, dc.category_key;
+</pre>
+<p><strong>Key techniques used:</strong></p>
+<ul class="cl">
+  <li><strong>Cross-database reference</strong>: <code>QHUTS_OLTP.dbo.tablename</code> — accessing another database on the same server</li>
+  <li><strong>CAST to DATE</strong>: <code>CAST(order_time AS DATE)</code> — strip time from DATETIME to match DIM_TIME's date-only column</li>
+  <li><strong>COUNT DISTINCT</strong>: <code>COUNT(DISTINCT o.order_id)</code> — count unique orders (prevents double-counting when multiple items per order join)</li>
+  <li><strong>Computed fact</strong>: <code>SUM(oi.quantity * oi.unit_price)</code> — calculated directly during the ETL</li>
+</ul>
+
+<h2>Pattern 3 — Complex Conditional Aggregation (DM5)</h2>
+<pre>
+<span class="cm">-- DM5: Operational metrics with 5 different CASE WHEN patterns</span>
+<span class="k">SELECT</span>
+    dt.time_key,
+    dh.hut_key,
+
+    <span class="f">COUNT</span>(o.order_id)                                           <span class="k">AS</span> total_orders,
+
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Delivered'</span>  <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)  <span class="k">AS</span> delivered_orders,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Cancelled'</span>  <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)  <span class="k">AS</span> cancelled_orders,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status <span class="k">IN</span>
+            (<span class="s">'Pending'</span>,<span class="s">'Preparing'</span>,<span class="s">'OutForDelivery'</span>)
+             <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)                                 <span class="k">AS</span> pending_orders,
+
+    <span class="cm">-- Cancellation rate = cancelled / total * 100</span>
+    <span class="cm">-- NULLIF prevents division by zero</span>
+    <span class="cm">-- CAST ensures decimal output (not integer division)</span>
+    <span class="f">CAST</span>(
+        <span class="n">100.0</span> * <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Cancelled'</span> <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>)
+        / <span class="f">NULLIF</span>(<span class="f">COUNT</span>(o.order_id), <span class="n">0</span>)
+    <span class="k">AS</span> <span class="k">DECIMAL</span>(<span class="n">5</span>,<span class="n">2</span>))                                             <span class="k">AS</span> cancellation_rate,
+
+    <span class="cm">-- Average delivery time in minutes — NULL-safe (skips orders without delivery time)</span>
+    <span class="f">AVG</span>(<span class="k">CASE WHEN</span> o.actual_delivery_time <span class="k">IS NOT NULL</span>
+             <span class="k">THEN</span> <span class="f">DATEDIFF</span>(MINUTE, o.order_time, o.actual_delivery_time)
+             <span class="k">ELSE NULL</span>
+        <span class="k">END</span>)                                                        <span class="k">AS</span> avg_delivery_mins,
+
+    <span class="cm">-- Total revenue only from delivered orders</span>
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> o.status = <span class="s">'Delivered'</span>
+             <span class="k">THEN</span> o.total_amount <span class="k">ELSE</span> <span class="n">0</span>
+        <span class="k">END</span>)                                                        <span class="k">AS</span> total_revenue
+
+<span class="k">FROM</span> QHUTS_OLTP.dbo.[ORDER] o
+<span class="k">JOIN</span> DIM_TIME    dt <span class="k">ON</span> <span class="f">CAST</span>(o.order_time <span class="k">AS</span> DATE) = dt.full_date
+<span class="k">JOIN</span> DM5_DIM_HUT dh <span class="k">ON</span> o.hut_id = dh.hut_id
+<span class="k">GROUP BY</span> dt.time_key, dh.hut_key;
+</pre>
+
+<h2>Pattern 4 — Rating Breakdown (DM4)</h2>
+<pre>
+<span class="cm">-- DM4: Break a single rating column into multiple count columns</span>
+<span class="k">SELECT</span>
+    <span class="f">COUNT</span>(f.feedback_id)                             <span class="k">AS</span> num_feedbacks,
+    <span class="f">AVG</span>(<span class="f">CAST</span>(f.rating <span class="k">AS</span> <span class="k">DECIMAL</span>(<span class="n">4</span>,<span class="n">2</span>)))              <span class="k">AS</span> avg_rating,
+
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating = <span class="n">5</span>     <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>) <span class="k">AS</span> five_star_count,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating = <span class="n">4</span>     <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>) <span class="k">AS</span> four_star_count,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating = <span class="n">3</span>     <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>) <span class="k">AS</span> three_star_count,
+    <span class="f">SUM</span>(<span class="k">CASE WHEN</span> f.rating <= <span class="n">2</span>    <span class="k">THEN</span> <span class="n">1</span> <span class="k">ELSE</span> <span class="n">0</span> <span class="k">END</span>) <span class="k">AS</span> low_rating_count
+
+<span class="k">FROM</span> FEEDBACK f;
+
+<span class="cm">-- The pattern: SUM(CASE WHEN condition THEN 1 ELSE 0 END)
+-- = "conditional COUNT" — counts only rows where condition is true
+-- This is equivalent to COUNT_IF in some databases</span>
+</pre>
+</div>
+
+<!-- ═══ Q BANK ═══ -->
+<div id="qbank" class="page">
+<div class="hero">
+  <div class="hbadge">Q Bank · Advanced SQL</div>
+  <h1>Exam Questions<br>&amp; Model Answers</h1>
+  <p>Every likely advanced SQL question. Write the answer before looking. These are the patterns Khalid and your TA have directly tested.</p>
+</div>
+
+<h2>Window Functions</h2>
+
+<details><summary><span class="badge bc">Window</span><span class="badge bhot">🔥 TA Quiz</span>What is ROW_NUMBER()? Write a query that assigns a row number to each hut's orders ordered by amount.</summary>
+<div class="ans"><p>ROW_NUMBER() assigns a unique sequential integer to each row within the window defined by OVER(). It never produces ties — even if two rows have equal values, they get different numbers.</p>
+<pre>
+SELECT order_id, hut_id, total_amount,
+       ROW_NUMBER() OVER (
+           PARTITION BY hut_id
+           ORDER BY total_amount DESC
+       ) AS rn
+FROM [ORDER]
+WHERE status = 'Delivered';
+</pre>
+<p>PARTITION BY hut_id means the row number resets for each hut (1, 2, 3 per hut, not globally).</p></div></details>
+
+<details><summary><span class="badge bc">Window</span><span class="badge bhot">🔥 Hot</span>How do you get the top 1 order per hut using ROW_NUMBER? Why not use MAX()?</summary>
+<div class="ans"><pre>
+WITH ranked AS (
+    SELECT order_id, hut_id, total_amount,
+           ROW_NUMBER() OVER (PARTITION BY hut_id ORDER BY total_amount DESC) AS rn
+    FROM [ORDER]
+    WHERE status = 'Delivered'
+)
+SELECT hut_id, order_id, total_amount
+FROM ranked
+WHERE rn = 1;
+</pre>
+<p>MAX() gives you the maximum value but not the other columns for that row (you can't know which order_id had the max amount). ROW_NUMBER lets you filter to the specific row with the highest amount and retrieve all its columns.</p></div></details>
+
+<details><summary><span class="badge bc">Window</span>Why can't you write WHERE ROW_NUMBER() = 1 directly in the same SELECT?</summary>
+<div class="ans"><p>Window functions are evaluated after the WHERE clause but before the final SELECT. So when WHERE is processed, the row_num alias doesn't exist yet. You must wrap the window function in a CTE or subquery, then filter in the outer query:</p>
+<pre>
+WITH ranked AS (
+    SELECT *, ROW_NUMBER() OVER (PARTITION BY hut_id ORDER BY amount DESC) AS rn
+    FROM [ORDER]
+)
+SELECT * FROM ranked WHERE rn = 1;  -- filter in outer query ✅
+</pre></div></details>
+
+<h2>RANK and DENSE_RANK</h2>
+
+<details><summary><span class="badge bc">Rank</span><span class="badge bhot">🔥 Book Ch33</span>What is the difference between RANK() and DENSE_RANK()? Give an example with ties.</summary>
+<div class="ans"><ul>
+<li><strong>RANK():</strong> Assigns the same rank to tied rows, but leaves gaps. If three rows tie for 2nd, the next rank is 5th (2nd, 2nd, 2nd, 5th). Gap = number of tied rows.</li>
+<li><strong>DENSE_RANK():</strong> Assigns the same rank to tied rows, NO gaps. If three rows tie for 2nd, the next rank is 3rd (2nd, 2nd, 2nd, 3rd).</li>
+</ul>
+<pre>
+SELECT hut_name, total_revenue,
+       RANK()       OVER (ORDER BY total_revenue DESC) AS rnk,
+       DENSE_RANK() OVER (ORDER BY total_revenue DESC) AS d_rnk
+FROM (
+    SELECT h.name AS hut_name, SUM(o.total_amount) AS total_revenue
+    FROM [ORDER] o JOIN HUT h ON o.hut_id = h.hut_id
+    WHERE o.status = 'Delivered'
+    GROUP BY h.name
+) hut_totals;
+</pre>
+<p>If Main Gate and Hostel Block 3 both have revenue 1,000: both get rank 2. RANK gives Sports Complex rank 4. DENSE_RANK gives it rank 3.</p></div></details>
+
+<details><summary><span class="badge bc">Rank</span>Write a query to find the top 2 products per category by revenue.</summary>
+<div class="ans"><pre>
+WITH product_ranks AS (
+    SELECT c.category_name, p.item_name,
+           SUM(oi.quantity * oi.unit_price) AS revenue,
+           DENSE_RANK() OVER (
+               PARTITION BY c.category_name
+               ORDER BY SUM(oi.quantity * oi.unit_price) DESC
+           ) AS dr
+    FROM ORDER_ITEM oi
+    JOIN PRODUCT p ON oi.product_id = p.product_id
+    JOIN CATEGORY c ON p.cat_id = c.cat_id
+    GROUP BY c.category_name, p.item_name
+)
+SELECT category_name, item_name, revenue, dr
+FROM product_ranks
+WHERE dr <= 2
+ORDER BY category_name, dr;
+</pre></div></details>
+
+<h2>ROLLUP</h2>
+
+<details><summary><span class="badge bq">ROLLUP</span><span class="badge bhot">🔥 Lab + Book</span>Write the ROLLUP query from your lab. What does NULL mean in the output?</summary>
+<div class="ans"><pre>
+USE SalesDB;
+SELECT
+    Country, Region, City,
+    SUM(Sales_Amount) AS Total_Sales,
+    SUM(Quantity)     AS Total_Quantity
+FROM dbo.sales_dataset
+GROUP BY ROLLUP (Country, Region, City)
+ORDER BY Country, Region, City;
+</pre>
+<p>With n=3 columns, ROLLUP produces n+1 = 4 levels:</p>
+<ul>
+<li>NULL in City only → subtotal for that Region (all cities in that region)</li>
+<li>NULL in City + Region → subtotal for that Country (all regions)</li>
+<li>NULL in all three columns → grand total (entire table)</li>
+</ul>
+<p>ROLLUP drops columns from RIGHT to LEFT at each level.</p></div></details>
+
+<details><summary><span class="badge bq">ROLLUP</span>What is the formula for how many rows ROLLUP and CUBE produce?</summary>
+<div class="ans"><ul>
+<li><strong>ROLLUP(A, B, C):</strong> n = 3 columns → n+1 = 4 aggregation levels</li>
+<li><strong>CUBE(A, B, C):</strong> n = 3 columns → 2³ = 8 combinations</li>
+</ul>
+<p>CUBE always produces more rows than ROLLUP with the same columns. ROLLUP is hierarchical (drops columns right-to-left). CUBE generates every possible combination.</p></div></details>
+
+<h2>CUBE</h2>
+
+<details><summary><span class="badge bq">CUBE</span><span class="badge bhot">🔥 Lab + Book</span>Write the CUBE query from your lab. What combinations does it generate that ROLLUP does not?</summary>
+<div class="ans"><pre>
+USE SalesDB;
+SELECT
+    Product_Category,
+    Region,
+    YEAR(Date) AS Year,
+    SUM(Sales_Amount) AS Total_Sales,
+    SUM(Quantity)     AS Total_Quantity
+FROM dbo.sales_dataset
+GROUP BY CUBE (Product_Category, Region, YEAR(Date));
+</pre>
+<p>n=3 → 2³ = 8 combinations. CUBE includes everything ROLLUP would produce PLUS:</p>
+<ul>
+<li>(Region, Year) — region + year totals, across all categories</li>
+<li>(Region) — region-only totals, across all categories and years</li>
+<li>(Year) — year-only totals, across all categories and regions</li>
+</ul>
+<p>These cross-dimensional subtotals are what CUBE adds that ROLLUP can't produce.</p></div></details>
+
+<h2>CASE WHEN</h2>
+
+<details><summary><span class="badge bt">CASE</span><span class="badge bhot">🔥 Project Pattern</span>Write a query that counts how many orders for each hut were Delivered, Cancelled, and Pending.</summary>
+<div class="ans"><pre>
+SELECT
+    h.name AS hut_name,
+    COUNT(o.order_id) AS total_orders,
+    SUM(CASE WHEN o.status = 'Delivered'  THEN 1 ELSE 0 END) AS delivered,
+    SUM(CASE WHEN o.status = 'Cancelled'  THEN 1 ELSE 0 END) AS cancelled,
+    SUM(CASE WHEN o.status IN ('Pending','Preparing','OutForDelivery')
+             THEN 1 ELSE 0 END) AS pending,
+    CAST(
+        100.0 * SUM(CASE WHEN o.status = 'Cancelled' THEN 1 ELSE 0 END)
+        / NULLIF(COUNT(o.order_id), 0)
+    AS DECIMAL(5,2)) AS cancel_pct
+FROM [ORDER] o
+JOIN HUT h ON o.hut_id = h.hut_id
+GROUP BY h.hut_id, h.name
+ORDER BY total_orders DESC;
+</pre></div></details>
+
+<details><summary><span class="badge bt">CASE</span>What does NULLIF do? Why is it used in cancellation rate calculations?</summary>
+<div class="ans"><p>NULLIF(expr1, expr2) returns NULL if expr1 = expr2, otherwise returns expr1. In cancellation rate: if a hut has 0 orders, dividing by zero would cause a runtime error. NULLIF(COUNT(order_id), 0) returns NULL when count = 0, and NULL/anything = NULL (safe, no crash).</p>
+<pre>
+-- Without NULLIF: error if count = 0
+100.0 * cancelled / COUNT(order_id)
+
+-- With NULLIF: returns NULL instead of dividing by zero
+100.0 * cancelled / NULLIF(COUNT(order_id), 0)
+</pre></div></details>
+
+<h2>CTEs</h2>
+
+<details><summary><span class="badge bt">CTE</span>What is a CTE? Write a CTE that finds huts where average delivery time exceeds 20 minutes.</summary>
+<div class="ans"><p>A Common Table Expression is a named temporary result set defined with WITH...AS before the main query. It improves readability and can be referenced multiple times.</p>
+<pre>
+WITH hut_delivery AS (
+    SELECT
+        h.name AS hut_name,
+        AVG(CASE WHEN o.actual_delivery_time IS NOT NULL
+                 THEN DATEDIFF(MINUTE, o.order_time, o.actual_delivery_time)
+                 ELSE NULL END) AS avg_delivery_mins,
+        COUNT(o.order_id) AS total_orders
+    FROM [ORDER] o
+    JOIN HUT h ON o.hut_id = h.hut_id
+    WHERE o.status = 'Delivered'
+    GROUP BY h.hut_id, h.name
+)
+SELECT hut_name, avg_delivery_mins, total_orders
+FROM hut_delivery
+WHERE avg_delivery_mins > 20
+ORDER BY avg_delivery_mins DESC;
+</pre></div></details>
+
+<hr>
+<h2>Final SQL Cheat Sheet</h2>
+<div class="tw"><table>
+<tr><th>Function</th><th>Syntax</th><th>Key behaviour</th></tr>
+<tr><td>ROW_NUMBER</td><td><code>ROW_NUMBER() OVER (PARTITION BY x ORDER BY y)</code></td><td>Always unique, never ties</td></tr>
+<tr><td>RANK</td><td><code>RANK() OVER (ORDER BY y DESC)</code></td><td>Ties get same rank, gap after</td></tr>
+<tr><td>DENSE_RANK</td><td><code>DENSE_RANK() OVER (ORDER BY y DESC)</code></td><td>Ties get same rank, no gap</td></tr>
+<tr><td>NTILE</td><td><code>NTILE(4) OVER (ORDER BY y)</code></td><td>Divide into n equal buckets</td></tr>
+<tr><td>LAG</td><td><code>LAG(col, 1, 0) OVER (ORDER BY x)</code></td><td>Previous row's value</td></tr>
+<tr><td>LEAD</td><td><code>LEAD(col, 1, 0) OVER (ORDER BY x)</code></td><td>Next row's value</td></tr>
+<tr><td>ROLLUP</td><td><code>GROUP BY ROLLUP(A,B,C)</code></td><td>n+1 hierarchical levels</td></tr>
+<tr><td>CUBE</td><td><code>GROUP BY CUBE(A,B,C)</code></td><td>2ⁿ all combinations</td></tr>
+<tr><td>Cond. COUNT</td><td><code>SUM(CASE WHEN cond THEN 1 ELSE 0 END)</code></td><td>Count rows meeting condition</td></tr>
+<tr><td>Cond. SUM</td><td><code>SUM(CASE WHEN cond THEN col ELSE 0 END)</code></td><td>Sum only matching rows</td></tr>
+<tr><td>NULLIF</td><td><code>NULLIF(expr, 0)</code></td><td>Return NULL if equal — prevents div/0</td></tr>
+<tr><td>COALESCE</td><td><code>COALESCE(col, 'default')</code></td><td>First non-NULL value</td></tr>
+<tr><td>CAST</td><td><code>CAST(col AS DECIMAL(10,2))</code></td><td>Type conversion</td></tr>
+<tr><td>DATEDIFF</td><td><code>DATEDIFF(MINUTE, start, end)</code></td><td>Date difference in specified unit</td></tr>
+<tr><td>Moving AVG</td><td><code>AVG(SUM(col)) OVER (ORDER BY x ROWS 2 PRECEDING)</code></td><td>3-row moving window</td></tr>
+<tr><td>Running SUM</td><td><code>SUM(SUM(col)) OVER (ORDER BY x ROWS UNBOUNDED PRECEDING)</code></td><td>Cumulative total</td></tr>
+<tr><td>CTE</td><td><code>WITH name AS (query) SELECT ... FROM name</code></td><td>Named temp result set</td></tr>
+<tr><td>INSERT...SELECT</td><td><code>INSERT INTO target SELECT ... FROM source</code></td><td>ETL: load from query result</td></tr>
+</table></div>
+</div>
+
+<script>
+function show(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>

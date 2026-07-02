@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MANET Routing — Exam Guide</title>
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1a2e;
+    --card: #16213e;
+    --border: #2a2a4a;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --accent3: #533483;
+    --green: #06d6a0;
+    --yellow: #ffd166;
+    --text: #e8e8f0;
+    --muted: #7a7a9a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.7; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0f0e17 0%, #1a1030 40%, #0f0e17 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: -60px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(233,69,96,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+  .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 0.95rem; max-width: 620px; }
+  .badge { display: inline-block; background: rgba(233,69,96,0.15); color: var(--accent); border: 1px solid rgba(233,69,96,0.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; margin-top: 16px; }
+
+  /* NAV */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; gap: 0; overflow-x: auto; }
+  .nav a { color: var(--muted); text-decoration: none; padding: 14px 16px; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+  .container { max-width: 980px; margin: 0 auto; padding: 32px 24px; }
+
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-num { background: var(--accent); color: #fff; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+  .section-num.green { background: var(--green); color: #000; }
+  .section-num.yellow { background: var(--yellow); color: #000; }
+  .section-num.purple { background: var(--accent3); }
+  .section-header h2 { font-size: 1.3rem; font-weight: 700; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; }
+  .card h3 { font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; }
+  .card p, .card li { font-size: 0.9rem; color: #c8c8d8; line-height: 1.65; }
+  .card ul { padding-left: 18px; }
+  .card ul li { margin-bottom: 6px; }
+
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; margin-top: 8px; }
+  .comp-table th { background: rgba(233,69,96,0.15); color: var(--accent); padding: 10px 14px; text-align: left; font-weight: 700; border: 1px solid var(--border); }
+  .comp-table td { padding: 9px 14px; border: 1px solid var(--border); color: #c8c8d8; vertical-align: top; }
+  .comp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  .highlight { border-left: 3px solid var(--accent); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; background: rgba(233,69,96,0.07); }
+  .highlight.green { border-left-color: var(--green); background: rgba(6,214,160,0.07); }
+  .highlight.yellow { border-left-color: var(--yellow); background: rgba(255,209,102,0.07); }
+  .highlight strong { color: var(--accent); display: block; margin-bottom: 6px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
+  .highlight.green strong { color: var(--green); }
+  .highlight.yellow strong { color: var(--yellow); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 10px 0; }
+  .flow-step { background: rgba(233,69,96,0.15); border: 1px solid rgba(233,69,96,0.3); border-radius: 6px; padding: 7px 12px; font-size: 0.8rem; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .flow-step.green { background: rgba(6,214,160,0.12); border-color: rgba(6,214,160,0.3); color: var(--green); }
+  .flow-step.yellow { background: rgba(255,209,102,0.12); border-color: rgba(255,209,102,0.3); color: var(--yellow); }
+  .flow-arrow { color: var(--muted); padding: 0 8px; }
+
+  /* DSR PATH VISUALIZATION */
+  .path-vis { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 12px 0; font-family: 'Courier New', monospace; font-size: 0.85rem; }
+  .path-vis .path-label { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; font-family: 'Segoe UI', sans-serif; }
+  .path-vis .path-nodes { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+  .path-node { background: var(--card); border: 1px solid var(--accent); border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-weight: 700; font-size: 0.85rem; }
+  .path-node.dest { border-color: var(--green); color: var(--green); }
+  .path-node.src { border-color: var(--yellow); color: var(--yellow); }
+  .path-edge { color: var(--muted); font-size: 1.1rem; }
+
+  /* PROTOCOL BADGE */
+  .proto-badge { display: inline-block; background: var(--accent2); color: #a0a8ff; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; margin-left: 8px; border: 1px solid #3a3a6a; }
+
+  section { margin-bottom: 48px; }
+  footer { border-top: 1px solid var(--border); padding: 24px 32px; text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
+  code { background: rgba(233,69,96,0.1); color: var(--accent); padding: 1px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.85em; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">CCN Exam Prep · Study Guide 2 of 3</div>
+  <h1>Routing in<br><span>Mobile Ad Hoc Networks</span></h1>
+  <p>MANET fundamentals, flooding, DSR (Dynamic Source Routing), proactive vs reactive protocols, and route caching — from Lecture 3.</p>
+  <div><span class="badge">Lec 3 — MANET Routing</span></div>
+</div>
+
+<nav class="nav">
+  <a href="#s1">What is MANET</a>
+  <a href="#s2">Routing Protocols</a>
+  <a href="#s3">Flooding</a>
+  <a href="#s4">DSR</a>
+  <a href="#s5">DSR Optimizations</a>
+  <a href="#s6">Routing Types</a>
+</nav>
+
+<div class="container">
+
+  <!-- SECTION 1 -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>What is a MANET?</h2>
+    </div>
+
+    <div class="highlight">
+      <strong>Definition</strong>
+      MANET (Mobile Ad Hoc Network) — a network formed by wireless, potentially mobile hosts without any pre-existing infrastructure. Routes may contain multiple hops. Nodes move, so routes change dynamically.
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Key Properties</h3>
+        <ul>
+          <li>Formed by wireless hosts that may be mobile</li>
+          <li>No pre-existing infrastructure required</li>
+          <li>Routes between nodes may need <b>multiple hops</b></li>
+          <li>Mobility causes route changes → protocols must adapt</li>
+          <li>Nodes must themselves perform routing/switching</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Why MANET?</h3>
+        <ul>
+          <li><b>Ease of deployment</b> — no infrastructure setup</li>
+          <li><b>Speed of deployment</b> — operational immediately</li>
+          <li><b>Decreased infrastructure dependence</b></li>
+          <li>Used in: battlefields, emergency rescue, disaster areas, collaborative computing, vehicular networks (VANET)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>MANET Challenges</h3>
+      <table class="comp-table">
+        <tr><th>Challenge</th><th>What It Means</th></tr>
+        <tr><td>Limited wireless range</td><td>Cannot reach distant nodes directly — needs multi-hop routing</td></tr>
+        <tr><td>Broadcast medium</td><td>All transmissions are heard by all nearby nodes — hidden terminal problem persists</td></tr>
+        <tr><td>Packet loss from errors</td><td>High bit error rate due to wireless nature</td></tr>
+        <tr><td>Mobility-induced route changes</td><td>Nodes move → previously valid routes break</td></tr>
+        <tr><td>Mobility-induced packet loss</td><td>Packets in transit may be lost when routes break</td></tr>
+        <tr><td>Battery constraints</td><td>Energy-aware routing needed; can't run power-hungry protocols</td></tr>
+        <tr><td>Network partitions</td><td>Network may split into disconnected sections</td></tr>
+        <tr><td>Security</td><td>Wireless transmissions easily snooped</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>MANET Variations</h3>
+      <ul>
+        <li><b>Fully Symmetric:</b> all nodes have identical capabilities and responsibilities</li>
+        <li><b>Asymmetric Capabilities:</b> different transmission ranges, battery life, processing power, movement speeds at different nodes</li>
+        <li><b>Asymmetric Responsibilities:</b> only some nodes route packets; some act as cluster heads (leaders of nearby nodes)</li>
+        <li>Traffic can be: unicast / multicast / geocast (geographic) / broadcast / anycast</li>
+        <li>May co-exist with infrastructure networks</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num green">2</div>
+      <h2>Routing Protocol Classification</h2>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Proactive Protocols</h3>
+        <ul>
+          <li>Determine routes <b>independent of traffic</b> — routes are always maintained</li>
+          <li>Traditional link-state and distance-vector protocols are proactive</li>
+          <li><b>Lower latency</b> for route discovery — routes already known</li>
+          <li><b>Higher overhead</b> — continuous route updating even when no traffic</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Reactive Protocols</h3>
+        <ul>
+          <li>Maintain routes <b>only when needed</b> — on-demand</li>
+          <li>Route from X to Y found only when X tries to send to Y</li>
+          <li><b>Higher latency</b> — must discover route before sending</li>
+          <li><b>Lower overhead</b> — routes only discovered when needed</li>
+          <li>Example: DSR (Dynamic Source Routing), AODV</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Hybrid Protocols</h3>
+      <p>Combine proactive and reactive strategies — proactive within a zone (for nearby nodes), reactive beyond that zone. Better trade-off depending on network size and mobility.</p>
+    </div>
+
+    <div class="highlight yellow">
+      <strong>Trade-Off Summary</strong>
+      Which is better — proactive or reactive — depends on traffic patterns and node mobility. High mobility + infrequent traffic → reactive better (routes would go stale anyway). Low mobility + frequent traffic → proactive better (route discovery overhead amortized over many packets).
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num yellow">3</div>
+      <h2>Flooding for Data Delivery</h2>
+    </div>
+
+    <div class="card">
+      <h3>How Flooding Works</h3>
+      <ul>
+        <li>Sender S broadcasts data packet P to all neighbors</li>
+        <li>Each node receiving P for the <b>first time</b> forwards P to its neighbors</li>
+        <li><b>Sequence numbers</b> prevent forwarding the same packet more than once</li>
+        <li>Packet reaches destination D if D is reachable from S</li>
+        <li>Node D does not forward the packet (it's the destination)</li>
+        <li>Nodes unreachable from S do not receive P</li>
+      </ul>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Advantages of Flooding</h3>
+        <ul>
+          <li><b>Simplicity</b> — no routing table maintenance needed</li>
+          <li>More efficient than discovery protocols when data rate is very low (overhead of discovery is higher than just flooding)</li>
+          <li>Potentially <b>higher reliability</b> — packet may arrive via multiple paths</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Disadvantages of Flooding</h3>
+        <ul>
+          <li><b>Very high overhead</b> — packet may be delivered to too many unnecessary nodes</li>
+          <li>Hard to implement <b>reliable broadcast</b> without increasing overhead</li>
+          <li>Hidden terminal collisions: if J and K both try to forward to D simultaneously, and J and K can't hear each other → collision → packet lost at D</li>
+          <li>In worst case, all reachable nodes receive the packet</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>Flooding of Control Packets</strong>
+      Many MANET protocols flood <i>control packets</i> (not data packets) to discover routes, then use the discovered route to send actual data. The flooding overhead is amortized (spread out) over the data packets sent between route discoveries. This is the basis for DSR.
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num purple">4</div>
+      <h2>DSR — Dynamic Source Routing</h2>
+    </div>
+
+    <div class="highlight green">
+      <strong>Core Idea of DSR</strong>
+      When node S wants to send to D but doesn't know a route, S floods a Route Request (RREQ). Each forwarding node appends its own ID. When RREQ reaches D, D sends a Route Reply (RREP) back along the reverse path. S then caches the full route and includes it in every data packet header — hence "source routing."
+    </div>
+
+    <div class="card">
+      <h3>Phase 1: Route Discovery</h3>
+      <ul>
+        <li>S floods <b>RREQ (Route Request)</b> to all neighbors</li>
+        <li>Each intermediate node appends its own identifier to the RREQ before forwarding</li>
+        <li>A node that has already forwarded this RREQ does NOT forward it again (uses sequence numbers)</li>
+        <li>Hidden terminal issue: if two nodes simultaneously forward RREQ to D, collision may prevent D from receiving it</li>
+      </ul>
+
+      <div class="path-vis">
+        <div class="path-label">Example: RREQ propagating S → E → F → J → D</div>
+        <div class="path-nodes">
+          <div class="path-node src">S</div>
+          <div class="path-edge">——[S]——›</div>
+          <div class="path-node">E</div>
+          <div class="path-edge">——[S,E]——›</div>
+          <div class="path-node">F</div>
+          <div class="path-edge">——[S,E,F]——›</div>
+          <div class="path-node">J</div>
+          <div class="path-edge">——[S,E,F,J]——›</div>
+          <div class="path-node dest">D</div>
+        </div>
+        <div class="path-label" style="margin-top:8px">Each node appends its ID. D now knows the full route to S.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Phase 2: Route Reply</h3>
+      <ul>
+        <li>Destination D receives RREQ and sends <b>RREP (Route Reply)</b></li>
+        <li>D sends RREP back by <b>reversing the route</b> in the received RREQ</li>
+        <li>RREP includes the complete route from S to D</li>
+        <li><b>Condition:</b> link reversal only works if links are guaranteed to be <b>bi-directional</b></li>
+        <li>If unidirectional links exist, D must initiate its own route discovery back to S, and piggybacking RREP on that RREQ</li>
+        <li>IEEE 802.11 MAC requires bi-directional links (ACK used) — so reverse route is valid in 802.11</li>
+      </ul>
+
+      <div class="path-vis">
+        <div class="path-label">RREP travels in reverse: D → J → F → E → S</div>
+        <div class="path-nodes">
+          <div class="path-node dest">D</div>
+          <div class="path-edge">——›</div>
+          <div class="path-node">J</div>
+          <div class="path-edge">——›</div>
+          <div class="path-node">F</div>
+          <div class="path-edge">——›</div>
+          <div class="path-node">E</div>
+          <div class="path-edge">——›</div>
+          <div class="path-node src">S</div>
+        </div>
+        <div class="path-label" style="margin-top:6px">RREP contains: [S, E, F, J, D]</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Phase 3: Data Delivery</h3>
+      <ul>
+        <li>S caches the route learned from RREP</li>
+        <li>When S sends data to D, the <b>entire route is included in the packet header</b></li>
+        <li>Intermediate nodes read the source route in the header to know where to forward next</li>
+        <li>No routing table at intermediate nodes — the source carries the full path</li>
+        <li><b>Downside:</b> packet header size grows with route length (long routes → large headers)</li>
+      </ul>
+
+      <div class="path-vis">
+        <div class="path-label">Data packet from S to D includes full route in header</div>
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:6px;padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <div style="background:rgba(255,209,102,0.15);border:1px solid rgba(255,209,102,0.3);border-radius:4px;padding:6px 10px;font-size:0.8rem;color:var(--yellow)">DATA</div>
+          <div style="background:rgba(233,69,96,0.1);border:1px solid rgba(233,69,96,0.3);border-radius:4px;padding:6px 10px;font-size:0.8rem;color:var(--accent)">Route: [S, E, F, J, D]</div>
+          <div style="font-size:0.75rem;color:var(--muted)">← route in header grows with path length</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>DSR Optimizations: Route Caching</h2>
+    </div>
+
+    <div class="card">
+      <h3>What Gets Cached</h3>
+      <p style="margin-bottom:10px">Nodes cache new routes learned <i>by any means</i> — not just from their own route discoveries.</p>
+      <table class="comp-table">
+        <tr><th>Event</th><th>What Node Learns</th></tr>
+        <tr><td>S finds route [S,E,F,J,D] to D</td><td>S also learns [S,E,F] to F, [S,E] to E</td></tr>
+        <tr><td>K receives RREQ [S,C,G] for D</td><td>K learns [K,G,C,S] — reverse path to S</td></tr>
+        <tr><td>F forwards RREP [S,E,F,J,D]</td><td>F learns [F,J,D] to D</td></tr>
+        <tr><td>E forwards DATA [S,E,F,J,D]</td><td>E learns [E,F,J,D] to D</td></tr>
+        <tr><td>Node overhears a data packet</td><td>Learns partial route from packet header</td></tr>
+      </table>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>How Cache Speeds Up Discovery</h3>
+        <ul>
+          <li>When S finds route to D is broken → checks <b>local cache first</b></li>
+          <li>If alternate route to D in cache → uses it immediately, no new RREQ needed</li>
+          <li>When node X receives an RREQ for D → if X knows a route to D in cache → X can send RREP itself without flooding reaching D</li>
+          <li>Can speed up route discovery significantly</li>
+          <li>Can reduce propagation of RREQs through network</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cache Format</h3>
+        <ul>
+          <li>DSR maintains cached routes in a <b>tree format</b> at each node</li>
+          <li>The tree root is the local node</li>
+          <li>Branches represent different cached paths to different destinations</li>
+          <li>Stale (outdated) cached routes can cause problems when topology changes — must be handled carefully</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section id="s6">
+    <div class="section-header">
+      <div class="section-num green">6</div>
+      <h2>Routing Types in MANET</h2>
+    </div>
+
+    <div class="card">
+      <h3>Types of Routing in Ad Hoc Networks</h3>
+      <table class="comp-table">
+        <tr><th>Type</th><th>Definition</th><th>Example Use</th></tr>
+        <tr>
+          <td><b>Unicast</b></td>
+          <td>One sender → one specific receiver. Standard point-to-point communication.</td>
+          <td>DSR, AODV, DSDV. Most common MANET routing type.</td>
+        </tr>
+        <tr>
+          <td><b>Multicast</b></td>
+          <td>One sender → a group of receivers simultaneously</td>
+          <td>Video streaming to group of nodes; military broadcasts</td>
+        </tr>
+        <tr>
+          <td><b>Geocast (Geographic)</b></td>
+          <td>Packets delivered to all nodes within a specific <b>geographic region</b></td>
+          <td>Location-aware applications; VANET warning alerts</td>
+        </tr>
+        <tr>
+          <td><b>Broadcast</b></td>
+          <td>Packets delivered to <b>all nodes</b> in the network</td>
+          <td>Network-wide control messages, route requests (flooding)</td>
+        </tr>
+        <tr>
+          <td><b>Anycast</b></td>
+          <td>Packet delivered to any one node from a group (nearest/best available)</td>
+          <td>Querying nearest server or service provider</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="highlight green">
+      <strong>DSR is a Unicast Reactive Protocol</strong>
+      DSR falls under: Unicast (one sender, one receiver) + Reactive (route discovered on-demand) + Source Routing (full route in packet header) + Route Caching (learns routes opportunistically from overheard packets).
+    </div>
+
+    <div class="card">
+      <h3>Performance Criteria in MANET Routing</h3>
+      <ul>
+        <li><b>Throughput:</b> total data successfully delivered</li>
+        <li><b>Latency:</b> delay from sender to receiver (route discovery adds latency in reactive protocols)</li>
+        <li><b>Route stability:</b> how long a discovered route stays valid despite mobility</li>
+        <li><b>Energy consumption:</b> important for battery-powered nodes</li>
+        <li><b>Overhead:</b> control packet cost relative to data delivered</li>
+        <li><b>Scalability:</b> does performance degrade with more nodes?</li>
+        <li>No single protocol performs best in all environments — research focuses on adaptive protocols</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h3>Quick Comparison: Flooding vs DSR</h3>
+      <table class="comp-table">
+        <tr><th>Feature</th><th>Flooding</th><th>DSR</th></tr>
+        <tr><td>What is flooded</td><td>Data packets directly</td><td>Control packets (RREQ) only; data uses discovered route</td></tr>
+        <tr><td>Overhead</td><td>High — data sent to all nodes</td><td>Lower — data on specific path only</td></tr>
+        <tr><td>Route table at nodes</td><td>None needed</td><td>Route carried in packet header</td></tr>
+        <tr><td>Reliability</td><td>Multiple paths (good) but broadcast collision risk</td><td>Unicast on specific route; better control</td></tr>
+        <tr><td>Latency</td><td>No discovery delay</td><td>Discovery delay before first data packet</td></tr>
+        <tr><td>Best suited for</td><td>Low traffic, highly mobile, small networks</td><td>Moderate traffic, route caching available</td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  CCN Exam Prep · Guide 2: MANET Routing · Lecture 3 · Dr. Muazzam A. Khan
+</footer>
+</body>
+</html>

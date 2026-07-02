@@ -1,0 +1,3 @@
+get powerbi file (more than 1) online having any type of dashboards.
+
+Apply all types of filter on it and upload zip file of ss separately with proper naming conventions

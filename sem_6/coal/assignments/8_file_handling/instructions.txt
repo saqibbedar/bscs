@@ -1,0 +1,1 @@
+Task is how to create a file, read and write in the file using assembly language. Give the syntax and an example program of it. Submit in image form of your hand written document.

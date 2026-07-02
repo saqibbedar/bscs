@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireless Networks & IEEE 802.11 — Exam Guide</title>
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --card: #1c2330;
+    --border: #30363d;
+    --accent: #58a6ff;
+    --accent2: #3fb950;
+    --accent3: #f0883e;
+    --accent4: #bc8cff;
+    --warn: #f85149;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --tag-bg: #1f3a5f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.7; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0d1117 0%, #1a2332 50%, #0d1117 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(88,166,255,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--accent); text-transform: uppercase; margin-bottom: 12px; }
+  .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { color: var(--muted); font-size: 0.95rem; max-width: 600px; }
+  .lecture-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 18px; }
+  .badge { background: var(--tag-bg); color: var(--accent); border: 1px solid rgba(88,166,255,0.3); border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; }
+
+  /* NAV */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; gap: 0; overflow-x: auto; }
+  .nav a { color: var(--muted); text-decoration: none; padding: 14px 16px; font-size: 13px; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .nav a:hover, .nav a.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* LAYOUT */
+  .container { max-width: 980px; margin: 0 auto; padding: 32px 24px; }
+
+  /* SECTION HEADER */
+  .section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .section-num { background: var(--accent); color: #000; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 14px; flex-shrink: 0; }
+  .section-num.green { background: var(--accent2); }
+  .section-num.orange { background: var(--accent3); }
+  .section-num.purple { background: var(--accent4); }
+  .section-num.red { background: var(--warn); }
+  .section-header h2 { font-size: 1.3rem; font-weight: 700; }
+
+  /* CARDS */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 24px; margin-bottom: 16px; }
+  .card h3 { font-size: 1rem; font-weight: 700; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .card h3::before { content: '›'; font-size: 1.2rem; }
+  .card p, .card li { font-size: 0.9rem; color: #c9d1d9; line-height: 1.65; }
+  .card ul { padding-left: 18px; }
+  .card ul li { margin-bottom: 6px; }
+
+  /* COMPARISON TABLE */
+  .comp-table { width: 100%; border-collapse: collapse; margin-top: 8px; font-size: 0.875rem; }
+  .comp-table th { background: var(--tag-bg); color: var(--accent); padding: 10px 14px; text-align: left; font-weight: 700; border: 1px solid var(--border); }
+  .comp-table td { padding: 9px 14px; border: 1px solid var(--border); color: #c9d1d9; vertical-align: top; }
+  .comp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  /* HIGHLIGHT BOX */
+  .highlight { background: linear-gradient(135deg, rgba(88,166,255,0.08), rgba(88,166,255,0.03)); border: 1px solid rgba(88,166,255,0.25); border-left: 3px solid var(--accent); border-radius: 8px; padding: 16px 20px; margin-bottom: 16px; }
+  .highlight.green { background: linear-gradient(135deg, rgba(63,185,80,0.08), rgba(63,185,80,0.03)); border-color: rgba(63,185,80,0.25); border-left-color: var(--accent2); }
+  .highlight.orange { background: linear-gradient(135deg, rgba(240,136,62,0.08), rgba(240,136,62,0.03)); border-color: rgba(240,136,62,0.25); border-left-color: var(--accent3); }
+  .highlight.red { background: linear-gradient(135deg, rgba(248,81,73,0.08), rgba(248,81,73,0.03)); border-color: rgba(248,81,73,0.25); border-left-color: var(--warn); }
+  .highlight strong { color: var(--accent); display: block; margin-bottom: 6px; font-size: 0.85rem; letter-spacing: 1px; text-transform: uppercase; }
+  .highlight.green strong { color: var(--accent2); }
+  .highlight.orange strong { color: var(--accent3); }
+  .highlight.red strong { color: var(--warn); }
+
+  /* FLOW DIAGRAM */
+  .flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; margin: 12px 0; }
+  .flow-step { background: var(--tag-bg); border: 1px solid rgba(88,166,255,0.3); border-radius: 6px; padding: 8px 14px; font-size: 0.8rem; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  .flow-arrow { color: var(--muted); padding: 0 8px; font-size: 1.1rem; }
+
+  /* 2-COL GRID */
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media(max-width: 640px) { .grid2 { grid-template-columns: 1fr; } }
+
+  /* SPEED TABLE */
+  .speed-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-top: 8px; }
+  .speed-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; text-align: center; }
+  .speed-card .std { font-size: 0.85rem; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+  .speed-card .rate { font-size: 1.1rem; font-weight: 800; color: var(--text); }
+  .speed-card .range { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+  /* TAG */
+  .tag { display: inline-block; background: rgba(63,185,80,0.15); color: var(--accent2); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+  .tag.warn { background: rgba(248,81,73,0.15); color: var(--warn); }
+
+  section { margin-bottom: 48px; }
+  .section-spacer { height: 40px; }
+  code { background: rgba(88,166,255,0.1); color: var(--accent); padding: 1px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.85em; }
+
+  /* FOOTER */
+  footer { border-top: 1px solid var(--border); padding: 24px 32px; text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
+
+  /* MOBILE PACKET VISUAL */
+  .packet-visual { display: flex; gap: 2px; margin: 12px 0; }
+  .pv-label { font-size: 0.7rem; color: var(--muted); text-align: center; margin-top: 4px; }
+  .pv-block { flex: 1; background: var(--tag-bg); border: 1px solid rgba(88,166,255,0.3); padding: 8px 4px; text-align: center; font-size: 0.75rem; color: var(--accent); font-weight: 700; border-radius: 4px; }
+  .pv-block.dark { background: rgba(240,136,62,0.15); border-color: rgba(240,136,62,0.3); color: var(--accent3); }
+  .pv-block.green { background: rgba(63,185,80,0.12); border-color: rgba(63,185,80,0.3); color: var(--accent2); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">CCN Exam Prep · Study Guide 1 of 3</div>
+  <h1>Wireless Networks &<br><span>IEEE 802.11</span></h1>
+  <p>Everything you need from Lectures 1.1 and 2 — infrastructure modes, 802.11 MAC, hidden/exposed terminal problems, mobility, and Mobile IP.</p>
+  <div class="lecture-badges">
+    <span class="badge">Lec 1.1 — IEEE 802.11</span>
+    <span class="badge">Lec 2 — Wireless & Mobile Networks</span>
+  </div>
+</div>
+
+<nav class="nav">
+  <a href="#s1" class="active">Network Types</a>
+  <a href="#s2">80211 Arch</a>
+  <a href="#s3">Wireless Challenges</a>
+  <a href="#s4">MAC Problems</a>
+  <a href="#s5">MACA Solution</a>
+  <a href="#s6">Standards</a>
+  <a href="#s7">Mobility</a>
+  <a href="#s8">Mobile IP</a>
+</nav>
+
+<div class="container">
+
+  <!-- SECTION 1: NETWORK TYPES -->
+  <section id="s1">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2>Wireless Network Types</h2>
+    </div>
+
+    <div class="highlight">
+      <strong>Core Distinction</strong>
+      Two fundamental modes: <b>Infrastructure Mode</b> (base station connects mobiles to wired network) vs <b>Ad Hoc Mode</b> (no base station — nodes route among themselves).
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Infrastructure Mode</h3>
+        <ul>
+          <li>Wireless hosts associate with a <b>Base Station (BS)</b></li>
+          <li>Base station connected to wired (larger) network</li>
+          <li>Traditional services provided: addressing, routing (DNS resolution), DHCP</li>
+          <li>Examples: WiFi (802.11) access points, cellular towers</li>
+          <li><b>Handoff</b> (switching to a different base station): mobile changes base station providing connection to wired network</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Ad Hoc Mode</h3>
+        <ul>
+          <li>No base stations at all</li>
+          <li>Nodes can only transmit to other nodes within <b>link coverage</b></li>
+          <li>Nodes self-organize and route among themselves</li>
+          <li>No traditional network services — hosts must provide them</li>
+          <li>Similar to peer-to-peer vs client-server model</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>4-Cell Classification (Know This Table)</h3>
+      <table class="comp-table">
+        <tr>
+          <th></th>
+          <th>Single Hop</th>
+          <th>Multi-Hop</th>
+        </tr>
+        <tr>
+          <td style="color:var(--accent);font-weight:700">Infrastructure-based</td>
+          <td>WiFi, Cellular networks<br><span style="color:var(--muted);font-size:0.8rem">BS connected to wired network, direct wireless hop</span></td>
+          <td>Wireless Mesh Networks, Wireless Sensor Networks<br><span style="color:var(--muted);font-size:0.8rem">Base station exists, but some nodes relay through others</span></td>
+        </tr>
+        <tr>
+          <td style="color:var(--accent);font-weight:700">Infrastructure-less</td>
+          <td>Bluetooth, Ad Hoc 802.11<br><span style="color:var(--muted);font-size:0.8rem">No wired network, one node coordinates</span></td>
+          <td>MANET, VANET<br><span style="color:var(--muted);font-size:0.8rem">No base station; nodes must relay to reach others</span></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Why Ad Hoc Networks?</h3>
+      <ul>
+        <li>Fixed infrastructure <b>not always viable</b> — disaster areas, war zones, emergency rescue</li>
+        <li>Short-range radios make infrastructure impractical (Bluetooth range ≈ 10m)</li>
+        <li>Easy and fast to deploy; no backbone support needed</li>
+        <li>Cellular vs Ad Hoc: cellular = centralized routing, guaranteed bandwidth, circuit-switched; ad hoc = distributed routing, shared channel, packet-switched, frequent path breaks</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 2: 802.11 ARCHITECTURE -->
+  <section id="s2">
+    <div class="section-header">
+      <div class="section-num green">2</div>
+      <h2>802.11 LAN Architecture</h2>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Key Components</h3>
+        <ul>
+          <li><b>Access Point (AP)</b> — the base station for 802.11; communicates with wireless hosts</li>
+          <li><b>BSS (Basic Service Set)</b> — coverage area of one AP; AP acts as master</li>
+          <li><b>SSID (Service Set Identifier)</b> — the "network name" identifying a BSS</li>
+          <li>Multiple BSSs connect through a hub/switch/router to the Internet</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Association Process</h3>
+        <ul>
+          <li>AP admin chooses a <b>frequency channel</b> for the AP</li>
+          <li>APs send periodic <b>beacon frames</b> containing SSID + MAC address</li>
+          <li>Host scans channels, hears beacons, selects AP to associate with</li>
+          <li>Then may perform authentication + DHCP to get an IP</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Passive vs Active Scanning</h3>
+      <div class="grid2">
+        <div>
+          <p style="color:var(--accent2);font-weight:700;margin-bottom:8px">Passive Scanning</p>
+          <div class="flow">
+            <div class="flow-step">AP sends Beacon</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">H1 hears it</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">Assoc. Request</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">Assoc. Response</div>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:6px">Host waits and listens — more energy-efficient</p>
+        </div>
+        <div>
+          <p style="color:var(--accent3);font-weight:700;margin-bottom:8px">Active Scanning</p>
+          <div class="flow">
+            <div class="flow-step">H1 broadcasts Probe</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">APs respond</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">H1 picks one</div>
+            <div class="flow-arrow">→</div>
+            <div class="flow-step">Assoc. done</div>
+          </div>
+          <p style="font-size:0.82rem;color:var(--muted);margin-top:6px">Host actively probes — faster discovery</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>802.11 Protocol Stack (MAC Layer)</h3>
+      <ul>
+        <li><b>DCF — Distributed Coordination Function:</b> medium access is contended by all stations. Uses CSMA/CA + RTS/CTS to reduce collisions. Default mode.</li>
+        <li><b>PCF — Point Coordination Function:</b> AP (point coordinator) controls access. Stations transmit after a shorter interval. Deterministic, contention-free.</li>
+      </ul>
+      <p style="margin-top:10px;font-size:0.85rem;color:var(--muted)">Remember: 802.11 uses CSMA/CA (Collision <b>Avoidance</b>) — not CSMA/CD (Collision <b>Detection</b>) like wired Ethernet.</p>
+    </div>
+
+    <div class="card">
+      <h3>802.11 Sub-Standards (Know These)</h3>
+      <p style="font-size:0.85rem;color:var(--muted);margin-bottom:12px">Different standards differ in frequency, speed, and modulation technique.</p>
+      <table class="comp-table">
+        <tr><th>Standard</th><th>Frequency</th><th>Speed</th><th>Modulation</th></tr>
+        <tr><td>802.11b</td><td>2.4 GHz</td><td>11 Mbps</td><td>DSSS (Direct Sequence Spread Spectrum)</td></tr>
+        <tr><td>802.11a</td><td>5 GHz</td><td>54 Mbps</td><td>OFDM</td></tr>
+        <tr><td>802.11g</td><td>2.4 GHz</td><td>54 Mbps</td><td>OFDM + PBCC</td></tr>
+        <tr><td>802.11n</td><td>2.4/5 GHz</td><td>200 Mbps</td><td>MIMO-OFDM</td></tr>
+        <tr><td>802.11p</td><td>5.9 GHz</td><td>—</td><td>Vehicular networks (VANET)</td></tr>
+        <tr><td>802.11i</td><td>—</td><td>—</td><td>MAC supplement — security/alternative WEP</td></tr>
+        <tr><td>802.11e</td><td>—</td><td>—</td><td>MAC — QoS support</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 3: WIRELESS CHALLENGES -->
+  <section id="s3">
+    <div class="section-header">
+      <div class="section-num orange">3</div>
+      <h2>Wireless Link Challenges</h2>
+    </div>
+
+    <div class="highlight orange">
+      <strong>Why Wireless is Hard</strong>
+      Unlike wired links where most loss = congestion, wireless has inherently higher bit-error rates due to signal physics. This fundamentally changes how protocols must work.
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Cause 1: Signal Attenuation</h3>
+        <ul>
+          <li>Signal disperses as it travels greater distance</li>
+          <li>Attenuates (weakens) as it passes through matter</li>
+          <li>Result: bit errors at receiver increase with distance</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cause 2: Interference</h3>
+        <ul>
+          <li>Other radio sources in the same frequency band</li>
+          <li>Example: 2.4 GHz cordless phones interfere with 802.11b</li>
+          <li>Microwave ovens, fluorescent lights cause electromagnetic noise</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Cause 3: Multipath Propagation</h3>
+        <ul>
+          <li>Electromagnetic waves reflect off buildings, furniture, people</li>
+          <li>Signal takes many paths of different lengths to reach receiver</li>
+          <li>Multiple copies arrive at receiver with different delays → <b>signal blurring</b></li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Dealing with Bit Errors</h3>
+        <ul>
+          <li>Increase transmission power → bad for battery, causes more interference</li>
+          <li>Stronger error detection codes (more powerful CRC)</li>
+          <li><b>Link-layer retransmission</b> of corrupted frames (ACK-based)</li>
+          <li>802.11 uses both: CRC check + ACK + retransmit on failure</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Wireless Broadcast Limitation: Fading Over Distance</h3>
+      <p style="margin-bottom:10px">This is the key reason collision detection (CD) doesn't work wirelessly:</p>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:monospace;font-size:0.85rem;color:#c9d1d9;">
+        <div style="display:flex;align-items:center;gap:20px;justify-content:center;">
+          <div style="text-align:center"><div style="font-size:1.3rem">A</div><div style="color:var(--accent);font-size:0.75rem">Sender</div></div>
+          <div style="color:var(--accent2)">⟺ hears ⟺</div>
+          <div style="text-align:center"><div style="font-size:1.3rem">B</div><div style="color:var(--accent);font-size:0.75rem">Middle</div></div>
+          <div style="color:var(--accent2)">⟺ hears ⟺</div>
+          <div style="text-align:center"><div style="font-size:1.3rem">C</div><div style="color:var(--accent);font-size:0.75rem">Sender</div></div>
+        </div>
+        <div style="text-align:center;margin-top:10px;color:var(--warn);font-size:0.8rem">A and C CANNOT hear each other — but both interfere at B!</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: HIDDEN/EXPOSED TERMINAL -->
+  <section id="s4">
+    <div class="section-header">
+      <div class="section-num purple">4</div>
+      <h2>MAC Problems: Hidden & Exposed Terminal</h2>
+    </div>
+
+    <div class="highlight red">
+      <strong>Why CSMA/CD Fails Wirelessly</strong>
+      In wired Ethernet, a station listens while it transmits to detect collisions. Wirelessly, signal strength received is far weaker than sent — you can't hear your own collision. Also, two stations may be unaware of each other but both interfere at a third node.
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Hidden Terminal Problem</h3>
+        <ul>
+          <li>A sends to B. C cannot detect A's transmission (out of range)</li>
+          <li>C senses medium = idle (Carrier Sense fails for C)</li>
+          <li>C starts transmitting → <b>collision at B</b></li>
+          <li>A cannot detect the collision (CD fails)</li>
+          <li>A is <b>"hidden"</b> from C</li>
+        </ul>
+        <div style="background:var(--surface);border-radius:6px;padding:12px;margin-top:10px;font-family:monospace;text-align:center;font-size:0.85rem;">
+          <span style="color:var(--accent)">A</span> ——— <span style="color:var(--accent2)">B</span> ——— <span style="color:var(--accent)">C</span><br>
+          <span style="color:var(--muted);font-size:0.75rem">A and C in range of B but not each other</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Exposed Terminal Problem</h3>
+        <ul>
+          <li>B sends to A. C wants to send to D</li>
+          <li>C senses carrier (B's transmission) — finds medium busy, waits</li>
+          <li>But A is <b>outside C's radio range</b> — C waiting is unnecessary!</li>
+          <li>C could safely transmit to D without interfering with A</li>
+          <li>C is <b>"exposed"</b> to B's transmission unnecessarily</li>
+        </ul>
+        <div style="background:var(--surface);border-radius:6px;padding:12px;margin-top:10px;font-family:monospace;text-align:center;font-size:0.85rem;">
+          <span style="color:var(--accent)">A</span> ←— <span style="color:var(--accent2)">B</span>&nbsp;&nbsp;&nbsp;<span style="color:var(--accent)">C</span> ——→ <span style="color:var(--accent3)">D</span><br>
+          <span style="color:var(--muted);font-size:0.75rem">C can transmit to D but wrongly waits due to sensing B</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight">
+      <strong>Exam Summary</strong>
+      Hidden terminal = CS fails (node can't detect ongoing transmission) → collision at receiver.<br>
+      Exposed terminal = node waits unnecessarily → wasted throughput.
+    </div>
+  </section>
+
+  <!-- SECTION 5: MACA -->
+  <section id="s5">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2>MACA — The Solution</h2>
+    </div>
+
+    <div class="card">
+      <h3>MACA: Multiple Access with Collision Avoidance</h3>
+      <p style="margin-bottom:12px">Uses short <b>signaling packets</b> before actual data transmission. Variants of this method are used in IEEE 802.11.</p>
+      <div class="grid2">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--accent2);font-weight:700;margin-bottom:6px">RTS — Request to Send</p>
+          <p style="font-size:0.85rem">Sender sends a short RTS packet to receiver before sending data. Contains: sender address, receiver address, duration of intended transmission.</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--accent3);font-weight:700;margin-bottom:6px">CTS — Clear to Send</p>
+          <p style="font-size:0.85rem">Receiver replies with CTS when ready to receive. All nodes that hear CTS know to stay silent for the duration.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Solves Hidden Terminal</h3>
+        <ul>
+          <li>A and C both want to send to B</li>
+          <li>A sends RTS first → B replies CTS</li>
+          <li>C hears B's CTS → knows B is busy → <b>C waits</b></li>
+          <li>Collision avoided even though C can't hear A</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3>Solves Exposed Terminal</h3>
+        <ul>
+          <li>B sends to A, C wants to send to D</li>
+          <li>C hears B's RTS but does NOT receive A's CTS (out of range)</li>
+          <li>Since C doesn't hear CTS, C knows its target isn't being used</li>
+          <li>C <b>proceeds to transmit</b> to D — no unnecessary waiting</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>CSMA/CA — How 802.11 Actually Works</h3>
+      <ul>
+        <li>Once a station starts transmitting, it needs aggressive collision avoidance</li>
+        <li>After sensing an idle channel, stations wait an additional random <b>backoff time</b> before transmitting (reduces two stations starting at same moment)</li>
+        <li>Receiving station sends <b>ACK</b> if packet received correctly</li>
+        <li>Sender retransmits if no ACK received within timeout</li>
+        <li>Gives up after multiple failed retransmissions</li>
+        <li>CRC used to detect bit errors in the frame</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- SECTION 6: STANDARDS REFERENCE -->
+  <section id="s6">
+    <div class="section-header">
+      <div class="section-num green">6</div>
+      <h2>Wireless Standards Speed Reference</h2>
+    </div>
+
+    <div class="speed-grid">
+      <div class="speed-card">
+        <div class="std">802.11n</div>
+        <div class="rate">200 Mbps</div>
+        <div class="range">Indoor 10–30m</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">802.11a/g</div>
+        <div class="rate">54 Mbps</div>
+        <div class="range">Indoor 10–30m</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">802.11b</div>
+        <div class="rate">5–11 Mbps</div>
+        <div class="range">Indoor 10–30m</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">802.15 (Bluetooth)</div>
+        <div class="rate">1 Mbps</div>
+        <div class="range">10–100m</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">WiMAX</div>
+        <div class="rate">5–11 Mbps</div>
+        <div class="range">Outdoor 200m–4km</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">3G Enhanced</div>
+        <div class="rate">4 Mbps</div>
+        <div class="range">Outdoor 5–20km</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">3G</div>
+        <div class="rate">384 Kbps</div>
+        <div class="range">Outdoor 5–20km</div>
+      </div>
+      <div class="speed-card">
+        <div class="std">2G (GSM)</div>
+        <div class="rate">56 Kbps</div>
+        <div class="range">Outdoor 5–20km</div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>IEEE 802 Family — Exam Cheatsheet</h3>
+      <table class="comp-table">
+        <tr><th>Standard</th><th>Technology</th></tr>
+        <tr><td>802.3</td><td>Ethernet (CSMA/CD)</td></tr>
+        <tr><td>802.11</td><td>Wireless LAN / Wi-Fi (CSMA/CA)</td></tr>
+        <tr><td>802.15</td><td>Bluetooth (WPAN — Wireless Personal Area Network)</td></tr>
+        <tr><td>802.16</td><td>WiMAX — Worldwide Interoperability for Microwave Access (point-to-multipoint)</td></tr>
+        <tr><td>GSM</td><td>Global System for Mobile Communications — 2G cellular</td></tr>
+        <tr><td>802.11p</td><td>VANET — Vehicular Ad Hoc Networks</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- SECTION 7: MOBILITY -->
+  <section id="s7">
+    <div class="section-header">
+      <div class="section-num orange">7</div>
+      <h2>Host Mobility</h2>
+    </div>
+
+    <div class="card">
+      <h3>Three Degrees of User Mobility</h3>
+      <table class="comp-table">
+        <tr><th>Scenario</th><th>What Happens</th><th>Challenge</th></tr>
+        <tr><td>Moves within same access network</td><td>IP address stays same; ongoing transfers continue</td><td>Minimal — only link-layer changes</td></tr>
+        <tr><td>Shuts down between moves</td><td>Gets new IP address at new network</td><td>Low — no ongoing transfers to maintain</td></tr>
+        <tr><td>Moves while active (true mobility)</td><td>Must maintain ongoing connections while changing networks</td><td>Hard — need to ensure traffic keeps reaching host</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3>Mobility Within Same Subnet</h3>
+      <ul>
+        <li>H1 keeps same IP address — ongoing transfers uninterrupted</li>
+        <li>H1 detects weakening signal from current AP → scans for stronger one</li>
+        <li>Changes to another AP with same SSID</li>
+        <li>Disassociates from old AP, associates with new AP</li>
+        <li>Switch learns new location via self-learning mechanism</li>
+      </ul>
+    </div>
+
+    <div class="highlight">
+      <strong>The Core Mobility Problem</strong>
+      "Wireless breaks the abstraction of a link. Mobility breaks the association of address and location."
+      TCP treats packet loss as congestion; mobile wireless causes non-congestion loss. TCP also doesn't handle changing RTT (Round-Trip Time) well. Higher-layer protocols don't perform as expected.
+    </div>
+  </section>
+
+  <!-- SECTION 8: MOBILE IP -->
+  <section id="s8">
+    <div class="section-header">
+      <div class="section-num purple">8</div>
+      <h2>Mobile IP — Maintaining Connections Across Networks</h2>
+    </div>
+
+    <div class="card">
+      <h3>Key Terminology</h3>
+      <table class="comp-table">
+        <tr><th>Term</th><th>Definition</th></tr>
+        <tr><td><b>Home Network</b></td><td>Mobile's permanent home network (e.g., 128.119.40/24)</td></tr>
+        <tr><td><b>Permanent Address</b></td><td>Address in home network — always used to reach the mobile (e.g., 128.119.40.186)</td></tr>
+        <tr><td><b>Home Agent</b></td><td>Entity in home network that performs mobility functions on mobile's behalf when it's away</td></tr>
+        <tr><td><b>Visited Network</b></td><td>Network where mobile currently resides (e.g., 79.129.13/24)</td></tr>
+        <tr><td><b>Care-of-Address (COA)</b></td><td>Temporary address in visited network — used to actually forward packets to mobile</td></tr>
+        <tr><td><b>Foreign Agent</b></td><td>Entity in visited network helping with forwarding</td></tr>
+        <tr><td><b>Correspondent</b></td><td>Node that wants to communicate with the mobile</td></tr>
+      </table>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h3>Indirect Routing (Triangle Routing)</h3>
+        <div class="flow" style="flex-direction:column;align-items:flex-start;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">1</div><p style="font-size:0.85rem">Correspondent sends to mobile's permanent address</p></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">2</div><p style="font-size:0.85rem">Home agent intercepts, tunnels to foreign agent</p></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">3</div><p style="font-size:0.85rem">Foreign agent forwards to mobile</p></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">4</div><p style="font-size:0.85rem">Mobile replies <b>directly</b> to correspondent</p></div>
+        </div>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:10px">Location is <b>transparent</b> to correspondent. But creates triangle routing inefficiency — packet goes home network even if correspondent and mobile are nearby.</p>
+      </div>
+      <div class="card">
+        <h3>Direct Routing</h3>
+        <div class="flow" style="flex-direction:column;align-items:flex-start;gap:6px;">
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">1</div><p style="font-size:0.85rem">Correspondent asks home agent for mobile's COA</p></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">2</div><p style="font-size:0.85rem">Correspondent sends directly to foreign agent</p></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">3</div><p style="font-size:0.85rem">Foreign agent forwards to mobile</p></div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="flow-step">4</div><p style="font-size:0.85rem">Mobile replies directly to correspondent</p></div>
+        </div>
+        <p style="font-size:0.82rem;color:var(--warn);margin-top:10px">No longer transparent to correspondent — it now knows mobile's location directly.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Registration Process</h3>
+      <div class="flow">
+        <div class="flow-step">Mobile enters visited network</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Contacts foreign agent</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Foreign agent tells home agent: "mobile is here"</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Home agent now knows COA</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>Letting Routing Protocol Handle Mobility (Alternative)</h3>
+      <ul>
+        <li>Mobile node injects its address into routing protocol (e.g., OSPF)</li>
+        <li>Advantage: no changes to end host; efficient routing path</li>
+        <li>Disadvantage: does not scale — too many routing messages, bigger routing tables</li>
+        <li>Example: Boeing Connexion (WiFi at 35,000 feet) used BGP with IP block per airplane</li>
+      </ul>
+    </div>
+
+    <div class="highlight green">
+      <strong>Exam Trick — Indirect vs Direct Routing</strong>
+      Indirect = triangle inefficiency but location transparent to correspondent.<br>
+      Direct = efficient routing but correspondent must know mobile's COA.<br>
+      Mobile always <b>replies directly</b> in both cases — only the <i>correspondent-to-mobile</i> path differs.
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  CCN Exam Prep · Guide 1: Wireless Networks & IEEE 802.11 · Lectures 1.1 & 2 · Dr. Muazzam A. Khan
+</footer>
+
+</body>
+</html>

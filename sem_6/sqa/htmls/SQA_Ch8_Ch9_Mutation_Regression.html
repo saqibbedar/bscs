@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQA — Ch.8 Mutation Testing & Ch.9 Regression Testing</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --surface3: #212635;
+    --border: #2a2f3f;
+    --accent: #5b8dee;
+    --accent2: #e06c75;
+    --accent3: #98c379;
+    --accent4: #e5c07b;
+    --accent5: #c678dd;
+    --accent6: #56b6c2;
+    --text: #abb2bf;
+    --text-bright: #e6edf3;
+    --text-muted: #5c6370;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px; line-height: 1.75; }
+
+  /* HEADER */
+  .page-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 2rem 1.5rem 1.5rem; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 960px; margin: 0 auto; }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: .75rem; }
+  .header-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent4); background: rgba(229,192,123,.1); border: 1px solid rgba(229,192,123,.2); padding: 2px 10px; border-radius: 20px; display: inline-block; margin-bottom: .4rem; }
+  .header-title { font-size: 1.4rem; font-weight: 600; color: var(--text-bright); }
+  .header-sub { font-size: 12.5px; color: var(--text-muted); margin-top: .2rem; }
+  .nav-wrap { display: flex; gap: .4rem; flex-wrap: wrap; }
+  .nav-ch { font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-decoration: none; white-space: nowrap; }
+  .nav-ch.ch8 { background: rgba(91,141,238,.12); border: 1px solid rgba(91,141,238,.3); color: var(--accent); }
+  .nav-ch.ch9 { background: rgba(152,195,121,.1); border: 1px solid rgba(152,195,121,.25); color: var(--accent3); }
+  .nav-ch:hover { opacity: .8; }
+
+  /* CHAPTER BADGE */
+  .ch-banner { padding: .4rem 1rem; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; border-radius: 6px; display: inline-block; margin-bottom: 1.25rem; }
+  .ch-banner.ch8 { background: rgba(91,141,238,.1); border: 1px solid rgba(91,141,238,.25); color: var(--accent); }
+  .ch-banner.ch9 { background: rgba(152,195,121,.08); border: 1px solid rgba(152,195,121,.2); color: var(--accent3); }
+
+  /* LAYOUT */
+  .main { max-width: 960px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* SECTION */
+  .section { margin-bottom: 3rem; }
+  .section-header { display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem; padding-bottom: .6rem; border-bottom: 1px solid var(--border); }
+  .section-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); background: rgba(91,141,238,.1); border: 1px solid rgba(91,141,238,.2); padding: 2px 8px; border-radius: 4px; }
+  .section-num.g { color: var(--accent3); background: rgba(152,195,121,.08); border-color: rgba(152,195,121,.2); }
+  .section-title { font-size: 1.1rem; font-weight: 600; color: var(--text-bright); }
+
+  /* CARD */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; margin-bottom: 1rem; }
+  .card-title { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .07em; color: var(--accent); margin-bottom: .75rem; }
+  .card p { margin-bottom: .55rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* CALLOUT */
+  .callout { border-radius: 8px; padding: .9rem 1.1rem; margin: .9rem 0; display: flex; gap: .7rem; align-items: flex-start; }
+  .callout-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+  .callout-body { flex: 1; font-size: 14px; }
+  .callout-title { font-weight: 600; font-size: 13px; margin-bottom: .25rem; }
+  .callout.info { background: rgba(91,141,238,.07); border-left: 3px solid var(--accent); }
+  .callout.info .callout-title { color: var(--accent); }
+  .callout.warn { background: rgba(229,192,123,.07); border-left: 3px solid var(--accent4); }
+  .callout.warn .callout-title { color: var(--accent4); }
+  .callout.success { background: rgba(152,195,121,.07); border-left: 3px solid var(--accent3); }
+  .callout.success .callout-title { color: var(--accent3); }
+  .callout.danger { background: rgba(224,108,117,.07); border-left: 3px solid var(--accent2); }
+  .callout.danger .callout-title { color: var(--accent2); }
+  .callout.purple { background: rgba(198,120,221,.07); border-left: 3px solid var(--accent5); }
+  .callout.purple .callout-title { color: var(--accent5); }
+
+  /* CODE */
+  .code-block { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: .9rem 1.1rem; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--text-bright); margin: .7rem 0; overflow-x: auto; white-space: pre; line-height: 1.65; }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--accent4); }
+  .hl-orange { color: #e5c07b; }
+  .hl-blue { color: #5b8dee; }
+  .hl-green { color: #98c379; }
+  .hl-red { color: #e06c75; }
+  .hl-purple { color: #c678dd; }
+  .hl-cyan { color: #56b6c2; }
+
+  /* TABLE */
+  .tbl-wrap { overflow-x: auto; margin: .75rem 0; border-radius: 8px; border: 1px solid var(--border); }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { background: var(--surface3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: .5rem .8rem; text-align: left; border: 1px solid var(--border); }
+  td { padding: .45rem .8rem; border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  tr:nth-child(even) td { background: rgba(255,255,255,.015); }
+  .td-g { color: var(--accent3); font-weight: 700; }
+  .td-r { color: var(--accent2); font-weight: 700; }
+  .td-hi { background: rgba(152,195,121,.08) !important; }
+  .td-lo { background: rgba(224,108,117,.06) !important; }
+  .td-y { color: var(--accent4); }
+
+  /* FORMULA */
+  .formula-box { background: var(--surface2); border: 1px solid rgba(91,141,238,.3); border-radius: 10px; padding: 1.25rem 1.5rem; text-align: center; margin: 1rem 0; }
+  .formula-main { font-family: 'JetBrains Mono', monospace; font-size: 1.2rem; color: var(--text-bright); margin-bottom: .5rem; }
+  .formula-label { font-size: 12.5px; color: var(--text-muted); margin-top: .4rem; }
+  .formula-vars { display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap; margin-top: .75rem; }
+  .fvar { font-size: 13px; color: var(--text); }
+  .fvar span { font-family: 'JetBrains Mono', monospace; color: var(--accent4); }
+
+  /* GRID CARDS */
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: .9rem; margin: .9rem 0; }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .8rem; margin: .9rem 0; }
+  .mini-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .mini-card-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .5rem; }
+  .mini-card p { font-size: 13.5px; margin-bottom: .35rem; }
+  .mini-card p:last-child { margin-bottom: 0; }
+
+  /* PROCEDURE */
+  .procedure { background: var(--surface2); border: 1px solid rgba(91,141,238,.25); border-radius: 10px; padding: 1.4rem; margin: 1rem 0; }
+  .procedure-title { font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 700; color: var(--accent); margin-bottom: 1rem; padding-bottom: .55rem; border-bottom: 1px solid rgba(91,141,238,.2); }
+  .proc-step { display: flex; gap: .7rem; margin-bottom: .8rem; align-items: flex-start; }
+  .step-num { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; background: var(--accent); color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px; }
+  .step-num.green { background: var(--accent3); }
+  .step-body { flex: 1; font-size: 14px; }
+
+  /* FLOW DIAGRAM */
+  .flow-wrap { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; }
+  .flow-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: .5rem .9rem; font-size: 13px; color: var(--text-bright); white-space: nowrap; }
+  .flow-box.active { border-color: var(--accent); color: var(--accent); }
+  .flow-box.green { border-color: var(--accent3); color: var(--accent3); }
+  .flow-arr { color: var(--text-muted); font-size: 16px; }
+
+  /* EXAMPLE BLOCK */
+  .example-block { background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent4); border-radius: 0 0 10px 10px; margin: 1.25rem 0; }
+  .example-header { background: rgba(229,192,123,.05); padding: .65rem 1.1rem; display: flex; align-items: center; gap: .65rem; cursor: pointer; transition: background .2s; }
+  .example-header:hover { background: rgba(229,192,123,.09); }
+  .example-badge { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent4); background: rgba(229,192,123,.1); border: 1px solid rgba(229,192,123,.2); padding: 2px 8px; border-radius: 3px; white-space: nowrap; }
+  .example-title { font-weight: 600; font-size: 13.5px; color: var(--text-bright); flex: 1; }
+  .toggle-arr { color: var(--text-muted); font-size: 13px; transition: transform .2s; }
+  .example-body { padding: 1.1rem; border-top: 1px solid var(--border); }
+
+  /* NOTE TAG */
+  .note-tag { font-size: 11px; color: var(--accent4); background: rgba(229,192,123,.08); border: 1px solid rgba(229,192,123,.18); padding: 2px 8px; border-radius: 3px; font-family: 'JetBrains Mono', monospace; display: inline-block; margin-right: .3rem; }
+  .note-tag.blue { color: var(--accent); background: rgba(91,141,238,.08); border-color: rgba(91,141,238,.2); }
+  .note-tag.green { color: var(--accent3); background: rgba(152,195,121,.08); border-color: rgba(152,195,121,.2); }
+  .note-tag.red { color: var(--accent2); background: rgba(224,108,117,.08); border-color: rgba(224,108,117,.2); }
+
+  /* DIVIDER */
+  .ch-divider { border: none; border-top: 2px solid var(--border); margin: 3rem 0; position: relative; }
+  .ch-divider::after { content: attr(data-label); position: absolute; top: -11px; left: 50%; transform: translateX(-50%); background: var(--bg); padding: 0 1rem; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--text-muted); letter-spacing: .05em; }
+  hr.simple { border: none; border-top: 1px solid var(--border); margin: 2rem 0; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .page-header { padding: 1.1rem 1rem; }
+    .main { padding: 1.5rem 1rem 4rem; }
+    .flow-wrap { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="header-inner">
+    <div class="header-top">
+      <div>
+        <div class="header-tag">SQA · Mathur Textbook</div>
+        <div class="header-title">Chapter 8 &amp; 9 — Mutation &amp; Regression Testing</div>
+        <div class="header-sub">Images 1–10 mapped · From First Principles · Exam Ready</div>
+      </div>
+      <nav class="nav-wrap">
+        <a class="nav-ch ch8" href="#ch8">↓ Ch.8 Mutation</a>
+        <a class="nav-ch ch8" href="#s82">8.2 Mutants</a>
+        <a class="nav-ch ch8" href="#s83">8.3 Score</a>
+        <a class="nav-ch ch8" href="#s84">8.4 Operators</a>
+        <a class="nav-ch ch8" href="#s85">Distinguish</a>
+        <a class="nav-ch ch9" href="#ch9">↓ Ch.9 Regression</a>
+        <a class="nav-ch ch9" href="#s92">9.2 Process</a>
+        <a class="nav-ch ch9" href="#s95">9.5 Execution Trace</a>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- ════════════════════════════════════════
+     CHAPTER 8 — MUTATION TESTING
+════════════════════════════════════════ -->
+<div id="ch8" style="scroll-margin-top:80px;">
+<div class="ch-banner ch8">Chapter 8 — Mutation Testing</div>
+
+<div class="callout info">
+  <div class="callout-icon">📌</div>
+  <div class="callout-body">
+    <div class="callout-title">What Ch.8 is about — one sentence</div>
+    You have a program P and a test set T. P passes all tests. But how good is T? Mutation testing answers this by deliberately <strong>introducing bugs</strong> (mutants) into P and checking whether T is strong enough to detect them.
+  </div>
+</div>
+
+<!-- 8.1 INTRO -->
+<section class="section" id="s81">
+  <div class="section-header">
+    <span class="section-num">8.1</span>
+    <span class="section-title">Introduction — What is Mutation Testing?</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Core Idea (from your Image 2)</div>
+    <p>Your notes ask: <em>"What is adequacy? What is program mutation?"</em></p>
+    <p><strong>Test adequacy</strong> = a measure of how "good" your test set is. A test set T is adequate w.r.t. some criterion if it meets the defined quality threshold for that criterion.</p>
+    <p><strong>Program mutation</strong> = slightly changing a program P to produce a mutant P'. We then ask: does T catch the difference between P and P'? If yes, T is "good" at detecting that kind of fault.</p>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card" style="border-top:2px solid var(--accent4);">
+      <div class="mini-card-label" style="color:var(--accent4);">Sunny Day Scenario</div>
+      <p>P and P' behave the same → T passes both. This is the <em>success scenario</em>.</p>
+    </div>
+    <div class="mini-card" style="border-top:2px solid var(--accent2);">
+      <div class="mini-card-label" style="color:var(--accent2);">Rainy Day Scenario</div>
+      <p>P and P' behave differently → T should expose this. If T fails to, T is <em>inadequate</em>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 8.2 MUTANTS -->
+<section class="section" id="s82">
+  <div class="section-header">
+    <span class="section-num">8.2</span>
+    <span class="section-title">Mutation &amp; Mutants — Key Definitions</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Vocabulary You Must Know (Image 2)</div>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent);">P'</div>
+        <p>A <strong>mutant</strong> of program P. Obtained by making one small syntactic change to P.</p>
+        <p>P is called the <strong>parent</strong> of P'.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent3);">t → single test</div>
+        <p>One test case.</p>
+        <p><strong>T</strong> = set of all test cases (the test suite).</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent4);">Kill a Mutant</div>
+        <p>Test t <strong>kills</strong> (= distinguishes) P' if: <code>P(t) ≠ P'(t)</code>.</p>
+        <p>That test has revealed a behavioral difference.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent5);">Live Mutant</div>
+        <p>A mutant that has NOT been killed by any test in T yet. Still "alive."</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">First-Order vs Higher-Order Mutants</div>
+    <p><strong>First-order mutant</strong>: ONE change made to P. These are standard in practice.</p>
+    <p><strong>Higher-order mutant</strong>: two or more changes made simultaneously. Rarely used — exponentially more mutants, harder to manage.</p>
+    <div class="callout warn">
+      <div class="callout-icon">⚠️</div>
+      <div class="callout-body">Why first-order only? Because the number of second-order mutants explodes. For a 28-line Fortran program (FIND), there are already 528,906 second-order mutants. Impractical.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">The foo(x, y) Example (your Images 4, 5, 7)</div>
+    <p>Your notes show a function with a <strong>missing else</strong>. Here it is mapped to the book:</p>
+    <div class="grid2">
+      <div>
+        <p style="font-size:12px;color:var(--accent3);margin-bottom:.3rem;">✅ CORRECT PROGRAM (P)</p>
+        <div class="code-block">int foo(int x, int y) {
+  int p = 0;
+  if (x &lt; y)
+    p = p + 1;
+  <span class="hl-green">else</span>
+    <span class="hl-green">p = p - 1;</span>  ← else IS present
+  return (x + p * y);
+}</div>
+      </div>
+      <div>
+        <p style="font-size:12px;color:var(--accent2);margin-bottom:.3rem;">❌ MUTANT (from your Image 7)</p>
+        <div class="code-block">int foo(int x, int y) {
+  int p = 0;
+  if (x &lt; y)
+    p = p + 1;
+  <span class="hl-red">← missing else!</span>
+  return (x + p * y);
+}</div>
+      </div>
+    </div>
+    <p style="margin-top:.75rem;font-size:13.5px;">The book shows three mutants m₁, m₂, m₃ derived from a base function. Your Image 4 shows:</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Mutant</th><th>Mutation</th><th>Function</th></tr></thead>
+        <tbody>
+          <tr><td class="hl-blue">m₁</td><td>Original: <code>return(x+y)</code></td><td>foo(int x,y) { return(x+y); }</td></tr>
+          <tr><td class="hl-blue">m₂</td><td>Replace + with −: <code>return(x-0)</code></td><td>foo(int x,y) { return(x-0); }</td></tr>
+          <tr><td class="hl-blue">m₃</td><td>Delete: <code>0*(0+y)</code></td><td>foo(int x,y) { return(0+y); }</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout success" style="margin-top:.75rem;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">From your Image 4</div>
+        <p>Test t₁ = (x=2, y=0): m₁(t₁)=2, m₂(t₁)=1. Expected=1-0=1. Expected behavior and actual same hai → this mutant is NOT revealed. In na hi mutant ko reveal kr yang han — error b nahi show kr yaha.</p>
+        <p><strong>m₃ is killed</strong> by t₁ because m₃(t₁) = 0 ≠ expected = 2. ✅</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Equivalent Mutants (Images 2, 5, 6)</div>
+    <p>If there is NO test case t in the <strong>entire input domain</strong> of P such that <code>P(t) ≠ P'(t)</code>, then P' is <strong>equivalent</strong> to P.</p>
+    <p>Equivalent mutants cannot be killed — ever. They are removed from the mutation score calculation.</p>
+    <div class="callout danger">
+      <div class="callout-icon">🔴</div>
+      <div class="callout-body">
+        <div class="callout-title">The Undecidable Problem (Image 6)</div>
+        <p>Determining whether a mutant is equivalent to its parent is <strong>undecidable</strong> in polynomial time — i.e., no program can decide this in bounded time for all cases. That is why we handle it manually or heuristically.</p>
+        <p><strong>Decidable</strong>: there exists a polynomial-time program that can say yes/no. <strong>Undecidable</strong>: no such program exists in general.</p>
+      </div>
+    </div>
+    <p style="margin-top:.75rem;"><strong>From your Image 5 (the algebra to check equivalence):</strong></p>
+    <div class="code-block">P  computes: x - y
+m₂ computes: x + y   ← mutant
+
+Are they equivalent?
+Set x-y = x+y
+→ 0 = 2y
+→ y ≠ 0    (they differ when y ≠ 0)
+→ NOT equivalent!</div>
+    <p style="margin-top:.6rem;">So test t₃ with <code>y ≠ 0</code> will kill m₂. Your notes note: "by t₃ all mutants are killed." ✅</p>
+    <div class="callout info" style="margin-top:.75rem;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Misconception (Images 6, 7)</div>
+        <p>A common misconception: "if a mutant is not killed by T, it must be equivalent." <strong>Wrong.</strong> It might just be that T is weak and doesn't contain the right test. Always check algebraically whether the mutant's output domain can ever differ from P's.</p>
+        <p>The "missing else" example in Image 7 is precisely this: the mutation creates a "missing path" — a code path that P has but the mutant doesn't, or vice versa. That's a structural change, not necessarily semantic equivalence.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8.3 MUTATION SCORE -->
+<section class="section" id="s83">
+  <div class="section-header">
+    <span class="section-num">8.3</span>
+    <span class="section-title">Test Adequacy Using Mutation — Mutation Score</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">This is the full process from Image 3 and the core of Chapter 8. <strong>Memorize the formula and process.</strong></p>
+
+  <div class="card">
+    <div class="card-title">Notation (Image 3)</div>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent4);">m = Total Mutants</div>
+        <p>All mutants generated from P. Also written |K| in some notations.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent3);">K₁ = Killed Mutants</div>
+        <p>Mutants that have been distinguished (killed) by at least one test in T.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent);">K₂ = Live Mutants</div>
+        <p>Mutants not yet killed. Could be equivalent or just need better tests.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent2);">e = Equivalent Mutants</div>
+        <p>Proven to be equivalent to P. Excluded from denominator of MS.</p>
+      </div>
+    </div>
+    <p style="margin-top:.75rem;">Note: K - K₁ = remaining live (non-killed) mutants. If K - K₁ = 0, all are killed.</p>
+  </div>
+
+  <div class="formula-box">
+    <div class="formula-main">MS = K₁ / (K − e)</div>
+    <div class="formula-label">Mutation Score = Killed Mutants / (Total Mutants − Equivalent Mutants)</div>
+    <div class="formula-vars">
+      <div class="fvar"><span>K₁</span> = distinguished (killed)</div>
+      <div class="fvar"><span>K</span> = total generated</div>
+      <div class="fvar"><span>e</span> = equivalent (excluded)</div>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-icon">✅</div>
+    <div class="callout-body">
+      <div class="callout-title">MS = 1 → Perfectly adequate test set</div>
+      <p>All non-equivalent mutants have been killed. T is mutation-adequate.</p>
+      <p>MS &lt; 1 → T is inadequate. You need more test cases.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Full Procedure: Test Adequacy Assessment (Images 3, 4)</div>
+    <div class="procedure">
+      <div class="procedure-title">12-Step Mutation Assessment Process (Figure 8.1 in book)</div>
+      <div class="proc-step"><div class="step-num">1</div><div class="step-body"><strong>Execute P against all tests in T.</strong> Record P(t) for all t ∈ T. Ensure P is correct — mutation testing starts only after P passes all its tests.</div></div>
+      <div class="proc-step"><div class="step-num">2</div><div class="step-body"><strong>Generate mutants.</strong> Apply mutation operators to P. All mutants are initially "live" → set L.</div></div>
+      <div class="proc-step"><div class="step-num">3</div><div class="step-body"><strong>All mutants considered?</strong> If yes → go to Step 11. If no → pick next mutant.</div></div>
+      <div class="proc-step"><div class="step-num">4</div><div class="step-body"><strong>Remove next mutant M from L.</strong> Now we try to distinguish it.</div></div>
+      <div class="proc-step"><div class="step-num">5</div><div class="step-body"><strong>All tests considered for M?</strong> If yes → M is not killed → go to Step 10 (put back in L).</div></div>
+      <div class="proc-step"><div class="step-num">6</div><div class="step-body"><strong>Select next test case t from T.</strong></div></div>
+      <div class="proc-step"><div class="step-num">7</div><div class="step-body"><strong>Execute M against t.</strong> Compute M(t).</div></div>
+      <div class="proc-step"><div class="step-num">8</div><div class="step-body"><strong>Is P(t) = M(t)?</strong> If yes → same behavior → go back to Step 5. If no → M is distinguished!</div></div>
+      <div class="proc-step"><div class="step-num">9</div><div class="step-body"><strong>M is distinguished → add to set D.</strong> Stop running M against remaining tests. Go to Step 3.</div></div>
+      <div class="proc-step"><div class="step-num">10</div><div class="step-num" style="width:auto;height:auto;border-radius:4px;background:var(--accent5);">10</div><div class="step-body"><strong>Put M back in L as live.</strong> M was not killed by any test in T.</div></div>
+      <div class="proc-step"><div class="step-num" style="background:var(--accent5);">11</div><div class="step-body"><strong>Identify equivalent mutants.</strong> Check remaining live mutants — prove algebraically if any are equivalent. Put them in set E.</div></div>
+      <div class="proc-step"><div class="step-num" style="background:var(--accent3);">12</div><div class="step-body"><strong>Compute MS = |D| / (|L| + |D|).</strong> This is your test adequacy score.</div></div>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="example-header" onclick="tog(this)">
+      <span class="example-badge">Book Example 8.12</span>
+      <span class="example-title">Complete table: P8.1 with 8 mutants, 4 tests</span>
+      <span class="toggle-arr">▼</span>
+    </div>
+    <div class="example-body">
+      <p style="margin-bottom:.5rem;">Program: <code>if(x&lt;y) output(x+y); else output(x*y);</code></p>
+      <p style="margin-bottom:.75rem;">Tests: t₁=(0,0), t₂=(0,1), t₃=(1,0), t₄=(-1,-2)</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Mutant</th><th>Mutation</th><th>t₁(0,0)</th><th>t₂(0,1)</th><th>t₃(1,0)</th><th>t₄(-1,-2)</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td>P (correct)</td><td>—</td><td>0</td><td>1</td><td>0</td><td>2</td><td>—</td></tr>
+            <tr><td class="hl-blue">M₁</td><td>x+1 &lt; y</td><td>0</td><td class="td-hi td-g">0* ✓</td><td>NE</td><td>NE</td><td class="td-g">KILLED t₂</td></tr>
+            <tr><td class="hl-blue">M₂</td><td>x &lt; y+1</td><td>0</td><td>1</td><td>0</td><td>2</td><td class="td-r">LIVE (equiv)</td></tr>
+            <tr><td class="hl-blue">M₃</td><td>x+1+y</td><td>0</td><td class="td-hi td-g">2* ✓</td><td>NE</td><td>NE</td><td class="td-g">KILLED t₂</td></tr>
+            <tr><td class="hl-blue">M₄</td><td>x+y+1</td><td>0</td><td class="td-hi td-g">2* ✓</td><td>NE</td><td>NE</td><td class="td-g">KILLED t₂</td></tr>
+            <tr><td class="hl-blue">M₅</td><td>x−y</td><td>0</td><td class="td-hi td-g">-1* ✓</td><td>NE</td><td>NE</td><td class="td-g">KILLED t₂</td></tr>
+            <tr><td class="hl-blue">M₆</td><td>(x+1)*y</td><td>0</td><td>1</td><td>0</td><td class="td-hi td-g">0* ✓</td><td class="td-g">KILLED t₄</td></tr>
+            <tr><td class="hl-blue">M₇</td><td>x*(y+1)</td><td>0</td><td>1</td><td class="td-hi td-g">1* ✓</td><td>NE</td><td class="td-g">KILLED t₃</td></tr>
+            <tr><td class="hl-blue">M₈</td><td>x/y</td><td class="td-hi td-g">U* ✓</td><td>NE</td><td>NE</td><td>NE</td><td class="td-g">KILLED t₁</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:.5rem;">NE=Not Executed, U=Undefined (div by 0), *=first distinguishing test</p>
+      <div class="callout success" style="margin-top:.75rem;">
+        <div class="callout-icon">📊</div>
+        <div class="callout-body">
+          <strong>MS = |D| / (|L| + |D|) = 7 / (1 + 7) = 0.875</strong><br>
+          M₂ is live. After algebraic analysis: M₂ is NOT equivalent (can be killed by x=1, y=1). After adding that test: MS = 1.0 ✅
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Test Enhancement Using Mutation (Image 3)</div>
+    <p>From your notes: <em>"non-equivalent live ke adequacy enhance kry ga. If MS is 1 then means mutants are killed. Existing test nay sary mutants ko kill kr deya. Ab new add tb gay TC."</em></p>
+    <p>Translated precisely:</p>
+    <p>① If MS = 1 → all non-equivalent mutants killed → T is adequate → done.</p>
+    <p>② If MS &lt; 1 → some live mutants remain → add new test cases to kill them → recompute MS.</p>
+    <p>③ If MS &lt; K₁/(K-e) → we make new test cases.</p>
+    <div class="code-block">Condition to ADD new tests:
+  1 &lt; K₁ / (K - e)  is FALSE
+  → i.e. MS &lt; 1
+  → live mutants still exist
+  → enhance T with new test cases that kill the remaining live mutants</div>
+  </div>
+</section>
+
+<!-- 8.4 MUTATION OPERATORS -->
+<section class="section" id="s84">
+  <div class="section-header">
+    <span class="section-num">8.4</span>
+    <span class="section-title">Mutation Operators &amp; Competent Programmer Hypothesis</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">What is a Mutation Operator? (Image 8)</div>
+    <p>A <strong>mutation operator</strong> is a rule that systematically generates mutants from a program. It defines what kind of change to make. Examples:</p>
+    <div class="code-block">ROR — Relational Operator Replacement:  change &lt; to ≤, &gt; to &lt;, etc.
+AOR — Arithmetic Operator Replacement: change + to -, * to /, etc.
+ABS — Absolute Value Insertion:         wrap expression e in abs(e)
+COR — Conditional Operator Replacement: change &amp;&amp; to ||, etc.
+CCR — Constant Constant Replacement:    replace constant c with constant d</div>
+  </div>
+
+  <div class="grid2">
+    <div class="mini-card" style="border-top:2px solid var(--accent4);">
+      <div class="mini-card-label" style="color:var(--accent4);">Competent Programmer Hypothesis (Image 8)</div>
+      <p>Competent programmers write programs that are <strong>close to correct</strong> — only a few mutations away from a correct program.</p>
+      <p>"As programs eitny ga k a few mutants away hoga" (your notes)</p>
+    </div>
+    <div class="mini-card" style="border-top:2px solid var(--accent5);">
+      <div class="mini-card-label" style="color:var(--accent5);">Coupling Effect (Image 8)</div>
+      <p>First-order mutants, once detected, can also detect many higher-order mutants — they are "coupled."</p>
+      <p>"First order mutants (once detect ksny way) test cases hai." (your notes)</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Mutation Operators: Language Dependent (Image 8)</div>
+    <p>Mutation operators are <strong>specific to the programming language</strong>. The operators for C are different from Java.</p>
+    <div class="grid2">
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent);">For C / Fortran</div>
+        <p>Operators like ABS, AOR, ROR, COR, etc. — targeting arithmetic and relational changes.</p>
+        <p><strong>Tools</strong>: Mothra (mentioned in your Image 8)</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent3);">For Java (Image 8)</div>
+        <p>Additional operators for: polymorphism, dynamic binding, method overloading.</p>
+        <p><strong>Tools</strong>: muJava, PIT (open source, Image 8)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Mutation Testing at Different Levels (Image 8)</div>
+    <p>From your notes: "mutation and system testing → now we discuss: ① method level ② mutation class testing"</p>
+    <div class="grid3">
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent);">Unit Level</div>
+        <p>Mutate individual functions/methods. Most common.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent3);">Class Level</div>
+        <p>Mutate classes — test object-oriented features: polymorphism, inheritance.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent5);">System Level</div>
+        <p>Mutate integration points — test how components interact.</p>
+      </div>
+    </div>
+    <div class="callout info" style="margin-top:.75rem;">
+      <div class="callout-icon">🔑</div>
+      <div class="callout-body">
+        <div class="callout-title">Application Unit (Image 8)</div>
+        <p>"Application unit: jo critical hen for secure functioning of the application." → If MS ≥ 1 (i.e. = 1), done. If MS &lt; 1, add further test cases.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8.5 DISTINGUISHING A MUTANT -->
+<section class="section" id="s85">
+  <div class="section-header">
+    <span class="section-num">8.3.4</span>
+    <span class="section-title">Distinguishing a Mutant — 3 Conditions (Images 5, 6)</span>
+  </div>
+
+  <div class="callout purple">
+    <div class="callout-icon">🎯</div>
+    <div class="callout-body">
+      <div class="callout-title">This is a frequently asked exam topic</div>
+      Your Image 6 says: "Distinguishing a mutant: ① Reachability ② Infection ③ Propagation"
+    </div>
+  </div>
+
+  <p style="margin-bottom:1rem;">A test t distinguishes mutant M from parent P if and only if ALL THREE conditions hold:</p>
+
+  <div class="grid3">
+    <div class="mini-card" style="border-top:2px solid var(--accent3);">
+      <div class="mini-card-label" style="color:var(--accent3);">① C₁: Reachability</div>
+      <p>The mutated statement must be <strong>executed</strong> during the test run.</p>
+      <p>If the mutated line is never reached, the mutation can never be detected.</p>
+      <p style="font-size:13px;color:var(--text-muted);">Image 6: "Is line tak ana reachability (test case k through a jata hai)"</p>
+    </div>
+    <div class="mini-card" style="border-top:2px solid var(--accent4);">
+      <div class="mini-card-label" style="color:var(--accent4);">② C₂: Infection</div>
+      <p>After the mutated statement executes, the <strong>program state must differ</strong> between P and M.</p>
+      <p style="font-size:13px;color:var(--text-muted);">Image 6: "Program execution sy bad wall state equal na ho" (state must NOT be equal)</p>
+    </div>
+    <div class="mini-card" style="border-top:2px solid var(--accent2);">
+      <div class="mini-card-label" style="color:var(--accent2);">③ C₃: Propagation</div>
+      <p>The state difference must <strong>propagate to the output</strong>. Different internal states that produce the same output still don't distinguish.</p>
+      <p style="font-size:13px;color:var(--text-muted);">Image 6: "Sin and sout ka difference agox program tuk a jay tou esay propagation kshty hain"</p>
+    </div>
+  </div>
+
+  <div class="example-block">
+    <div class="example-header" onclick="tog(this)">
+      <span class="example-badge">Your Image 4 Example</span>
+      <span class="example-title">Testing m₁, m₂, m₃ — which gets killed?</span>
+      <span class="toggle-arr">▼</span>
+    </div>
+    <div class="example-body">
+      <p style="margin-bottom:.75rem;">From your notes: the function foo computes <code>return(x+y)</code> in original. Mutants:</p>
+      <div class="code-block">P  (original):   return(x + y)
+m₁ (mutant 1):   return(x + 1 + y)   ← adds +1
+m₂ (mutant 2):   return(x - 0)       ← arithmetic change  
+m₃ (mutant 3):   return(0 + y)       ← drops x</div>
+      <p style="margin:.5rem 0;">Test t₁: x=2, y=0:</p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Version</th><th>Computation</th><th>Output</th><th>Match P?</th></tr></thead>
+          <tbody>
+            <tr><td>P</td><td>2+0</td><td>2</td><td>—</td></tr>
+            <tr><td>m₁</td><td>2+1+0</td><td>3</td><td class="td-g">✅ DIFFERENT → m₁ killed</td></tr>
+            <tr><td>m₂</td><td>2-0</td><td>2</td><td class="td-r">❌ Same → not killed</td></tr>
+            <tr><td>m₃</td><td>0+0</td><td>0</td><td class="td-g">✅ DIFFERENT → m₃ killed</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:.5rem;font-size:13.5px;">m₂ is live after t₁. Check equivalence: x-0 = x+0 → same for all y=0. But for y≠0? x-0 is still x, x+y is x+y when y=0... wait, the mutation here is on the return value only. Check: is x-0 = x+y for all inputs? No, only when y=0. So m₂ is NOT equivalent. Need test t with y≠0 to kill it.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Error Revealing Conditions (Image 5 bottom)</div>
+    <p>Your notes list exactly three conditions under "error revealing:"</p>
+    <p><span class="note-tag red">C₁</span> Mutant kill ho — the mutated statement must be reached</p>
+    <p><span class="note-tag">C₂</span> New k all output na ay — the output produced by the mutant must differ from the original</p>
+    <p><span class="note-tag blue">C₃</span> Changing b occur ho — the state change must occur and propagate</p>
+    <p style="margin-top:.5rem;">These map exactly to C₁ (Reachability), C₂ (Infection), C₃ (Propagation).</p>
+  </div>
+</section>
+
+</div><!-- /ch8 -->
+
+<hr class="ch-divider" data-label="CHAPTER BREAK">
+
+<!-- ════════════════════════════════════════
+     CHAPTER 9 — REGRESSION TESTING
+════════════════════════════════════════ -->
+<div id="ch9" style="scroll-margin-top:80px;">
+<div class="ch-banner ch9">Chapter 9 — Regression Testing</div>
+
+<div class="callout success">
+  <div class="callout-icon">📌</div>
+  <div class="callout-body">
+    <div class="callout-title">What Ch.9 is about — one sentence</div>
+    You have a working program P and a test set T. You modify P to get P'. You can't run all tests again (time/cost). Which subset of T do you re-run to ensure the unchanged parts of P still work in P'?
+  </div>
+</div>
+
+<!-- 9.1 WHAT IS REGRESSION TESTING -->
+<section class="section" id="s91">
+  <div class="section-header">
+    <span class="section-num g">9.1</span>
+    <span class="section-title">What Is Regression Testing? (Image 9)</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Definition</div>
+    <p><strong>Regression testing</strong>: retesting a modified program P' to ensure that code carried over unchanged from P continues to behave correctly.</p>
+    <p>The word <em>"regress"</em> = return to a previous, worse state. Regression testing prevents that from happening undetected.</p>
+    <div class="grid2" style="margin-top:.75rem;">
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent3);">Corrective RT</div>
+        <p>Testing P' obtained by <strong>fixing bugs</strong> in P.</p>
+      </div>
+      <div class="mini-card">
+        <div class="mini-card-label" style="color:var(--accent);">Progressive RT</div>
+        <p>Testing P' obtained by <strong>adding new features</strong> to P.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Terminology: T is split into 3 categories (Image 9 + Image 1)</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Set</th><th>Name</th><th>Meaning</th><th>Re-run?</th></tr></thead>
+        <tbody>
+          <tr><td class="hl-green">Tr</td><td>Regression subset</td><td>Tests that test functionality CARRIED OVER from P to P'</td><td class="td-g">✅ YES</td></tr>
+          <tr><td class="hl-orange">Tu</td><td>Redundant tests</td><td>Tests that don't traverse any modified portion of P'</td><td>Maybe not</td></tr>
+          <tr><td class="hl-red">To</td><td>Obsolete tests</td><td>Tests that are no longer valid for P' (input format changed, etc.)</td><td class="td-r">❌ NO</td></tr>
+          <tr><td class="hl-blue">Td</td><td>Development tests</td><td>NEW tests for newly added functionality in P'</td><td class="td-g">✅ YES (new)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="margin-top:.5rem;font-size:13.5px;">The test set for P' is: T' = Tr ∪ Td</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Test Selection Techniques (Image 9)</div>
+    <p>Your notes: <em>"Test selection techniques: ① Execution tree ② Extract test vector ③ Syntax trees (④ u/n)"</em></p>
+    <div class="grid3">
+      <div class="mini-card" style="border-top:2px solid var(--accent3);">
+        <div class="mini-card-label" style="color:var(--accent3);">9.4.1 Test All</div>
+        <p>Run T − To. Safest. Most expensive. Used in practice when time allows.</p>
+      </div>
+      <div class="mini-card" style="border-top:2px solid var(--accent4);">
+        <div class="mini-card-label" style="color:var(--accent4);">9.4.2 Random</div>
+        <p>Randomly sample from T − To. Cheap but unreliable.</p>
+      </div>
+      <div class="mini-card" style="border-top:2px solid var(--accent);">
+        <div class="mini-card-label" style="color:var(--accent);">9.4.3 Modification-Traversing</div>
+        <p>Only select tests that traverse modified code. Needs execution trace + syntax trees. <strong>SAFE</strong>.</p>
+      </div>
+      <div class="mini-card" style="border-top:2px solid var(--accent2);">
+        <div class="mini-card-label" style="color:var(--accent2);">9.4.4 Minimization</div>
+        <p>Further reduce Tr by removing redundant tests. NOT necessarily safe.</p>
+      </div>
+      <div class="mini-card" style="border-top:2px solid var(--accent5);">
+        <div class="mini-card-label" style="color:var(--accent5);">9.4.5 Prioritization</div>
+        <p>Rank tests by criticality. Select top-k when resources limited.</p>
+      </div>
+    </div>
+    <div class="callout info" style="margin-top:.75rem;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">From Image 9 right-hand side column</div>
+        <p>"Test Selection Techniques: BP, BVA" — your notes indicate that Black-box Partitioning (BP) and Boundary Value Analysis (BVA) are valid test selection approaches to consider when picking which tests to include in Tr.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9.2 REGRESSION TEST PROCESS -->
+<section class="section" id="s92">
+  <div class="section-header">
+    <span class="section-num g">9.2</span>
+    <span class="section-title">Regression Test Process (Image 9)</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">Your Image 9 explicitly shows the flow: Test Selection → Test Setup → Test Sequencing → Test Execution → Output/Error Collection</p>
+
+  <div class="flow-wrap">
+    <div class="flow-box active">Test Revalidation/<br>Selection</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Test Setup</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Test Sequencing</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Test Execution</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box green">Output Comparison</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box active">Error Collection</div>
+  </div>
+
+  <div class="grid2" style="margin-top:1rem;">
+    <div class="card">
+      <div class="card-title">9.2.1 Test Revalidation (Image 1)</div>
+      <p>Check which tests from T are still valid for P'. A test becomes <strong>obsolete</strong> (To) if:</p>
+      <p>→ Input format changed for P'</p>
+      <p>→ Expected output changed</p>
+      <p>→ Feature removed from P'</p>
+      <p style="margin-top:.5rem;">Valid remaining tests = Tu ∪ Tr (the non-obsolete set).</p>
+    </div>
+    <div class="card">
+      <div class="card-title">9.2.3 Test Sequencing (Image 9)</div>
+      <p>Order of test execution matters for <strong>stateful applications</strong> (banking, SATM).</p>
+      <p>Example: to test Withdraw, you must first run Deposit — otherwise the account balance is 0 and Withdraw fails trivially.</p>
+      <p style="margin-top:.4rem;">Test sequencing ensures P' is in the correct state when each test runs.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">9.2.5 Output Comparison (Image 9)</div>
+    <p>After execution, compare P'(t) with expected output. Automated tools do this. Your Image 9 shows "error collection ← output" arrow.</p>
+    <p>Key challenge: the <strong>oracle problem</strong> — knowing what the correct output should be. In regression testing, the oracle is usually P(t) recorded earlier, or the spec.</p>
+  </div>
+</section>
+
+<!-- 9.5 EXECUTION TRACE + SYNTAX TREES -->
+<section class="section" id="s95">
+  <div class="section-header">
+    <span class="section-num g">9.5</span>
+    <span class="section-title">Test Selection Using Execution Trace &amp; Syntax Trees (Images 1, 10)</span>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <div class="callout-title">This is the most algorithmic part of Ch.9 — and it's in your notes (Images 1, 10)</div>
+      Image 1 explicitly says "Syntax Tree: main.1 → Tree. Both nodes have same syntax than equivalence. T' → changes waly eimey ay gay." Image 10 shows execution traces and test vectors.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Control Flow Graph (CFG) — Basics</div>
+    <p>A CFG G = (N, E) represents a program's flow. Each node N = one basic block. Edges E = control flow.</p>
+    <p><strong>Start</strong> = first node. <strong>End</strong> = last node.</p>
+    <p>Notation: <code>main.3</code> = node 3 in main's CFG. <code>g1.2</code> = node 2 in function g1's CFG.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Execution Trace (Image 10)</div>
+    <p>When P executes against test t, the <strong>execution trace</strong> = sequence of nodes visited in the CFG.</p>
+    <p><strong>test(n)</strong> = the set of all tests that traversed node n. Also called the <strong>test vector</strong> of node n.</p>
+    <p style="margin-top:.5rem;">From your Image 10, the program P9.1 has functions: <code>main</code>, <code>g₁</code>, <code>g₂</code>. With 3 tests:</p>
+    <div class="code-block">T = { t₁: x=1,y=3 | t₂: x=2,y=1 | t₃: x=3,y=4 }</div>
+    <p style="margin:.5rem 0;">Execution traces (from Image 10 + book):</p>
+    <div class="code-block">t₁: main.Start → main.1 → main.2 → g₁.Start → g₁.1 → g₁.3 → g₁.End → main.2 → main.4 → main.End
+t₂: main.Start → main.1 → main.3 → g₂.Start → g₂.1 → g₂.2 → g₂.End → main.3 → main.4 → main.End  
+t₃: main.Start → main.1 → main.3 → g₂.Start → g₂.1 → g₂.3 → g₂.End → main.3 → main.4 → main.End</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Test Vectors for Each Node (Image 10 table)</div>
+    <p>Your Image 10 shows the exact test vector table. Here it is mapped to the book:</p>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Function</th><th>Node 1</th><th>Node 2</th><th>Node 3</th><th>Node 4</th></tr></thead>
+        <tbody>
+          <tr><td class="hl-blue">main</td><td>t₁, t₂, t₃</td><td>t₁, t₃</td><td>t₂</td><td>t₁, t₂, t₃</td></tr>
+          <tr><td class="hl-blue">g₁</td><td>t₁, t₃</td><td>t₃</td><td>t₁</td><td>—</td></tr>
+          <tr><td class="hl-blue">g₂</td><td>t₂</td><td>t₂</td><td>None</td><td>—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p style="font-size:13px;color:var(--text-muted);margin-top:.4rem;">This is exactly your Image 10 table: "Test Vector — for node n"</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Syntax Trees &amp; Node Equivalence (Images 1, 9)</div>
+    <p>Image 1 says: <strong>"Both nodes have same syntax → equivalence."</strong></p>
+    <p>Each node in the CFG has a <strong>syntax tree</strong> representing the code in that basic block. Two nodes n (from P) and n' (from P') are <strong>equivalent</strong> if their syntax trees are identical — meaning the code in that block hasn't changed.</p>
+    <p style="margin-top:.5rem;">Image 1 also says: <strong>"T' → changes waly eimey ay gay"</strong> = T' (the selected regression tests) will contain only those tests that traverse CHANGED (non-equivalent) nodes.</p>
+    <div class="callout info" style="margin-top:.75rem;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Key insight on syntax tree equivalence</div>
+        <p>If node n in G and node n' in G' have the same syntax tree → that code is UNCHANGED → tests traversing only this node need not be selected.</p>
+        <p>If syntax trees differ → code CHANGED → all tests in test(n) are selected for regression.</p>
+        <p>Function calls require checking the CFGs of the called functions recursively!</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Procedure SelectTests (Image 1 + Image 9 methods list)</div>
+    <div class="procedure">
+      <div class="procedure-title">SelectTestsMain — Algorithm for Regression Test Selection</div>
+      <div class="proc-step"><div class="step-num green">1</div><div class="step-body">Set T' = Ø. Unmark all nodes in G (CFG of P) and all child CFGs.</div></div>
+      <div class="proc-step"><div class="step-num green">2</div><div class="step-body">Call <strong>SelectTests(G.Start, G'.Start)</strong> — compare from the start nodes of P and P'.</div></div>
+      <div class="proc-step"><div class="step-num green">3</div><div class="step-body">T' (the output) is the regression test set for P'.</div></div>
+    </div>
+    <div class="procedure" style="margin-top:.75rem; border-color:rgba(152,195,121,.25);">
+      <div class="procedure-title" style="color:var(--accent3);border-color:rgba(152,195,121,.2);">SelectTests(N, N') — Recursive Comparison</div>
+      <div class="proc-step"><div class="step-num green">1</div><div class="step-body">Mark node N (to avoid revisiting).</div></div>
+      <div class="proc-step"><div class="step-num green">2</div><div class="step-body">If N and N' are <strong>NOT equivalent</strong> (different syntax trees): T' = T' ∪ test(N). Return. <em>(All tests that ever visited this changed node are selected.)</em></div></div>
+      <div class="proc-step"><div class="step-num green">3</div><div class="step-body">Let S = successor nodes of N in G.</div></div>
+      <div class="proc-step"><div class="step-num green">4</div><div class="step-body">For each successor n in S:<br>
+        4.1 If n is already marked → return (avoid cycle).<br>
+        4.1.1 Let l = edge label (t, f, or empty).<br>
+        4.1.2 Find n' = corresponding node in G' with same label.<br>
+        4.1.3 Recurse: <strong>SelectTests(n, n')</strong>.
+      </div></div>
+      <div class="proc-step"><div class="step-num green">5</div><div class="step-body">Return.</div></div>
+    </div>
+
+    <div class="example-block" style="margin-top:1rem;">
+      <div class="example-header" onclick="tog(this)">
+        <span class="example-badge">Book Example 9.9</span>
+        <span class="example-title">P9.1 modified — g1 condition changed: a+1==b → a-1==b</span>
+        <span class="toggle-arr">▼</span>
+      </div>
+      <div class="example-body">
+        <p style="margin-bottom:.5rem;">Only g₁ is modified. The CFG structure doesn't change — only the syntax tree of node g₁.1 changes.</p>
+        <div class="code-block">SelectTestsMain:
+  T' = Ø
+  Call SelectTests(G.main.Start, G'.main.Start)
+    → main.Start ≡ main'.Start → proceed
+    → main.1 ≡ main'.1 → proceed
+    → main.2: contains call to g1
+      → Check g1 CFG vs g1' CFG
+      → g1.1 syntax tree: a+1==b  ≠  a-1==b (CHANGED!)
+      → T' = T' ∪ test(main.2) = {t₁, t₃}   ← SELECTED
+    → main.3: contains call to g2 → g2 unchanged → not selected
+  T' = {t₁, t₃}</div>
+        <div class="callout success" style="margin-top:.5rem;">
+          <div class="callout-icon">✅</div>
+          <div class="callout-body">Tests t₁ and t₃ are selected as regression tests because they traverse main.2 which calls the modified g₁. Test t₂ traverses only g₂ (unchanged) → NOT selected. Efficient!</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Image 9 — "constrained to using a subset of mutations" (top of page)</div>
+    <p>This appears at the top of Image 9 and links Ch.8 to Ch.9: when using mutation-based regression testing, you are "constrained to using a subset of mutations" — meaning you don't need to run the full mutation suite; you select the relevant mutants for modified code only.</p>
+  </div>
+</section>
+
+</div><!-- /ch9 -->
+
+<!-- ════════════════════════════════════════
+     MASTER EXAM CHEATSHEET
+════════════════════════════════════════ -->
+<hr class="simple">
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">EXAM</span>
+    <span class="section-title">Master Cheatsheet — What You Must Know Cold</span>
+  </div>
+
+  <div class="grid2">
+    <div class="card" style="border-top:2px solid var(--accent);">
+      <div class="card-title" style="color:var(--accent);">Ch.8 — Mutation: Key Formulas</div>
+      <p><code>MS = K₁ / (K − e)</code> = Mutation Score</p>
+      <p><code>K₁</code> = killed, <code>K</code> = total, <code>e</code> = equivalent</p>
+      <p>MS = 1 → adequate. MS &lt; 1 → add tests.</p>
+      <p>Kill condition: <code>P(t) ≠ P'(t)</code></p>
+      <p>3 conditions to kill: Reach → Infect → Propagate</p>
+      <p>Equivalent mutant → undecidable in general</p>
+    </div>
+    <div class="card" style="border-top:2px solid var(--accent3);">
+      <div class="card-title" style="color:var(--accent3);">Ch.9 — Regression: Key Facts</div>
+      <p>T = To (obsolete) + Tu (redundant) + Tr (regression)</p>
+      <p>T' = Tr ∪ Td (regression + new tests)</p>
+      <p>Safe selection = modification-traversing</p>
+      <p>Syntax tree equivalence → node unchanged → skip</p>
+      <p>test(n) = test vector = set of tests that visited n</p>
+      <p>SelectTests = bottom-up CFG comparison algorithm</p>
+    </div>
+  </div>
+
+  <div class="card" style="border-top:2px solid var(--accent4);">
+    <div class="card-title">One-line Answers for Viva/MCQs</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+        <tbody>
+          <tr><td>What is a mutant?</td><td>A syntactically correct program obtained by making one small change to P</td></tr>
+          <tr><td>When is a mutant killed?</td><td>When P(t) ≠ P'(t) for some test t</td></tr>
+          <tr><td>What is mutation score?</td><td>MS = Killed / (Total − Equivalent), a number between 0 and 1</td></tr>
+          <tr><td>What is an equivalent mutant?</td><td>A mutant that produces identical output to P for ALL possible inputs</td></tr>
+          <tr><td>Why use first-order mutants?</td><td>Higher-order mutants are exponentially more numerous; coupling effect covers them</td></tr>
+          <tr><td>What is regression testing?</td><td>Retesting a modified P' to ensure unchanged code from P still works</td></tr>
+          <tr><td>What is a test vector?</td><td>The set of tests that traversed a given CFG node during execution</td></tr>
+          <tr><td>When are two CFG nodes equivalent?</td><td>When their syntax trees are identical (same code, same structure)</td></tr>
+          <tr><td>What is a "safe" selection technique?</td><td>One that never excludes a test that traverses a modified statement</td></tr>
+          <tr><td>What are the 3 conditions to distinguish a mutant?</td><td>Reachability, State Infection, State Propagation</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+function tog(header) {
+  const body = header.nextElementSibling;
+  const arr = header.querySelector('.toggle-arr');
+  const col = body.style.display === 'none';
+  body.style.display = col ? 'block' : 'none';
+  arr.style.transform = col ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.example-body').forEach(b => b.style.display = 'block');
+  document.querySelectorAll('.toggle-arr').forEach(a => a.style.transform = 'rotate(0deg)');
+});
+</script>
+</body>
+</html>

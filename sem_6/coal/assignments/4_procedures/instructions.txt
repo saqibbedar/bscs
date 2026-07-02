@@ -1,0 +1,18 @@
+Write an Assembly Language program that:
+
+1. Stores two numbers in memory.
+2. Creates three procedures:
+    ADD_NUM → to add two numbers
+    SUB_NUM → to subtract two numbers
+    DIV_NUM → to divide one number by another
+3. Calls all procedures one by one.
+4. Stores all results in separate variables.
+5. Displays all results on the screen.
+
+Submission Rules:
+
+1. Submit your file in .ASM format only.
+2. Do not submit .ZIP or any other file format.
+3. Any submission not in .ASM format will receive zero marks.
+4. File name should be in the format:
+    RegNo_Name_Task4.asm

@@ -1,0 +1,2 @@
+Q1. write a program to convert mathematical expression to prefix notation.                                            
+Q2. Write a program to print the triangle upwards and down wards. use nested loops.   

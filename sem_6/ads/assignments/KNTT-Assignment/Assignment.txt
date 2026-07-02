@@ -1,0 +1,7 @@
+KNTT Implementation
+
+Instructions:
+
+	Pseudocode
+	Code in any language
+	Check the results against the dataset

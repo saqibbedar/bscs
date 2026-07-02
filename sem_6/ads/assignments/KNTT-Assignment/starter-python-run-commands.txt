@@ -1,0 +1,5 @@
+1. python -m venv venv # create virtual environment named 'venv'
+2. source venv/bin/activate  # On Windows: venv\Scripts\activate
+3. pip install numpy pandas # install required libraries
+3.3. pip install -r requirements.txt # using requirements file to install dependencies
+4. python main.py # to run python file

@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 22 — Transaction Management</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:       #f7f6f2;
+  --surface:  #ffffff;
+  --sur2:     #f0efe9;
+  --border:   #e2e0d8;
+  --text:     #1c1917;
+  --muted:    #78716c;
+  --ink:      #292524;
+
+  --acid-a:   #dc2626;   /* Atomicity — red */
+  --acid-c:   #2563eb;   /* Consistency — blue */
+  --acid-i:   #7c3aed;   /* Isolation — violet */
+  --acid-d:   #059669;   /* Durability — green */
+
+  --prob:     #b45309;   /* problems — amber */
+  --lock-s:   #0891b2;   /* shared lock — cyan */
+  --lock-x:   #dc2626;   /* exclusive lock — red */
+  --two-pl:   #7c3aed;   /* 2PL — violet */
+  --dead:     #991b1b;   /* deadlock — dark red */
+  --log:      #065f46;   /* log/recovery — dark green */
+  --undo:     #9f1239;   /* UNDO */
+  --redo:     #064e3b;   /* REDO */
+  --accent:   #c2410c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.75; }
+
+/* HEADER */
+header { background: var(--ink); color: #fff; padding: 42px 60px 36px; }
+.eyebrow { font-size: 11px; text-transform: uppercase; letter-spacing: .16em; color: #a8a29e; font-weight: 600; margin-bottom: 10px; }
+header h1 { font-family: 'Source Serif 4', serif; font-size: 2.3rem; font-weight: 700; line-height: 1.2; }
+header h1 em { color: #fbbf24; font-style: normal; }
+.exam-strip { margin-top: 16px; background: rgba(251,191,36,.12); border: 1px solid rgba(251,191,36,.3); border-radius: 7px; padding: 12px 16px; font-size: 13px; color: #fde68a; }
+.exam-strip strong { color: #fbbf24; }
+
+/* NAV */
+.toc { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 60px; display: flex; overflow-x: auto; }
+.toc a { display: inline-block; padding: 11px 13px; font-size: 12.5px; font-weight: 500; color: var(--muted); text-decoration: none; border-bottom: 2px solid transparent; white-space: nowrap; transition: color .15s, border-color .15s; }
+.toc a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* MAIN */
+main { max-width: 980px; margin: 0 auto; padding: 50px 40px 80px; }
+section { margin-bottom: 60px; }
+.sec-lbl { font-size: 10.5px; text-transform: uppercase; letter-spacing: .15em; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+h2 { font-family: 'Source Serif 4', serif; font-size: 1.6rem; font-weight: 700; color: var(--ink); margin-bottom: 16px; padding-bottom: 11px; border-bottom: 2px solid var(--border); }
+h3 { font-size: 1.02rem; font-weight: 700; color: var(--ink); margin: 24px 0 9px; }
+p { margin-bottom: 12px; color: var(--text); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+/* BOXES */
+.box { border-radius: 8px; padding: 14px 17px; margin: 12px 0; border-left: 3px solid; font-size: .93em; }
+.box-red    { background: #fff1f2; border-color: var(--acid-a); }
+.box-blue   { background: #eff6ff; border-color: var(--acid-c); }
+.box-violet { background: #f5f3ff; border-color: var(--acid-i); }
+.box-green  { background: #f0fdf4; border-color: var(--acid-d); }
+.box-amber  { background: #fffbeb; border-color: var(--prob); }
+.box-log    { background: #f0fdf4; border-color: var(--log); }
+.bt { font-weight: 700; margin-bottom: 4px; font-size: .91rem; }
+.box-red    .bt { color: var(--acid-a); }
+.box-blue   .bt { color: var(--acid-c); }
+.box-violet .bt { color: var(--acid-i); }
+.box-green  .bt { color: var(--acid-d); }
+.box-amber  .bt { color: var(--prob);   }
+.box-log    .bt { color: var(--log);    }
+
+/* ACID GRID */
+.acid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 18px 0; }
+@media(max-width:600px){ .acid { grid-template-columns: 1fr; } }
+.acid-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; border-top: 4px solid; }
+.acid-letter { font-family: 'Source Serif 4', serif; font-size: 2rem; font-weight: 700; }
+.acid-name { font-weight: 700; font-size: .92rem; margin: 2px 0 5px; }
+.acid-card p { font-size: .86rem; color: var(--muted); margin: 0; }
+.a-a { border-top-color: var(--acid-a); } .a-a .acid-letter { color: var(--acid-a); }
+.a-c { border-top-color: var(--acid-c); } .a-c .acid-letter { color: var(--acid-c); }
+.a-i { border-top-color: var(--acid-i); } .a-i .acid-letter { color: var(--acid-i); }
+.a-d { border-top-color: var(--acid-d); } .a-d .acid-letter { color: var(--acid-d); }
+
+/* STATES FLOW */
+.states { display: flex; align-items: center; gap: 0; overflow-x: auto; margin: 16px 0; flex-wrap: nowrap; }
+.state-box { background: var(--surface); border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 14px; text-align: center; font-size: .82rem; font-weight: 700; flex-shrink: 0; min-width: 100px; }
+.state-active   { border-color: var(--acid-c); color: var(--acid-c); }
+.state-partial  { border-color: var(--prob);   color: var(--prob);   }
+.state-commit   { border-color: var(--acid-d); color: var(--acid-d); }
+.state-failed   { border-color: var(--acid-a); color: var(--acid-a); }
+.state-aborted  { border-color: #6b7280;        color: #6b7280;        }
+.st-arr { color: var(--muted); padding: 0 6px; font-size: 16px; flex-shrink: 0; }
+
+/* PROBLEMS TABLE */
+.prob-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 14px 0; }
+.prob-table th { background: var(--sur2); padding: 9px 14px; text-align: left; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+.prob-table td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; }
+tr:nth-child(even) td { background: #fafaf8; }
+.prob-name { font-weight: 700; color: var(--ink); }
+.prob-aka  { font-size: .82rem; color: var(--muted); }
+
+/* CODE */
+pre, code { font-family: 'JetBrains Mono', monospace; }
+code { background: var(--sur2); border: 1px solid var(--border); border-radius: 4px; padding: 1px 6px; font-size: .87em; color: var(--accent); }
+pre { background: #1c1917; color: #e7e5e4; border-radius: 8px; padding: 16px 18px; font-size: 12.5px; line-height: 1.7; overflow-x: auto; margin: 10px 0; }
+
+/* LOCK COMPAT TABLE */
+.compat { width: auto; border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+.compat th, .compat td { border: 1px solid var(--border); padding: 8px 16px; text-align: center; font-weight: 600; }
+.compat th { background: var(--sur2); color: var(--muted); font-size: 11px; text-transform: uppercase; }
+.yes { color: #059669; font-size: 1.1rem; }
+.no  { color: var(--acid-a); font-size: 1.1rem; }
+.rowlbl { font-weight: 700; text-align: left !important; background: var(--sur2); }
+
+/* 2PL PHASES */
+.phases { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+.phase-box { border-radius: 9px; padding: 16px 18px; border: 1.5px solid; }
+.phase-grow   { background: #eff6ff; border-color: var(--acid-c); }
+.phase-shrink { background: #fff1f2; border-color: var(--acid-a); }
+.phase-box h4 { font-size: .95rem; font-weight: 700; margin-bottom: 8px; }
+.phase-grow   h4 { color: var(--acid-c); }
+.phase-shrink h4 { color: var(--acid-a); }
+.phase-box ul { padding-left: 1.1em; font-size: .88rem; color: var(--muted); line-height: 1.9; }
+
+/* WFG */
+.wfg-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin: 14px 0; text-align: center; }
+
+/* LOG ENTRIES */
+.log-row { display: flex; gap: 12px; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: .88rem; }
+.log-row:last-child { border-bottom: none; }
+.log-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+.lt-start  { background: #dbeafe; color: #1d4ed8; }
+.lt-write  { background: #fef3c7; color: #92400e; }
+.lt-commit { background: #dcfce7; color: #166534; }
+.lt-abort  { background: #fee2e2; color: #991b1b; }
+.lt-chk    { background: #f3e8ff; color: #6b21a8; }
+
+/* UNDO REDO TABLE */
+.ur-table { width: 100%; border-collapse: collapse; font-size: 13px; margin: 14px 0; }
+.ur-table th { padding: 9px 14px; border: 1px solid var(--border); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; background: var(--sur2); }
+.ur-table td { padding: 10px 14px; border: 1px solid var(--border); vertical-align: top; }
+.td-undo { background: #fff1f2; }
+.td-redo { background: #f0fdf4; }
+.td-nothing { background: #fafaf8; }
+.undo-lbl { font-weight: 700; color: var(--undo); }
+.redo-lbl { font-weight: 700; color: var(--redo); }
+
+/* TIMELINE SVG */
+.tl-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; margin: 14px 0; overflow-x: auto; }
+
+/* RECOVERY COMPARE */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 16px 0; }
+@media(max-width:600px){ .rec-grid { grid-template-columns: 1fr; } }
+.rec-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 18px; }
+.rec-card h4 { font-weight: 700; font-size: .95rem; margin-bottom: 10px; }
+.rec-deferred h4 { color: var(--acid-c); }
+.rec-immediate h4 { color: var(--prob); }
+.rec-card ul { padding-left: 1.1em; font-size: .87rem; color: var(--muted); line-height: 2; }
+.rec-card strong { color: var(--ink); }
+
+/* QUIZ CARDS */
+.quiz-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; margin: 11px 0; border-left: 4px solid var(--accent); }
+.quiz-q { font-weight: 700; color: var(--ink); margin-bottom: 7px; }
+.quiz-a { color: #374151; font-size: .91rem; line-height: 1.65; }
+
+/* INLINE LABEL CHIPS */
+.chip { display: inline-block; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 20px; }
+.chip-s { background: #cffafe; color: #155e75; }
+.chip-x { background: #fee2e2; color: #991b1b; }
+.chip-ok { background: #dcfce7; color: #166534; }
+.chip-no { background: #fee2e2; color: #991b1b; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">ADS — Connolly &amp; Begg, 6th Ed.</div>
+  <h1>Chapter 22<br><em>Transaction Management</em></h1>
+  <div class="exam-strip">
+    <strong>What matters for a paper:</strong> ACID properties · Concurrency problems · Serializability &amp; precedence graph · Locks + 2PL · Deadlock + WFG · Log file · Checkpoints · UNDO/REDO · Recovery techniques
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#acid">ACID</a>
+  <a href="#states">States</a>
+  <a href="#problems">Concurrency Problems</a>
+  <a href="#serial">Serializability</a>
+  <a href="#locks">Locking</a>
+  <a href="#twopl">Two-Phase Locking</a>
+  <a href="#deadlock">Deadlock</a>
+  <a href="#timestamp">Timestamping</a>
+  <a href="#recovery">Recovery</a>
+  <a href="#quiz">Quiz Prep</a>
+</nav>
+
+<main>
+
+<!-- ══════════════ SECTION 1 — ACID ══════════════ -->
+<section id="acid">
+  <div class="sec-lbl">Section 01</div>
+  <h2>ACID Properties</h2>
+  <p>Every transaction must satisfy four properties. These are the most fundamental and most tested concept in this chapter.</p>
+
+  <div class="acid">
+    <div class="acid-card a-a">
+      <div class="acid-letter">A</div>
+      <div class="acid-name">Atomicity</div>
+      <p><strong>"All or nothing."</strong> A transaction either completes entirely or not at all. If it fails midway, everything it did is rolled back. Ensured by the <strong>recovery subsystem</strong>.</p>
+    </div>
+    <div class="acid-card a-c">
+      <div class="acid-letter">C</div>
+      <div class="acid-name">Consistency</div>
+      <p>A transaction takes the database from one <strong>consistent state to another</strong>. Integrity constraints must hold before and after. Ensured by <strong>DBMS + application developers</strong>.</p>
+    </div>
+    <div class="acid-card a-i">
+      <div class="acid-letter">I</div>
+      <div class="acid-name">Isolation</div>
+      <p>Transactions execute <strong>independently</strong> of each other. Partial results of an incomplete transaction are <strong>invisible</strong> to other transactions. Ensured by <strong>concurrency control</strong>.</p>
+    </div>
+    <div class="acid-card a-d">
+      <div class="acid-letter">D</div>
+      <div class="acid-name">Durability</div>
+      <p>Once committed, changes are <strong>permanent</strong> — even if the system crashes immediately after. Ensured by the <strong>recovery subsystem</strong>.</p>
+    </div>
+  </div>
+
+  <div class="box box-amber">
+    <div class="bt">Quick: who ensures what?</div>
+    Atomicity &amp; Durability → Recovery Manager &nbsp;|&nbsp; Isolation → Concurrency Control &nbsp;|&nbsp; Consistency → Both DBMS and Application
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 2 — STATES ══════════════ -->
+<section id="states">
+  <div class="sec-lbl">Section 02</div>
+  <h2>Transaction States</h2>
+  <p>A transaction moves through these 5 states during its lifetime:</p>
+
+  <div class="states">
+    <div class="state-box state-active">ACTIVE</div>
+    <div class="st-arr">→</div>
+    <div class="state-box state-partial">PARTIALLY<br>COMMITTED</div>
+    <div class="st-arr">→</div>
+    <div class="state-box state-commit">COMMITTED</div>
+  </div>
+  <div class="states" style="margin-top:6px">
+    <div class="state-box state-active">ACTIVE</div>
+    <div class="st-arr">→</div>
+    <div class="state-box state-failed">FAILED</div>
+    <div class="st-arr">→</div>
+    <div class="state-box state-aborted">ABORTED</div>
+  </div>
+  <div class="states" style="margin-top:6px">
+    <div class="state-box state-partial">PARTIALLY<br>COMMITTED</div>
+    <div class="st-arr">→</div>
+    <div class="state-box state-failed">FAILED</div>
+    <div class="st-arr">→</div>
+    <div class="state-box state-aborted">ABORTED</div>
+  </div>
+
+  <table class="prob-table" style="margin-top:16px">
+    <tr><th>State</th><th>Meaning</th></tr>
+    <tr><td class="prob-name" style="color:var(--acid-c)">Active</td><td>Transaction is currently executing</td></tr>
+    <tr><td class="prob-name" style="color:var(--prob)">Partially Committed</td><td>Last statement has executed but changes not yet permanent — may still fail (integrity violation, serialization fail, or crash)</td></tr>
+    <tr><td class="prob-name" style="color:var(--acid-d)">Committed</td><td>Successfully completed and permanently recorded. <strong>Cannot be aborted</strong> — only reversed by a compensating transaction</td></tr>
+    <tr><td class="prob-name" style="color:var(--acid-a)">Failed</td><td>Transaction cannot continue — will be aborted</td></tr>
+    <tr><td class="prob-name" style="color:#6b7280">Aborted</td><td>Rolled back to state before transaction began</td></tr>
+  </table>
+
+  <p>SQL transaction control: <code>BEGIN TRANSACTION</code> — <code>COMMIT</code> — <code>ROLLBACK</code></p>
+</section>
+
+<!-- ══════════════ SECTION 3 — CONCURRENCY PROBLEMS ══════════════ -->
+<section id="problems">
+  <div class="sec-lbl">Section 03</div>
+  <h2>The 5 Concurrency Problems</h2>
+  <p>When multiple transactions run simultaneously without control, these problems occur. Know all 5 — the first 3 are the most tested.</p>
+
+  <table class="prob-table">
+    <tr><th>#</th><th>Problem Name</th><th>What happens</th><th>Fix</th></tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">1</td>
+      <td>
+        <div class="prob-name">Lost Update</div>
+      </td>
+      <td>T1 and T2 both read x (=100). T2 writes 200. T1 writes 90. T2's update is <strong>lost</strong> — overwritten by T1.</td>
+      <td>Prevent T1 from reading x until T2 commits</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">2</td>
+      <td>
+        <div class="prob-name">Uncommitted Dependency</div>
+        <div class="prob-aka">aka Dirty Read</div>
+      </td>
+      <td>T1 reads a value written by T2, but T2 <strong>aborts</strong>. T1 has read data that never officially existed. The bad value is called <strong>dirty data</strong>.</td>
+      <td>Prevent T1 reading x until T2 commits or aborts</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">3</td>
+      <td>
+        <div class="prob-name">Inconsistent Analysis</div>
+        <div class="prob-aka">aka Unrepeatable Read</div>
+      </td>
+      <td>T1 is summing balances (x, y, z). While it reads them, T2 updates some. T1 gets the <strong>wrong total</strong> — it read old values of some and new values of others.</td>
+      <td>Prevent T2 from updating while T1 is reading</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">4</td>
+      <td>
+        <div class="prob-name">Nonrepeatable Read</div>
+        <div class="prob-aka">aka Fuzzy Read</div>
+      </td>
+      <td>T1 reads x, then reads it again. Between the two reads, T2 changed x. T1 gets <strong>two different values</strong> for the same item.</td>
+      <td>Lock x for the duration of T1's transaction</td>
+    </tr>
+    <tr>
+      <td style="font-weight:700;color:var(--accent)">5</td>
+      <td>
+        <div class="prob-name">Phantom Read</div>
+      </td>
+      <td>T1 runs a query → gets rows R. T2 inserts a new row that matches T1's query. T1 runs the same query again → gets R + <strong>the new "phantom" row</strong>.</td>
+      <td>Predicate locking (range locks)</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ══════════════ SECTION 4 — SERIALIZABILITY ══════════════ -->
+<section id="serial">
+  <div class="sec-lbl">Section 04</div>
+  <h2>Serializability &amp; Precedence Graphs</h2>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0">
+    <div class="box box-blue" style="margin:0">
+      <div class="bt">Serial Schedule</div>
+      Transactions execute one after another — no interleaving. <strong>Always correct</strong>, but reduces concurrency.
+    </div>
+    <div class="box box-violet" style="margin:0">
+      <div class="bt">Serializable Schedule</div>
+      A concurrent (interleaved) schedule that produces the <strong>same result as some serial execution</strong>. Goal of concurrency control.
+    </div>
+  </div>
+
+  <h3>When do operations conflict?</h3>
+  <p>Two operations conflict if they belong to <strong>different transactions</strong>, access the <strong>same data item</strong>, and <strong>at least one is a write</strong>.</p>
+
+  <table class="prob-table">
+    <tr><th>T1 operation</th><th>T2 operation</th><th>Same item?</th><th>Conflict?</th></tr>
+    <tr><td>Read</td><td>Read</td><td>Yes</td><td><span class="chip chip-ok">✓ NO — safe</span></td></tr>
+    <tr><td>Read</td><td>Write</td><td>Yes</td><td><span class="chip chip-no">✗ YES</span></td></tr>
+    <tr><td>Write</td><td>Read</td><td>Yes</td><td><span class="chip chip-no">✗ YES</span></td></tr>
+    <tr><td>Write</td><td>Write</td><td>Yes</td><td><span class="chip chip-no">✗ YES</span></td></tr>
+    <tr><td>Anything</td><td>Anything</td><td>No</td><td><span class="chip chip-ok">✓ NO — safe</span></td></tr>
+  </table>
+
+  <h3>Precedence (Serialization) Graph — Testing Conflict Serializability</h3>
+  <div class="box box-violet">
+    <div class="bt">How to draw a precedence graph</div>
+    <ol style="padding-left:1.2em;line-height:2.2;font-size:.92rem">
+      <li>Create one <strong>node per transaction</strong></li>
+      <li>Draw an edge <strong>Ti → Tj</strong> if Tj reads what Ti wrote</li>
+      <li>Draw an edge <strong>Ti → Tj</strong> if Tj writes what Ti read</li>
+      <li>Draw an edge <strong>Ti → Tj</strong> if Tj writes what Ti wrote</li>
+      <li><strong>If there is a cycle → NOT conflict serializable</strong></li>
+      <li><strong>If no cycle → IS conflict serializable</strong> (serial order = topological sort)</li>
+    </ol>
+  </div>
+
+  <div class="tl-wrap">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:12px">Precedence Graph Example — 2 transactions</div>
+    <svg viewBox="0 0 460 130" width="100%" height="120" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="12">
+      <!-- Scenario A: NO CYCLE - serializable -->
+      <text x="10" y="18" fill="#059669" font-weight="700" font-size="11">CASE A — No cycle → Serializable</text>
+      <circle cx="70" cy="70" r="26" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+      <text x="70" y="74" text-anchor="middle" fill="#1d4ed8" font-weight="700">T1</text>
+      <circle cx="170" cy="70" r="26" fill="#eff6ff" stroke="#2563eb" stroke-width="2"/>
+      <text x="170" y="74" text-anchor="middle" fill="#1d4ed8" font-weight="700">T2</text>
+      <defs><marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker></defs>
+      <line x1="96" y1="70" x2="143" y2="70" stroke="#7c3aed" stroke-width="2" marker-end="url(#arr)"/>
+      <text x="120" y="62" text-anchor="middle" fill="#7c3aed" font-size="10">T1→T2</text>
+      <text x="120" y="108" text-anchor="middle" fill="#059669" font-size="10">No cycle: serial order = T1, T2</text>
+
+      <!-- Scenario B: CYCLE - not serializable -->
+      <text x="255" y="18" fill="#dc2626" font-weight="700" font-size="11">CASE B — Cycle → NOT Serializable</text>
+      <circle cx="310" cy="70" r="26" fill="#fff1f2" stroke="#dc2626" stroke-width="2"/>
+      <text x="310" y="74" text-anchor="middle" fill="#dc2626" font-weight="700">T1</text>
+      <circle cx="420" cy="70" r="26" fill="#fff1f2" stroke="#dc2626" stroke-width="2"/>
+      <text x="420" y="74" text-anchor="middle" fill="#dc2626" font-weight="700">T2</text>
+      <defs><marker id="arr2" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#dc2626"/></marker></defs>
+      <path d="M336,58 Q365,30 394,58" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arr2)"/>
+      <path d="M394,82 Q365,110 336,82" fill="none" stroke="#dc2626" stroke-width="2" marker-end="url(#arr2)"/>
+      <text x="365" y="40" text-anchor="middle" fill="#dc2626" font-size="10">T1→T2</text>
+      <text x="365" y="108" text-anchor="middle" fill="#dc2626" font-size="10">T2→T1 (cycle!)</text>
+    </svg>
+  </div>
+
+  <h3>Recoverable Schedule</h3>
+  <div class="box box-green">
+    A schedule is <strong>recoverable</strong> if: whenever Tj reads data written by Ti, the commit of Ti happens <em>before</em> the commit of Tj. This prevents a situation where Tj has committed based on data that Ti then rolls back.
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 5 — LOCKING ══════════════ -->
+<section id="locks">
+  <div class="sec-lbl">Section 05</div>
+  <h2>Locking</h2>
+  <p><strong>Locking</strong> is the most widely used approach to concurrency control. Before accessing a data item, a transaction must acquire a lock on it.</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:16px 0">
+    <div class="box box-blue" style="margin:0">
+      <div class="bt"><span class="chip chip-s">S Lock</span> Shared Lock</div>
+      Transaction can <strong>read</strong> the item but <strong>not update</strong> it.<br>
+      Multiple transactions can hold a Shared lock on the same item simultaneously.
+    </div>
+    <div class="box box-red" style="margin:0">
+      <div class="bt"><span class="chip chip-x">X Lock</span> Exclusive Lock</div>
+      Transaction can <strong>read AND update</strong> the item.<br>
+      Only one transaction can hold an Exclusive lock — no other lock is allowed.
+    </div>
+  </div>
+
+  <h3>Lock Compatibility Table</h3>
+  <table class="compat">
+    <tr>
+      <th></th>
+      <th>Holds S lock</th>
+      <th>Holds X lock</th>
+      <th>No lock</th>
+    </tr>
+    <tr>
+      <td class="rowlbl">Request S</td>
+      <td><span class="yes">✓</span> Grant</td>
+      <td><span class="no">✗</span> Wait</td>
+      <td><span class="yes">✓</span> Grant</td>
+    </tr>
+    <tr>
+      <td class="rowlbl">Request X</td>
+      <td><span class="no">✗</span> Wait</td>
+      <td><span class="no">✗</span> Wait</td>
+      <td><span class="yes">✓</span> Grant</td>
+    </tr>
+  </table>
+
+  <div class="box box-amber">
+    <div class="bt">Lock granularity</div>
+    A lock can be placed at different levels: entire database → file → page → record → field. <strong>Finer granularity = more concurrency but more overhead</strong>. Coarser granularity = less overhead but less concurrency.
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 6 — TWO-PHASE LOCKING ══════════════ -->
+<section id="twopl">
+  <div class="sec-lbl">Section 06</div>
+  <h2>Two-Phase Locking (2PL)</h2>
+  <p>Basic locking alone doesn't guarantee serializability. The <strong>Two-Phase Locking protocol</strong> does — it's the most important concurrency technique in this chapter.</p>
+
+  <div class="box box-violet">
+    <div class="bt">2PL Rule</div>
+    A transaction follows 2PL if <strong>all locking operations precede the first unlock operation</strong>. Once it releases any lock, it can never acquire a new one.
+  </div>
+
+  <div class="phases">
+    <div class="phase-box phase-grow">
+      <h4>📈 Phase 1: Growing Phase</h4>
+      <ul>
+        <li>Transaction <strong>acquires locks</strong></li>
+        <li>Cannot release any lock</li>
+        <li>Lock upgrades (S→X) allowed here</li>
+      </ul>
+    </div>
+    <div class="phase-box phase-shrink">
+      <h4>📉 Phase 2: Shrinking Phase</h4>
+      <ul>
+        <li>Transaction <strong>releases locks</strong></li>
+        <li>Cannot acquire new locks</li>
+        <li>Lock downgrades (X→S) allowed here</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="box box-green">
+    <div class="bt">Guarantee</div>
+    If every transaction follows 2PL, the schedule is <strong>guaranteed to be conflict serializable</strong>.
+  </div>
+
+  <h3>Variants of 2PL</h3>
+  <table class="prob-table">
+    <tr><th>Variant</th><th>What it does</th><th>Why</th></tr>
+    <tr>
+      <td class="prob-name">Basic 2PL</td>
+      <td>Release locks any time during shrinking phase</td>
+      <td>Can cause cascading rollbacks</td>
+    </tr>
+    <tr>
+      <td class="prob-name">Strict 2PL</td>
+      <td>Hold <strong>exclusive (X) locks</strong> until transaction commits or aborts</td>
+      <td>Prevents dirty reads; avoids cascading rollbacks</td>
+    </tr>
+    <tr>
+      <td class="prob-name">Rigorous 2PL</td>
+      <td>Hold <strong>all locks</strong> (S and X) until commit or abort</td>
+      <td>Strictest — transactions serialize in commit order. Used by most DBMSs.</td>
+    </tr>
+    <tr>
+      <td class="prob-name">Conservative 2PL</td>
+      <td>Acquire <strong>all needed locks at start</strong></td>
+      <td>Prevents deadlock but impractical — must know all locks in advance</td>
+    </tr>
+  </table>
+
+  <h3>Cascading Rollback</h3>
+  <div class="box box-red">
+    <div class="bt">Problem with Basic 2PL</div>
+    If T1 writes x and releases the lock, T2 reads that x and commits — then T1 aborts, T2 must also be undone (it read dirty data), and anything T3 read from T2 too. <strong>One failure cascades into multiple rollbacks.</strong><br>
+    <strong>Fix:</strong> Use Strict or Rigorous 2PL — hold locks until commit, so no one can read uncommitted data.
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 7 — DEADLOCK ══════════════ -->
+<section id="deadlock">
+  <div class="sec-lbl">Section 07</div>
+  <h2>Deadlock</h2>
+
+  <div class="box box-red">
+    <div class="bt">Definition</div>
+    An impasse where <strong>two or more transactions are each waiting for locks held by the other</strong>. Neither can proceed. Classic example: T1 holds lock on X, wants Y. T2 holds lock on Y, wants X.
+  </div>
+
+  <h3>Three Approaches to Handling Deadlock</h3>
+  <table class="prob-table">
+    <tr><th>Approach</th><th>How it works</th></tr>
+    <tr>
+      <td class="prob-name">Timeout</td>
+      <td>Transaction waits only a specified time for a lock. If not granted → <strong>assume deadlock, abort and restart</strong>. Simple but may abort transactions that aren't actually deadlocked.</td>
+    </tr>
+    <tr>
+      <td class="prob-name">Deadlock Prevention<br><small>(Wait-Die / Wound-Wait)</small></td>
+      <td>Use timestamps to order. <strong>Wait-Die</strong>: older transaction waits for younger; younger dies (aborts). <strong>Wound-Wait</strong>: older wounds (aborts) younger; younger waits for older.</td>
+    </tr>
+    <tr>
+      <td class="prob-name">Deadlock Detection + Recovery</td>
+      <td>Let it happen. Periodically build a <strong>Wait-For Graph (WFG)</strong>. If WFG has a cycle → deadlock exists. Abort the cheapest victim to break it.</td>
+    </tr>
+  </table>
+
+  <h3>Wait-For Graph (WFG) — Most Testable</h3>
+  <div class="box box-violet">
+    <div class="bt">How to build a WFG</div>
+    <ol style="padding-left:1.2em;line-height:2.2;font-size:.92rem">
+      <li>Create one node per transaction</li>
+      <li>Draw edge <strong>Ti → Tj</strong> if Ti is <em>waiting</em> for a lock currently held by Tj</li>
+      <li><strong>Cycle in WFG = Deadlock</strong></li>
+    </ol>
+  </div>
+
+  <div class="wfg-wrap">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:12px">WFG Example — T17 and T18 deadlocked</div>
+    <svg viewBox="0 0 360 120" width="360" height="110" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+      <defs>
+        <marker id="warr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#991b1b"/></marker>
+      </defs>
+      <!-- T17 -->
+      <circle cx="80" cy="60" r="30" fill="#fff1f2" stroke="#dc2626" stroke-width="2"/>
+      <text x="80" y="55" text-anchor="middle" fill="#dc2626" font-weight="700" font-size="13">T17</text>
+      <text x="80" y="72" text-anchor="middle" fill="#6b7280" font-size="9">holds X on balx</text>
+      <!-- T18 -->
+      <circle cx="260" cy="60" r="30" fill="#fff1f2" stroke="#dc2626" stroke-width="2"/>
+      <text x="260" y="55" text-anchor="middle" fill="#dc2626" font-weight="700" font-size="13">T18</text>
+      <text x="260" y="72" text-anchor="middle" fill="#6b7280" font-size="9">holds X on baly</text>
+      <!-- T17 → T18: waiting for baly -->
+      <path d="M110,48 Q170,15 230,48" fill="none" stroke="#991b1b" stroke-width="2" marker-end="url(#warr)"/>
+      <text x="170" y="22" text-anchor="middle" fill="#991b1b" font-size="10">T17 waits for baly</text>
+      <!-- T18 → T17: waiting for balx -->
+      <path d="M230,72 Q170,105 110,72" fill="none" stroke="#991b1b" stroke-width="2" marker-end="url(#warr)"/>
+      <text x="170" y="108" text-anchor="middle" fill="#991b1b" font-size="10">T18 waits for balx</text>
+    </svg>
+    <p style="font-size:.84rem;color:var(--muted);margin-top:6px;text-align:center">Cycle detected → <strong style="color:var(--dead)">DEADLOCK!</strong> Abort one (e.g. T18) to break it.</p>
+  </div>
+
+  <h3>Choosing the Deadlock Victim</h3>
+  <p style="font-size:.9rem">Abort the transaction with minimum cost — consider: how long it's been running (shorter = abort first), how many changes it made (fewer = abort first), how many changes it still needs to make. Also avoid <strong>starvation</strong> — don't always pick the same victim (track abort count).</p>
+
+  <div class="box box-amber">
+    <div class="bt">Livelock vs Deadlock</div>
+    <strong>Deadlock</strong>: transactions are <em>stuck waiting</em> for each other — detected by WFG cycle.<br>
+    <strong>Livelock</strong>: a transaction is <em>permanently skipped</em> in the lock queue — no cycle in WFG but it never gets the lock. Fix with a FIFO queue (first-come-first-served).
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 8 — TIMESTAMPING ══════════════ -->
+<section id="timestamp">
+  <div class="sec-lbl">Section 08</div>
+  <h2>Timestamping</h2>
+
+  <div class="box box-blue">
+    <div class="bt">Key Difference from Locking</div>
+    <strong>No locks → no deadlock possible.</strong> Instead: each transaction gets a unique timestamp at start. Each data item stores <code>read_timestamp</code> and <code>write_timestamp</code>. Conflicts → rollback (not wait).
+  </div>
+
+  <h3>Basic Timestamp Ordering Rules</h3>
+
+  <div class="box box-violet" style="margin-bottom:10px">
+    <div class="bt">When transaction T issues READ(x):</div>
+    <ul style="padding-left:1.2em;line-height:2;font-size:.92rem">
+      <li>If <code>ts(T) &lt; write_timestamp(x)</code> → T is trying to read a value written by a <em>younger</em> transaction. <strong>Abort T, restart with new timestamp.</strong></li>
+      <li>Otherwise → allow read. Set <code>read_timestamp(x) = max(ts(T), read_timestamp(x))</code></li>
+    </ul>
+  </div>
+
+  <div class="box box-violet">
+    <div class="bt">When transaction T issues WRITE(x):</div>
+    <ul style="padding-left:1.2em;line-height:2;font-size:.92rem">
+      <li>If <code>ts(T) &lt; read_timestamp(x)</code> → a younger transaction already read the current value; we can't overwrite it. <strong>Abort T, restart.</strong></li>
+      <li>If <code>ts(T) &lt; write_timestamp(x)</code> → a younger transaction already wrote; T's write is obsolete. <strong>Abort T, restart</strong> (or ignore via Thomas's Write Rule).</li>
+      <li>Otherwise → allow write. Set <code>write_timestamp(x) = ts(T)</code></li>
+    </ul>
+  </div>
+
+  <div class="box box-amber">
+    <div class="bt">Thomas's Write Rule (extension)</div>
+    If <code>ts(T) &lt; write_timestamp(x)</code> — instead of aborting, <strong>safely ignore the obsolete write</strong> (a younger transaction has already written a newer value). Allows more concurrency.
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 9 — RECOVERY ══════════════ -->
+<section id="recovery">
+  <div class="sec-lbl">Section 09</div>
+  <h2>Database Recovery</h2>
+
+  <h3>The Log File</h3>
+  <p>The DBMS keeps a <strong>log (journal)</strong> — a sequential record of all database changes. It survives failures. Each record contains:</p>
+
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0">
+    <div class="log-row"><span class="log-tag lt-start">START</span> Transaction identifier — "T1 has started"</div>
+    <div class="log-row"><span class="log-tag lt-write">WRITE</span> <strong>Transaction ID, data item, before-image (old value), after-image (new value)</strong></div>
+    <div class="log-row"><span class="log-tag lt-commit">COMMIT</span> Transaction ID — "T1 has committed successfully"</div>
+    <div class="log-row"><span class="log-tag lt-abort">ABORT</span> Transaction ID — "T1 has been aborted"</div>
+    <div class="log-row"><span class="log-tag lt-chk">CHECKPOINT</span> IDs of all active transactions at checkpoint time</div>
+  </div>
+
+  <div class="box box-green">
+    <div class="bt">Write-Ahead Log (WAL) Protocol</div>
+    Log records must be written to disk <strong>before</strong> the actual database write. This guarantees we can always undo or redo — we never lose the record of what happened.
+  </div>
+
+  <h3>Checkpoints</h3>
+  <div class="box box-log">
+    <div class="bt">What is a checkpoint?</div>
+    A <strong>point of synchronization</strong>: the DBMS flushes all log records and modified buffer pages to disk, then writes a CHECKPOINT record to the log. On recovery, we only need to look back to the last checkpoint — not the entire log.
+  </div>
+
+  <p>At a checkpoint, three things happen:</p>
+  <ol style="padding-left:1.3em;line-height:2.1;font-size:.93rem">
+    <li>All log records in memory → written to secondary storage</li>
+    <li>All modified buffer blocks → written to secondary storage</li>
+    <li>A checkpoint record (with active transaction IDs) → written to log</li>
+  </ol>
+
+  <h3>UNDO and REDO — The Core Recovery Logic</h3>
+
+  <div class="tl-wrap">
+    <div style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);font-weight:700;margin-bottom:10px">Recovery Timeline — crash at tf, checkpoint at tc</div>
+    <svg viewBox="0 0 700 200" width="100%" height="190" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif" font-size="11">
+      <!-- Timeline -->
+      <line x1="40" y1="100" x2="650" y2="100" stroke="#d6d3d1" stroke-width="2"/>
+      <polygon points="650,95 660,100 650,105" fill="#d6d3d1"/>
+      <!-- t0 -->
+      <line x1="60" y1="90" x2="60" y2="110" stroke="#78716c" stroke-width="2"/>
+      <text x="60" y="125" text-anchor="middle" fill="#78716c" font-size="10">t0 Start</text>
+      <!-- tc checkpoint -->
+      <line x1="260" y1="85" x2="260" y2="115" stroke="#7c3aed" stroke-width="2.5"/>
+      <text x="260" y="132" text-anchor="middle" fill="#7c3aed" font-weight="700" font-size="10">tc CHECKPOINT</text>
+      <!-- tf crash -->
+      <line x1="520" y1="85" x2="520" y2="115" stroke="#dc2626" stroke-width="2.5"/>
+      <text x="520" y="132" text-anchor="middle" fill="#dc2626" font-weight="700" font-size="10">tf CRASH</text>
+
+      <!-- T1: started before tc, active at crash → UNDO -->
+      <line x1="80" y1="40" x2="530" y2="40" stroke="#9f1239" stroke-width="3.5" stroke-linecap="round"/>
+      <text x="75" y="35" fill="#9f1239" font-weight="700" font-size="11">T1</text>
+      <text x="560" y="44" fill="#9f1239" font-weight="700" font-size="11">UNDO</text>
+
+      <!-- T2: started before tc, committed before tc → nothing needed -->
+      <line x1="90" y1="58" x2="220" y2="58" stroke="#059669" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="220" cy="58" r="5" fill="#059669"/>
+      <text x="75" y="62" fill="#059669" font-weight="700" font-size="11">T2</text>
+      <text x="232" y="62" fill="#059669" font-size="10">committed before tc → NOTHING</text>
+
+      <!-- T3: started before tc, committed after tc → REDO -->
+      <line x1="140" y1="76" x2="400" y2="76" stroke="#064e3b" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="400" cy="76" r="5" fill="#064e3b"/>
+      <text x="75" y="80" fill="#064e3b" font-weight="700" font-size="11">T3</text>
+      <text x="415" y="80" fill="#064e3b" font-size="10">committed after tc → REDO</text>
+
+      <!-- T4: started after tc, committed before crash → REDO -->
+      <line x1="300" y1="150" x2="460" y2="150" stroke="#064e3b" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="460" cy="150" r="5" fill="#064e3b"/>
+      <text x="252" y="154" fill="#064e3b" font-weight="700" font-size="11">T4</text>
+      <text x="475" y="154" fill="#064e3b" font-size="10">committed after tc → REDO</text>
+
+      <!-- T5: started after tc, still active at crash → UNDO -->
+      <line x1="350" y1="168" x2="530" y2="168" stroke="#9f1239" stroke-width="3.5" stroke-linecap="round"/>
+      <text x="298" y="172" fill="#9f1239" font-weight="700" font-size="11">T5</text>
+      <text x="545" y="172" fill="#9f1239" font-weight="700" font-size="11">UNDO</text>
+
+      <!-- Legend -->
+      <rect x="40" y="183" width="12" height="6" fill="#9f1239" rx="2"/>
+      <text x="57" y="190" fill="#9f1239" font-size="9" font-weight="700">UNDO — active at crash (no COMMIT in log)</text>
+      <rect x="300" y="183" width="12" height="6" fill="#064e3b" rx="2"/>
+      <text x="317" y="190" fill="#064e3b" font-size="9" font-weight="700">REDO — committed after last checkpoint</text>
+    </svg>
+  </div>
+
+  <table class="ur-table">
+    <tr><th>What's in the log</th><th>Action on Recovery</th><th>Why</th></tr>
+    <tr>
+      <td>START + COMMIT (committed before checkpoint)</td>
+      <td class="td-nothing" style="font-weight:700;color:#78716c">NOTHING</td>
+      <td>Changes already written to disk at checkpoint</td>
+    </tr>
+    <tr>
+      <td>START + COMMIT (committed after checkpoint)</td>
+      <td class="td-redo"><span class="redo-lbl">REDO</span> — reapply using <em>after-images</em></td>
+      <td>Committed but changes may not have reached disk</td>
+    </tr>
+    <tr>
+      <td>START only (no COMMIT in log)</td>
+      <td class="td-undo"><span class="undo-lbl">UNDO</span> — reverse using <em>before-images</em></td>
+      <td>Transaction was active at crash — must be rolled back (Atomicity)</td>
+    </tr>
+  </table>
+
+  <h3>Recovery Techniques</h3>
+  <div class="rec-grid">
+    <div class="rec-card rec-deferred" style="border-top:3px solid var(--acid-c)">
+      <h4>Deferred Update (No-Steal)</h4>
+      <ul>
+        <li>Updates <strong>NOT written to database</strong> until after commit</li>
+        <li>On failure: only <strong>REDO</strong> needed — aborted transactions never wrote anything</li>
+        <li>Log records written to disk before commit</li>
+        <li><strong>No UNDO required</strong></li>
+        <li>Drawback: needs large buffers to hold uncommitted changes</li>
+      </ul>
+    </div>
+    <div class="rec-card rec-immediate" style="border-top:3px solid var(--prob)">
+      <h4>Immediate Update (Steal)</h4>
+      <ul>
+        <li>Updates written to database <strong>as they happen</strong></li>
+        <li>Log record written <em>before</em> database update (WAL)</li>
+        <li>On failure: need both <strong>UNDO</strong> (for uncommitted) and <strong>REDO</strong> (for committed but not yet on disk)</li>
+        <li>Most DBMSs use this (Steal, No-Force policy)</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>Shadow Paging (alternative)</h3>
+  <p style="font-size:.9rem">Maintains two page tables: current and shadow. Shadow never changes during the transaction. On commit → current becomes shadow. On abort → discard current, shadow is still intact. <strong>No log needed — but causes fragmentation.</strong></p>
+</section>
+
+<!-- ══════════════ SECTION 10 — QUIZ ══════════════ -->
+<section id="quiz">
+  <div class="sec-lbl">Section 10</div>
+  <h2>⚡ Quiz Prep</h2>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q1: What are the ACID properties and who ensures each?</div>
+    <div class="quiz-a">
+      <strong>A</strong>tomicity (all-or-nothing) → Recovery Manager<br>
+      <strong>C</strong>onsistency (valid state to valid state) → DBMS + Application Developers<br>
+      <strong>I</strong>solation (transactions independent) → Concurrency Control<br>
+      <strong>D</strong>urability (committed = permanent) → Recovery Manager
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q2: What are the 3 main concurrency problems? Describe each briefly.</div>
+    <div class="quiz-a">
+      <strong>Lost Update</strong>: T1 and T2 both read x, T2 writes, T1 overwrites T2's change — T2's update is lost.<br>
+      <strong>Dirty Read (Uncommitted Dependency)</strong>: T1 reads data written by T2, but T2 aborts — T1 worked with data that never officially existed.<br>
+      <strong>Inconsistent Analysis</strong>: T1 is summing values across multiple items while T2 is updating them — T1 gets a mix of old and new values, producing an incorrect total.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q3: What is a serializable schedule? How do you test for conflict serializability?</div>
+    <div class="quiz-a">A serializable schedule is a concurrent schedule that produces the same result as some serial execution. To test: draw a <strong>precedence graph</strong> — one node per transaction, add directed edge Ti→Tj for each conflict where Ti's operation precedes Tj's conflicting operation. If the graph has <strong>no cycle</strong> → conflict serializable. If it has a cycle → not.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q4: What is the difference between a Shared lock and an Exclusive lock?</div>
+    <div class="quiz-a">A <strong>Shared (S) lock</strong> allows the transaction to read but not update the item. Multiple transactions can hold S locks on the same item simultaneously. An <strong>Exclusive (X) lock</strong> allows both read and write — no other transaction can hold any lock (S or X) on the same item.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q5: Explain 2PL and its two phases.</div>
+    <div class="quiz-a">Two-Phase Locking requires that all lock acquisitions precede all releases. <strong>Phase 1 (Growing)</strong>: acquire locks, no releases. <strong>Phase 2 (Shrinking)</strong>: release locks, no acquisitions. 2PL guarantees conflict serializability. <strong>Strict 2PL</strong> holds X locks until commit. <strong>Rigorous 2PL</strong> holds all locks until commit.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q6: What is cascading rollback and how does Rigorous 2PL prevent it?</div>
+    <div class="quiz-a">Cascading rollback occurs when T1 aborts and T2 (which read T1's uncommitted data) must also abort, and T3 (which read T2's data) must also abort — one failure cascades into many. Rigorous 2PL prevents this by holding all locks until commit — no transaction can read uncommitted data because the lock is never released early.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q7: What is a Wait-For Graph and how do you use it?</div>
+    <div class="quiz-a">A WFG has one node per transaction. Draw edge Ti→Tj if Ti is waiting for a lock currently held by Tj. <strong>A cycle in the WFG means deadlock exists.</strong> To resolve: choose a victim transaction (minimum cost), abort it, release its locks. This breaks the cycle and allows other transactions to proceed.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q8: What does a log file contain and why is the Write-Ahead Log important?</div>
+    <div class="quiz-a">The log contains: transaction start, write records (transaction ID, item, before-image, after-image), commit records, abort records, and checkpoint records. The <strong>Write-Ahead Log (WAL)</strong> protocol requires log records to be written to disk before the database update. This ensures that if a crash occurs, the recovery manager can always undo or redo operations.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q9: After a crash with a checkpoint at tc, which transactions do you UNDO and which do you REDO?</div>
+    <div class="quiz-a">
+      <strong>UNDO</strong>: transactions that were <em>active (running) at the time of crash</em> — no COMMIT record in log. Reverse using before-images.<br>
+      <strong>REDO</strong>: transactions that <em>committed after the last checkpoint</em> — have a COMMIT record but changes may not have reached disk. Reapply using after-images.<br>
+      <strong>Nothing</strong>: transactions that committed before the checkpoint — already safely on disk.
+    </div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q10: Deferred Update vs Immediate Update — key difference?</div>
+    <div class="quiz-a">
+      <strong>Deferred Update</strong>: writes delayed until after commit. Only REDO needed on recovery (no UNDO — nothing was ever written for aborted transactions).<br>
+      <strong>Immediate Update</strong>: writes applied as they happen (WAL). Both UNDO and REDO needed on recovery. Used by most real DBMSs (Steal + No-Force policy).
+    </div>
+  </div>
+
+  <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:18px 22px;margin-top:26px">
+    <div style="font-weight:700;color:#166534;margin-bottom:10px;font-size:.94rem">✅ Key Vocab</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;font-size:.86rem;line-height:2">
+      <div><strong>Transaction</strong> — unit of work (all-or-nothing)</div>
+      <div><strong>ACID</strong> — Atomicity, Consistency, Isolation, Durability</div>
+      <div><strong>Dirty read</strong> — reading uncommitted data</div>
+      <div><strong>Serializable</strong> — same result as some serial run</div>
+      <div><strong>Precedence graph</strong> — tests conflict serializability</div>
+      <div><strong>S lock</strong> — read only; shareable</div>
+      <div><strong>X lock</strong> — read + write; exclusive</div>
+      <div><strong>2PL</strong> — all locks before any release; guarantees serializability</div>
+      <div><strong>Rigorous 2PL</strong> — hold all locks until commit</div>
+      <div><strong>Deadlock</strong> — circular wait for locks</div>
+      <div><strong>WFG</strong> — Wait-For Graph; cycle = deadlock</div>
+      <div><strong>Timestamp</strong> — unique ID = relative start time</div>
+      <div><strong>Before-image</strong> — value before update (used for UNDO)</div>
+      <div><strong>After-image</strong> — value after update (used for REDO)</div>
+      <div><strong>Checkpoint</strong> — sync point; flush all to disk</div>
+      <div><strong>WAL</strong> — log before database write</div>
+      <div><strong>Deferred update</strong> — write to DB only after commit; REDO only</div>
+      <div><strong>Immediate update</strong> — write as it happens; UNDO + REDO</div>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Triggers — ADS Study Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg:        #0d1117;
+    --surface:   #161b22;
+    --surface2:  #1c2128;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --muted:     #7d8590;
+    --before:    #f78166;   /* red-orange — danger/before */
+    --after:     #56d364;   /* green — success/after */
+    --insert:    #79c0ff;   /* blue */
+    --update:    #ffa657;   /* amber */
+    --delete:    #ff7b72;   /* red */
+    --keyword:   #ff7b72;
+    --string:    #a5d6ff;
+    --comment:   #6e7681;
+    --func:      #d2a8ff;
+    --accent:    #58a6ff;
+    --gold:      #e3b341;
+    --tag-bg:    #1f2d3d;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #1a1f2e 100%);
+    border-bottom: 2px solid var(--border);
+    padding: 40px 60px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 80% 50%, rgba(88,166,255,.08) 0%, transparent 70%);
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .15em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  header h1 {
+    font-size: 2.6rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: #fff;
+  }
+  header h1 span { color: var(--accent); }
+  .header-sub {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  .badge-row {
+    margin-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .badge {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 11px;
+    border-radius: 20px;
+    border: 1px solid;
+    letter-spacing: .04em;
+  }
+  .badge-blue  { border-color: var(--accent);  color: var(--accent);  background: rgba(88,166,255,.08); }
+  .badge-green { border-color: var(--after);   color: var(--after);   background: rgba(86,211,100,.08); }
+  .badge-gold  { border-color: var(--gold);    color: var(--gold);    background: rgba(227,179,65,.08); }
+  .badge-red   { border-color: var(--before);  color: var(--before);  background: rgba(247,129,102,.08); }
+
+  /* ── LAYOUT ── */
+  .toc-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 60px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+  }
+  .toc-bar a {
+    display: inline-block;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color .2s, border-color .2s;
+  }
+  .toc-bar a:hover { color: var(--text); border-bottom-color: var(--accent); }
+
+  main { max-width: 960px; margin: 0 auto; padding: 50px 40px 80px; }
+
+  /* ── SECTIONS ── */
+  section { margin-bottom: 60px; }
+  .section-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .15em;
+    color: var(--accent);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  h2 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 28px 0 10px;
+  }
+  p { margin-bottom: 14px; color: var(--text); }
+
+  /* vocab highlight */
+  .vocab {
+    color: var(--gold);
+    font-weight: 500;
+  }
+  .def {
+    color: var(--muted);
+    font-style: italic;
+    font-size: .92em;
+  }
+
+  /* ── INFO BOXES ── */
+  .box {
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    border-left: 3px solid;
+    font-size: .95em;
+  }
+  .box-blue  { background: rgba(88,166,255,.07);  border-color: var(--accent);  }
+  .box-green { background: rgba(86,211,100,.07);  border-color: var(--after);   }
+  .box-red   { background: rgba(247,129,102,.07); border-color: var(--before);  }
+  .box-gold  { background: rgba(227,179,65,.07);  border-color: var(--gold);    }
+  .box-title { font-weight: 700; margin-bottom: 6px; }
+  .box-blue  .box-title { color: var(--accent); }
+  .box-green .box-title { color: var(--after);  }
+  .box-red   .box-title { color: var(--before); }
+  .box-gold  .box-title { color: var(--gold);   }
+
+  /* ── CODE BLOCKS ── */
+  pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    margin: 14px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+  .code-header {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 16px;
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .code-header + pre { border-radius: 0 0 8px 8px; margin-top: 0; }
+  .ck { color: var(--keyword); font-weight: 700; }
+  .cs { color: var(--string); }
+  .cc { color: var(--comment); font-style: italic; }
+  .cf { color: var(--func); }
+  .cn { color: #ffa657; }
+
+  /* ── TRIGGER TYPE CARDS ── */
+  .trigger-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  @media(max-width:640px){ .trigger-grid { grid-template-columns: 1fr; } }
+  .t-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    border-top: 3px solid;
+    position: relative;
+  }
+  .t-card-before { border-top-color: var(--before); }
+  .t-card-after  { border-top-color: var(--after);  }
+  .t-card-insert { border-top-color: var(--insert); }
+  .t-card-update { border-top-color: var(--update); }
+  .t-card-delete { border-top-color: var(--delete); }
+  .t-card h4 { font-size: .95rem; font-weight: 700; margin-bottom: 8px; }
+  .t-card-before h4 { color: var(--before); }
+  .t-card-after  h4 { color: var(--after);  }
+  .t-card p { font-size: .88rem; color: var(--muted); margin: 0; }
+
+  /* ── 6 TRIGGER TABLE ── */
+  .six-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+  }
+  @media(max-width:640px){ .six-grid { grid-template-columns: 1fr; } }
+  .six-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+  }
+  .six-card .event { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .six-card .timing { font-size: 1.1rem; font-weight: 700; margin: 4px 0; }
+  .six-card .use    { font-size: .82rem; color: var(--muted); }
+  .before-insert .timing { color: var(--before); }
+  .before-update .timing { color: var(--before); }
+  .before-delete .timing { color: var(--before); }
+  .after-insert  .timing { color: var(--after);  }
+  .after-update  .timing { color: var(--after);  }
+  .after-delete  .timing { color: var(--after);  }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    margin: 20px 0;
+    overflow-x: auto;
+  }
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 18px;
+    min-width: 140px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+  .flow-step .label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .flow-step .value { font-weight: 700; font-size: .95rem; margin-top: 4px; }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    color: var(--muted);
+    padding: 0 6px;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .flow-step.highlight-before { border-color: var(--before); background: rgba(247,129,102,.07); }
+  .flow-step.highlight-before .value { color: var(--before); }
+  .flow-step.highlight-after  { border-color: var(--after);  background: rgba(86,211,100,.07); }
+  .flow-step.highlight-after  .value { color: var(--after); }
+  .flow-step.highlight-sql    { border-color: var(--accent); background: rgba(88,166,255,.07); }
+  .flow-step.highlight-sql    .value { color: var(--accent); }
+
+  /* ── NEW/OLD TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13.5px;
+  }
+  th {
+    background: var(--surface2);
+    padding: 10px 16px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  td {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+  .yes { color: var(--after);  font-weight: 700; }
+  .no  { color: var(--before); font-weight: 700; }
+
+  /* ── TRACE STEPS ── */
+  .trace {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin: 20px 0;
+    overflow: hidden;
+  }
+  .trace-header {
+    background: var(--surface2);
+    padding: 12px 20px;
+    font-weight: 700;
+    font-size: .9rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .trace-step {
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    font-size: .9rem;
+  }
+  .trace-step:last-child { border-bottom: none; }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-num-before { background: rgba(247,129,102,.2); color: var(--before); }
+  .step-num-sql    { background: rgba(88,166,255,.2);  color: var(--accent);  }
+  .step-num-after  { background: rgba(86,211,100,.2);  color: var(--after);   }
+  .step-content strong { color: var(--text); }
+  .step-content small  { color: var(--muted); display: block; margin-top: 3px; }
+
+  /* ── SYNTAX BREAKDOWN ── */
+  .syntax-box {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin: 20px 0;
+  }
+  .syntax-line {
+    display: flex;
+    gap: 14px;
+    margin: 8px 0;
+    align-items: flex-start;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+  }
+  .syn-code { color: var(--text); flex-shrink: 0; }
+  .syn-explain { color: var(--muted); font-family: 'Inter', sans-serif; font-size: .85rem; margin-top: 2px; }
+
+  /* ── DELIMITER EXPLAINER ── */
+  .delimiter-visual {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 2;
+  }
+  .d-kw   { color: var(--keyword); font-weight: 700; }
+  .d-del  { color: #f0e68c; font-weight: 700; background: rgba(240,230,140,.1); padding: 0 4px; border-radius: 3px; }
+  .d-comment { color: var(--comment); font-style: italic; }
+
+  /* ── QUIZ PREP BOX ── */
+  .quiz-card {
+    background: var(--surface);
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 14px 0;
+  }
+  .quiz-q { font-weight: 700; color: var(--gold); margin-bottom: 8px; }
+  .quiz-a { color: var(--text); font-size: .93rem; }
+
+  /* ── RESULT TABLE ── */
+  .result-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--muted);
+    font-weight: 600;
+    margin: 16px 0 6px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .result-table { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .result-table th { font-family: 'JetBrains Mono', monospace; }
+
+  /* ── INLINE CODE ── */
+  code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 7px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .88em;
+    color: var(--string);
+  }
+
+  hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-eyebrow">Advanced Database Systems — ADS Lab 📋</div>
+  <h1>Database <span>Triggers</span><br>in MySQL</h1>
+  <p class="header-sub">Complete quiz preparation — from zero to full understanding, step by step.</p>
+  <div class="badge-row">
+    <span class="badge badge-blue">6 Trigger Types</span>
+    <span class="badge badge-green">NEW &amp; OLD Keywords</span>
+    <span class="badge badge-red">BEFORE Triggers</span>
+    <span class="badge badge-gold">AFTER Triggers</span>
+    <span class="badge badge-blue">Lab Walkthrough</span>
+    <span class="badge badge-green">Quiz Prep</span>
+  </div>
+</header>
+
+<nav class="toc-bar">
+  <a href="#what">What is a Trigger?</a>
+  <a href="#types">Two Types</a>
+  <a href="#six">6 Row-Level Triggers</a>
+  <a href="#newold">NEW &amp; OLD</a>
+  <a href="#delimiter">DELIMITER</a>
+  <a href="#syntax">Syntax</a>
+  <a href="#lab">Lab Walkthrough</a>
+  <a href="#trace">Full Trace</a>
+  <a href="#quiz">Quiz Prep</a>
+</nav>
+
+<main>
+
+<!-- ─────────────────────────────── SECTION 1 ─────────────────────────────── -->
+<section id="what">
+  <div class="section-label">Section 01</div>
+  <h2>What is a Trigger?</h2>
+
+  <p>
+    A <span class="vocab">trigger</span> <span class="def">(something that causes an action automatically)</span>
+    is a special type of <span class="vocab">stored procedure</span> <span class="def">(a saved block of SQL code in the database)</span>
+    that <strong>runs automatically</strong> when a specific event happens on a table.
+  </p>
+
+  <div class="box box-blue">
+    <div class="box-title">🔑 Core Idea</div>
+    You don't call a trigger manually. You do something to a table (INSERT / UPDATE / DELETE),
+    and the trigger fires <em>on its own</em> — like a <em>motion sensor light</em>.
+    Someone walks in → light turns on. You insert a row → trigger fires.
+  </div>
+
+  <h3>Why do we use triggers?</h3>
+  <p>Your notes mention three key uses:</p>
+
+  <div class="trigger-grid">
+    <div class="t-card t-card-before">
+      <h4>① Data Validation <span class="def">(checking that data is correct)</span></h4>
+      <p>Use a BEFORE trigger to check and fix data <em>before</em> it enters the table.
+         Example: salary cannot be negative → change it to 0 automatically.</p>
+    </div>
+    <div class="t-card t-card-after">
+      <h4>② Audit Logging <span class="def">(keeping a record of who did what)</span></h4>
+      <p>Use an AFTER trigger to write a record into a log table every time
+         an employee is inserted, updated, or deleted.</p>
+    </div>
+    <div class="t-card t-card-before">
+      <h4>③ Organizational Constraints <span class="def">(business rules of a company)</span></h4>
+      <p>Rules that go beyond simple CHECK constraints — e.g., if the department
+         is "HR", ensure salary is within a specific range.</p>
+    </div>
+    <div class="t-card t-card-after">
+      <h4>④ Auto-calculated Values</h4>
+      <p>Automatically compute and insert derived values. Example:
+         when inserting a sale row, automatically update the total_sales column.</p>
+    </div>
+  </div>
+
+  <div class="box box-gold">
+    <div class="box-title">📝 From Your Notes</div>
+    <em>"Triggers in physical memory — better performance than CHECK."</em><br><br>
+    Triggers are stored in physical (disk-based, <span class="vocab">persistent</span> <span class="def">= stays even after restart</span>) memory of MySQL,
+    so once defined they are always available without re-running code.
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 2 ─────────────────────────────── -->
+<section id="types">
+  <div class="section-label">Section 02</div>
+  <h2>Two Types of Triggers</h2>
+  <p>Your notes show exactly two types. This is about <em>how many times</em> the trigger fires:</p>
+
+  <div class="trigger-grid">
+    <div class="t-card t-card-insert">
+      <h4>1. Row-Level Trigger</h4>
+      <p>
+        Fires <strong>once for every row</strong> affected by the SQL statement.<br><br>
+        Example: If you insert 50 rows in one statement, this trigger fires <strong>50 times</strong>.<br><br>
+        Keyword: <code>FOR EACH ROW</code>
+      </p>
+    </div>
+    <div class="t-card t-card-update">
+      <h4>2. Statement-Level Trigger</h4>
+      <p>
+        Fires <strong>once per SQL statement</strong>, regardless of how many rows it affects.<br><br>
+        Example: If you insert 50 rows in one statement, this trigger fires <strong>only 1 time</strong>.<br><br>
+        (NOT available in MySQL — only in PostgreSQL)
+      </p>
+    </div>
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">⚠️ MySQL Specific — Important for Your Quiz</div>
+    MySQL supports <strong>ONLY row-level triggers</strong> (<code>FOR EACH ROW</code>).
+    Statement-level triggers exist in <span class="vocab">PostgreSQL</span> <span class="def">(another database system)</span> — both DDL and DML triggers are available there.
+    Your lab uses MySQL, so everything you write will always have <code>FOR EACH ROW</code>.
+  </div>
+
+  <div class="box box-blue">
+    <div class="box-title">📌 Also from notes: DML vs DDL</div>
+    Triggers in MySQL are <span class="vocab">DML</span> <span class="def">(Data Manipulation Language — INSERT, UPDATE, DELETE)</span> triggers only.
+    For <span class="vocab">DDL</span> <span class="def">(Data Definition Language — CREATE, DROP, ALTER)</span> → no triggers in MySQL.
+    PostgreSQL supports both.
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 3 ─────────────────────────────── -->
+<section id="six">
+  <div class="section-label">Section 03</div>
+  <h2>The 6 Row-Level Trigger Types</h2>
+  <p>
+    From your notes: <em>"Row Level Triggers — 6 types"</em>.
+    These come from combining <strong>timing</strong> (BEFORE / AFTER) × <strong>event</strong> (INSERT / UPDATE / DELETE):
+  </p>
+
+  <div class="six-grid">
+    <div class="six-card before-insert">
+      <div class="event">INSERT</div>
+      <div class="timing">BEFORE INSERT</div>
+      <div class="use">Validate/modify data before it's saved. e.g. fix negative salary → 0</div>
+    </div>
+    <div class="six-card before-update">
+      <div class="event">UPDATE</div>
+      <div class="timing">BEFORE UPDATE</div>
+      <div class="use">Check new value before it's applied. e.g. reject negative salary updates</div>
+    </div>
+    <div class="six-card before-delete">
+      <div class="event">DELETE</div>
+      <div class="timing">BEFORE DELETE</div>
+      <div class="use">Log the record or cancel deletion if needed. Access OLD data.</div>
+    </div>
+    <div class="six-card after-insert">
+      <div class="event">INSERT</div>
+      <div class="timing">AFTER INSERT</div>
+      <div class="use">Log that a new record was added. e.g. write to employee_log</div>
+    </div>
+    <div class="six-card after-update">
+      <div class="event">UPDATE</div>
+      <div class="timing">AFTER UPDATE</div>
+      <div class="use">Log what changed. e.g. record old salary → new salary</div>
+    </div>
+    <div class="six-card after-delete">
+      <div class="event">DELETE</div>
+      <div class="timing">AFTER DELETE</div>
+      <div class="use">Confirm deletion in log. OLD data is still accessible.</div>
+    </div>
+  </div>
+
+  <div class="box box-blue">
+    <div class="box-title">Simple Memory Rule</div>
+    <strong>BEFORE</strong> = intercept and change data before it hits the table → use for <em>validation</em> <span class="def">(checking if data is correct)</span><br>
+    <strong>AFTER</strong> = react to something that already happened → use for <em>audit logs</em> <span class="def">(records of changes for accountability)</span>
+  </div>
+
+  <h3>Execution flow — what actually happens</h3>
+  <div class="flow">
+    <div class="flow-step highlight-before">
+      <div class="label">Step 1</div>
+      <div class="value">BEFORE Trigger fires</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight-sql">
+      <div class="label">Step 2</div>
+      <div class="value">SQL operation executes on table</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step highlight-after">
+      <div class="label">Step 3</div>
+      <div class="value">AFTER Trigger fires</div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 4 ─────────────────────────────── -->
+<section id="newold">
+  <div class="section-label">Section 04</div>
+  <h2>NEW and OLD Keywords</h2>
+  <p>
+    Inside a trigger body, you can access two special row references:
+    <code>NEW</code> and <code>OLD</code>. Think of them as the row "before the operation" and
+    "after the operation."
+  </p>
+
+  <table>
+    <tr>
+      <th>Keyword</th>
+      <th>What it refers to</th>
+      <th>Available in INSERT?</th>
+      <th>Available in UPDATE?</th>
+      <th>Available in DELETE?</th>
+    </tr>
+    <tr>
+      <td><code style="color:var(--after)">NEW</code></td>
+      <td>The row as it will be written to the table (the incoming data)</td>
+      <td class="yes">✔ YES</td>
+      <td class="yes">✔ YES</td>
+      <td class="no">✘ NO</td>
+    </tr>
+    <tr>
+      <td><code style="color:var(--before)">OLD</code></td>
+      <td>The row as it existed before this operation</td>
+      <td class="no">✘ NO</td>
+      <td class="yes">✔ YES</td>
+      <td class="yes">✔ YES</td>
+    </tr>
+  </table>
+
+  <div class="box box-green">
+    <div class="box-title">Logic behind this:</div>
+    <strong>INSERT</strong>: There is no "old" row — you're creating a brand new one. Only <code>NEW</code> exists.<br>
+    <strong>DELETE</strong>: You're removing the row. There's nothing "new" being inserted. Only <code>OLD</code> exists.<br>
+    <strong>UPDATE</strong>: You have <em>both</em> — the old version and the new version. Use <code>OLD.salary</code> for what it was, <code>NEW.salary</code> for what it will become.
+  </div>
+
+  <div class="box box-red">
+    <div class="box-title">⚡ Key difference: BEFORE vs AFTER with NEW</div>
+    In a <strong>BEFORE trigger</strong>, you can actually <em>modify</em> <code>NEW.column</code> before it's saved.
+    This is how the BEFORE INSERT trigger in the lab changes a negative salary to 0 — it sets <code>SET NEW.salary = 0</code>.
+    In an AFTER trigger, the row is already saved — modifying <code>NEW</code> has no effect.
+  </div>
+
+  <h3>From your notes:</h3>
+  <div class="box box-gold">
+    <em>"NEW — generally used with BEFORE. For newly inserted rows."</em><br>
+    <em>"OLD — old rows which are already there, can be accessed."</em><br><br>
+    More precisely: NEW is available in both BEFORE and AFTER, but it's <em>useful</em> to modify only in BEFORE.
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 5 ─────────────────────────────── -->
+<section id="delimiter">
+  <div class="section-label">Section 05</div>
+  <h2>The DELIMITER — Why We Need It</h2>
+
+  <p>
+    MySQL uses a semicolon <code>;</code> as the <span class="vocab">statement terminator</span>
+    <span class="def">(the character that tells MySQL "this statement is complete, execute it")</span>.
+    Inside a trigger body, you also use semicolons to separate SQL statements.
+    This creates a problem: MySQL would try to execute the trigger <em>halfway through</em> when it hits the first inner semicolon.
+  </p>
+
+  <p>The solution is to temporarily change the delimiter to something else — usually <code>//</code> — while creating the trigger, then change it back to <code>;</code> afterward.</p>
+
+  <div class="delimiter-visual">
+    <span class="d-del">DELIMITER //</span>  <span class="d-comment">← "From now on, // means END of statement, not ;"</span><br><br>
+    <span class="d-kw">CREATE TRIGGER</span> my_trigger<br>
+    <span class="d-kw">BEFORE INSERT ON</span> employees <span class="d-kw">FOR EACH ROW</span><br>
+    <span class="d-kw">BEGIN</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="d-kw">IF</span> NEW.salary &lt; 0 <span class="d-kw">THEN</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="d-kw">SET</span> NEW.salary = 0<span class="d-del">;</span>  <span class="d-comment">← this ; does NOT confuse MySQL now</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="d-kw">END IF</span><span class="d-del">;</span><br>
+    <span class="d-kw">END</span><span class="d-del">//</span>  <span class="d-comment">← THIS is the actual end of the CREATE TRIGGER statement</span><br><br>
+    <span class="d-del">DELIMITER ;</span>  <span class="d-comment">← "Okay, go back to ; as the terminator"</span>
+  </div>
+
+  <div class="box box-gold">
+    <div class="box-title">From your notes:</div>
+    <em>"By default MySQL uses ; so it gets confused — so we use the delimiter."</em><br><br>
+    Exactly right. The DELIMITER command is a MySQL client instruction, not actual SQL.
+    It just tells MySQL Workbench / command line: "treat <code>//</code> as the end of a statement for now."
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 6 ─────────────────────────────── -->
+<section id="syntax">
+  <div class="section-label">Section 06</div>
+  <h2>Full Trigger Syntax Breakdown</h2>
+
+  <div class="syntax-box">
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">DELIMITER</span> //</span>
+      <span class="syn-explain">Temporarily change the statement terminator to //</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"></span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">CREATE TRIGGER</span> <span class="cf">trigger_name</span></span>
+      <span class="syn-explain">Give the trigger a unique name</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">BEFORE</span> | <span class="ck">AFTER</span></span>
+      <span class="syn-explain">TIMING — when should this fire?</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">INSERT</span> | <span class="ck">UPDATE</span> | <span class="ck">DELETE</span></span>
+      <span class="syn-explain">EVENT — which operation triggers it?</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">ON</span> <span class="cn">table_name</span></span>
+      <span class="syn-explain">Which table to watch</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">FOR EACH ROW</span></span>
+      <span class="syn-explain">Row-level trigger (mandatory in MySQL)</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">BEGIN</span></span>
+      <span class="syn-explain">Start of the trigger body</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code">&nbsp;&nbsp;&nbsp;&nbsp;<span class="cc">-- your SQL logic here</span></span>
+      <span class="syn-explain">Can use NEW.column, OLD.column, IF-THEN, INSERT, etc.</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">END</span>//</span>
+      <span class="syn-explain">End of body — // is the statement terminator here</span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"></span>
+    </div>
+    <div class="syntax-line">
+      <span class="syn-code"><span class="ck">DELIMITER</span> ;</span>
+      <span class="syn-explain">Restore normal ; terminator</span>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 7 ─────────────────────────────── -->
+<section id="lab">
+  <div class="section-label">Section 07</div>
+  <h2>Lab Walkthrough — All 6 Triggers Explained</h2>
+  <p>The lab creates an <code>emp_db</code> database with two tables and 6 triggers. Let's go through each one.</p>
+
+  <h3>The Two Tables</h3>
+  <div class="code-header">
+    <span>employees table</span>
+    <span style="color:var(--insert)">Main Data Table</span>
+  </div>
+  <pre><span class="ck">CREATE TABLE</span> employees (
+    emp_id     <span class="cf">INT</span> <span class="ck">PRIMARY KEY AUTO_INCREMENT</span>,  <span class="cc">-- unique ID, auto-assigned</span>
+    emp_name   <span class="cf">VARCHAR</span>(100),                      <span class="cc">-- employee's name</span>
+    salary     <span class="cf">DECIMAL</span>(10,2),                     <span class="cc">-- salary, 2 decimal places</span>
+    department <span class="cf">VARCHAR</span>(50)                        <span class="cc">-- department name</span>
+);</pre>
+
+  <div class="code-header">
+    <span>employee_log table</span>
+    <span style="color:var(--after)">Audit Log Table</span>
+  </div>
+  <pre><span class="ck">CREATE TABLE</span> employee_log (
+    log_id      <span class="cf">INT</span> <span class="ck">PRIMARY KEY AUTO_INCREMENT</span>,
+    action_type <span class="cf">VARCHAR</span>(50),              <span class="cc">-- what happened: "AFTER INSERT", etc.</span>
+    emp_id      <span class="cf">INT</span>,                       <span class="cc">-- which employee this log entry is about</span>
+    action_time <span class="cf">TIMESTAMP</span> <span class="ck">DEFAULT</span> CURRENT_TIMESTAMP, <span class="cc">-- automatically records when</span>
+    message     <span class="cf">VARCHAR</span>(255)               <span class="cc">-- human-readable description</span>
+);</pre>
+
+  <hr>
+
+  <h3>Trigger 1 — BEFORE INSERT</h3>
+  <div class="box box-red">
+    <div class="box-title">Purpose</div>
+    Intercept an INSERT before it happens. If the salary being inserted is negative (invalid), change it to 0.
+  </div>
+  <div class="code-header">
+    <span>before_employee_insert</span>
+    <span style="color:var(--before)">BEFORE INSERT</span>
+  </div>
+  <pre><span class="ck">CREATE TRIGGER</span> before_employee_insert
+<span class="ck">BEFORE INSERT ON</span> employees
+<span class="ck">FOR EACH ROW</span>
+<span class="ck">BEGIN</span>
+    <span class="ck">IF</span> NEW.salary &lt; 0 <span class="ck">THEN</span>
+        <span class="ck">SET</span> NEW.salary = 0;   <span class="cc">-- modify the incoming data</span>
+    <span class="ck">END IF</span>;
+<span class="ck">END</span>//</pre>
+  <div class="box box-green">
+    <strong>NEW.salary</strong> = the salary value the user tried to insert. We check if it's &lt; 0 and overwrite it with 0.
+    The table then receives 0, not the negative value — the user never even gets an error message.
+  </div>
+
+  <h3>Trigger 2 — AFTER INSERT</h3>
+  <div class="box box-green">
+    <div class="box-title">Purpose</div>
+    After a new employee is successfully added, write a log entry saying who was inserted.
+  </div>
+  <div class="code-header">
+    <span>after_employee_insert</span>
+    <span style="color:var(--after)">AFTER INSERT</span>
+  </div>
+  <pre><span class="ck">CREATE TRIGGER</span> after_employee_insert
+<span class="ck">AFTER INSERT ON</span> employees
+<span class="ck">FOR EACH ROW</span>
+<span class="ck">BEGIN</span>
+    <span class="ck">INSERT INTO</span> employee_log(action_type, emp_id, message)
+    <span class="ck">VALUES</span> (<span class="cs">'AFTER INSERT'</span>, NEW.emp_id,
+            <span class="cf">CONCAT</span>(<span class="cs">'Employee '</span>, NEW.emp_name, <span class="cs">' inserted'</span>));
+<span class="ck">END</span>//</pre>
+  <div class="box box-blue">
+    <code>CONCAT()</code> joins strings together. So if we insert 'Ali', the message becomes:
+    <code>"Employee Ali inserted"</code>.
+    <code>NEW.emp_id</code> is the auto-assigned ID of the newly inserted row.
+  </div>
+
+  <h3>Trigger 3 — BEFORE UPDATE</h3>
+  <div class="box box-red">
+    <div class="box-title">Purpose</div>
+    Before a salary update, check if the new salary is negative. If yes, <em>keep the old salary</em> instead.
+  </div>
+  <div class="code-header">
+    <span>before_employee_update</span>
+    <span style="color:var(--before)">BEFORE UPDATE</span>
+  </div>
+  <pre><span class="ck">CREATE TRIGGER</span> before_employee_update
+<span class="ck">BEFORE UPDATE ON</span> employees
+<span class="ck">FOR EACH ROW</span>
+<span class="ck">BEGIN</span>
+    <span class="ck">IF</span> NEW.salary &lt; 0 <span class="ck">THEN</span>
+        <span class="ck">SET</span> NEW.salary = OLD.salary;  <span class="cc">-- reject the change, restore old value</span>
+    <span class="ck">END IF</span>;
+<span class="ck">END</span>//</pre>
+  <div class="box box-green">
+    Notice: here both <code>OLD</code> and <code>NEW</code> are used.
+    <code>NEW.salary</code> is what the user <em>tried</em> to set.
+    <code>OLD.salary</code> is what it was <em>before</em>. By setting <code>NEW.salary = OLD.salary</code>,
+    we effectively cancel (undo) the bad update.
+  </div>
+
+  <h3>Trigger 4 — AFTER UPDATE</h3>
+  <div class="box box-green">
+    <div class="box-title">Purpose</div>
+    After a salary is updated, log the change — show what the old value was and what the new value is.
+  </div>
+  <div class="code-header">
+    <span>after_employee_update</span>
+    <span style="color:var(--after)">AFTER UPDATE</span>
+  </div>
+  <pre><span class="ck">CREATE TRIGGER</span> after_employee_update
+<span class="ck">AFTER UPDATE ON</span> employees
+<span class="ck">FOR EACH ROW</span>
+<span class="ck">BEGIN</span>
+    <span class="ck">INSERT INTO</span> employee_log(action_type, emp_id, message)
+    <span class="ck">VALUES</span> (<span class="cs">'AFTER UPDATE'</span>, NEW.emp_id,
+            <span class="cf">CONCAT</span>(<span class="cs">'Salary updated from '</span>,
+                   OLD.salary, <span class="cs">' to '</span>, NEW.salary));
+<span class="ck">END</span>//</pre>
+  <div class="box box-blue">
+    Example message produced: <code>"Salary updated from 50000.00 to 60000.00"</code>.
+    This is a classic <span class="vocab">audit trail</span> <span class="def">(a record of all changes, for accountability)</span>.
+  </div>
+
+  <h3>Trigger 5 — BEFORE DELETE</h3>
+  <div class="box box-red">
+    <div class="box-title">Purpose</div>
+    Before deleting an employee, log the fact that we are about to delete them.
+    This preserves a record of who existed <em>before</em> they're removed.
+  </div>
+  <div class="code-header">
+    <span>before_employee_delete</span>
+    <span style="color:var(--before)">BEFORE DELETE</span>
+  </div>
+  <pre><span class="ck">CREATE TRIGGER</span> before_employee_delete
+<span class="ck">BEFORE DELETE ON</span> employees
+<span class="ck">FOR EACH ROW</span>
+<span class="ck">BEGIN</span>
+    <span class="ck">INSERT INTO</span> employee_log(action_type, emp_id, message)
+    <span class="ck">VALUES</span> (<span class="cs">'BEFORE DELETE'</span>, OLD.emp_id,
+            <span class="cf">CONCAT</span>(<span class="cs">'Deleting employee '</span>, OLD.emp_name));
+<span class="ck">END</span>//</pre>
+  <div class="box box-gold">
+    Only <code>OLD</code> is used here — there is no <code>NEW</code> in a DELETE trigger. The row is being removed,
+    so no "new" version of it exists.
+  </div>
+
+  <h3>Trigger 6 — AFTER DELETE</h3>
+  <div class="box box-green">
+    <div class="box-title">Purpose</div>
+    After the deletion is complete, write a confirmation log entry.
+  </div>
+  <div class="code-header">
+    <span>after_employee_delete</span>
+    <span style="color:var(--after)">AFTER DELETE</span>
+  </div>
+  <pre><span class="ck">CREATE TRIGGER</span> after_employee_delete
+<span class="ck">AFTER DELETE ON</span> employees
+<span class="ck">FOR EACH ROW</span>
+<span class="ck">BEGIN</span>
+    <span class="ck">INSERT INTO</span> employee_log(action_type, emp_id, message)
+    <span class="ck">VALUES</span> (<span class="cs">'AFTER DELETE'</span>, OLD.emp_id,
+            <span class="cf">CONCAT</span>(<span class="cs">'Employee '</span>, OLD.emp_name, <span class="cs">' deleted'</span>));
+<span class="ck">END</span>//</pre>
+  <div class="box box-blue">
+    Even in an AFTER DELETE trigger, <code>OLD</code> is still accessible — MySQL keeps it available
+    within the scope of the trigger execution even though the row is already removed from the table.
+  </div>
+
+  <div class="box box-blue" style="margin-top:24px">
+    <div class="box-title">Checking All Triggers: SHOW TRIGGERS</div>
+    <pre style="margin:8px 0 0;padding:10px"><span class="ck">SHOW TRIGGERS FROM</span> emp_db;</pre>
+    This lists all 6 triggers with their table, event, timing, and body.
+  </div>
+</section>
+
+<!-- ─────────────────────────────── SECTION 8 ─────────────────────────────── -->
+<section id="trace">
+  <div class="section-label">Section 08</div>
+  <h2>Full Execution Trace — Step by Step</h2>
+  <p>This is the most important section. Walk through every test query in the lab and see exactly what happens.</p>
+
+  <!-- TRACE 1 -->
+  <div class="trace">
+    <div class="trace-header" style="color:var(--insert)">
+      🔵 Test 1: INSERT valid employee — INSERT INTO employees VALUES ('Ali', 50000, 'IT')
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-before">1</div>
+      <div class="step-content">
+        <strong>BEFORE INSERT trigger fires</strong>
+        <small>Checks: is 50000 &lt; 0? → NO. Nothing changes. NEW.salary stays 50000.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-sql">2</div>
+      <div class="step-content">
+        <strong>MySQL executes the INSERT</strong>
+        <small>Row (emp_id=1, 'Ali', 50000.00, 'IT') is written to employees table.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-after">3</div>
+      <div class="step-content">
+        <strong>AFTER INSERT trigger fires</strong>
+        <small>Inserts into employee_log: action_type='AFTER INSERT', emp_id=1, message='Employee Ali inserted'</small>
+      </div>
+    </div>
+  </div>
+  <div class="result-label">Result — SELECT * FROM employees</div>
+  <table class="result-table">
+    <tr><th>emp_id</th><th>emp_name</th><th>salary</th><th>department</th></tr>
+    <tr><td>1</td><td>Ali</td><td>50000.00</td><td>IT</td></tr>
+  </table>
+  <div class="result-label">Result — SELECT * FROM employee_log</div>
+  <table class="result-table">
+    <tr><th>log_id</th><th>action_type</th><th>emp_id</th><th>message</th></tr>
+    <tr><td>1</td><td>AFTER INSERT</td><td>1</td><td>Employee Ali inserted</td></tr>
+  </table>
+
+  <!-- TRACE 2 -->
+  <div class="trace" style="margin-top:30px">
+    <div class="trace-header" style="color:var(--before)">
+      🔴 Test 2: INSERT negative salary — INSERT INTO employees VALUES ('alina', -10000, 'HR')
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-before">1</div>
+      <div class="step-content">
+        <strong>BEFORE INSERT trigger fires</strong>
+        <small>Checks: is -10000 &lt; 0? → YES! SET NEW.salary = 0. The salary is corrected to 0 before saving.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-sql">2</div>
+      <div class="step-content">
+        <strong>MySQL executes the INSERT with corrected data</strong>
+        <small>Row (emp_id=2, 'alina', 0.00, 'HR') is written — not -10000!</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-after">3</div>
+      <div class="step-content">
+        <strong>AFTER INSERT trigger fires</strong>
+        <small>Inserts into log: 'Employee alina inserted'</small>
+      </div>
+    </div>
+  </div>
+  <div class="result-label">Result — SELECT * FROM employees</div>
+  <table class="result-table">
+    <tr><th>emp_id</th><th>emp_name</th><th>salary</th><th>department</th></tr>
+    <tr><td>1</td><td>Ali</td><td>50000.00</td><td>IT</td></tr>
+    <tr><td>2</td><td>alina</td><td style="color:var(--before);font-weight:700">0.00</td><td>HR</td></tr>
+  </table>
+  <div class="box box-red" style="margin:10px 0">Note: salary is 0.00, not -10000. The BEFORE INSERT trigger corrected it silently.</div>
+
+  <!-- TRACE 3 -->
+  <div class="trace" style="margin-top:30px">
+    <div class="trace-header" style="color:var(--update)">
+      🟡 Test 3: Valid UPDATE — UPDATE employees SET salary = 60000 WHERE emp_id = 1
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-before">1</div>
+      <div class="step-content">
+        <strong>BEFORE UPDATE trigger fires</strong>
+        <small>NEW.salary = 60000. Is 60000 &lt; 0? → NO. Nothing changes.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-sql">2</div>
+      <div class="step-content">
+        <strong>MySQL executes the UPDATE</strong>
+        <small>Ali's salary changes from 50000 to 60000.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-after">3</div>
+      <div class="step-content">
+        <strong>AFTER UPDATE trigger fires</strong>
+        <small>Log: 'Salary updated from 50000.00 to 60000.00'</small>
+      </div>
+    </div>
+  </div>
+  <div class="result-label">SELECT * FROM employee_log (now has 3 entries)</div>
+  <table class="result-table">
+    <tr><th>log_id</th><th>action_type</th><th>emp_id</th><th>message</th></tr>
+    <tr><td>1</td><td>AFTER INSERT</td><td>1</td><td>Employee Ali inserted</td></tr>
+    <tr><td>2</td><td>AFTER INSERT</td><td>2</td><td>Employee alina inserted</td></tr>
+    <tr><td>3</td><td>AFTER UPDATE</td><td>1</td><td>Salary updated from 50000.00 to 60000.00</td></tr>
+  </table>
+
+  <!-- TRACE 4 -->
+  <div class="trace" style="margin-top:30px">
+    <div class="trace-header" style="color:var(--before)">
+      🔴 Test 4: Invalid UPDATE — UPDATE employees SET salary = -5000 WHERE emp_id = 1
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-before">1</div>
+      <div class="step-content">
+        <strong>BEFORE UPDATE trigger fires</strong>
+        <small>NEW.salary = -5000. Is -5000 &lt; 0? → YES! SET NEW.salary = OLD.salary = 60000. Update is cancelled.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-sql">2</div>
+      <div class="step-content">
+        <strong>MySQL executes the UPDATE — but with salary = 60000 (same as before)</strong>
+        <small>No real change happens. Row stays the same.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-after">3</div>
+      <div class="step-content">
+        <strong>AFTER UPDATE trigger fires</strong>
+        <small>Log: 'Salary updated from 60000.00 to 60000.00' — shows no real change occurred.</small>
+      </div>
+    </div>
+  </div>
+  <div class="result-label">SELECT * FROM employees — Ali still has 60000</div>
+  <table class="result-table">
+    <tr><th>emp_id</th><th>emp_name</th><th>salary</th><th>department</th></tr>
+    <tr><td>1</td><td>Ali</td><td style="color:var(--after);font-weight:700">60000.00</td><td>IT</td></tr>
+  </table>
+
+  <!-- TRACE 5 -->
+  <div class="trace" style="margin-top:30px">
+    <div class="trace-header" style="color:var(--delete)">
+      🔴 Test 5: DELETE — DELETE FROM employees WHERE emp_id = 1
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-before">1</div>
+      <div class="step-content">
+        <strong>BEFORE DELETE trigger fires</strong>
+        <small>Log: 'Deleting employee Ali' — records who is about to be deleted.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-sql">2</div>
+      <div class="step-content">
+        <strong>MySQL executes the DELETE</strong>
+        <small>Ali's row is removed from the employees table.</small>
+      </div>
+    </div>
+    <div class="trace-step">
+      <div class="step-num step-num-after">3</div>
+      <div class="step-content">
+        <strong>AFTER DELETE trigger fires</strong>
+        <small>Log: 'Employee Ali deleted' — final confirmation entry.</small>
+      </div>
+    </div>
+  </div>
+  <div class="result-label">SELECT * FROM employee_log — final state (6 entries)</div>
+  <table class="result-table">
+    <tr><th>log_id</th><th>action_type</th><th>emp_id</th><th>message</th></tr>
+    <tr><td>1</td><td>AFTER INSERT</td><td>1</td><td>Employee Ali inserted</td></tr>
+    <tr><td>2</td><td>AFTER INSERT</td><td>2</td><td>Employee alina inserted</td></tr>
+    <tr><td>3</td><td>AFTER UPDATE</td><td>1</td><td>Salary updated from 50000.00 to 60000.00</td></tr>
+    <tr><td>4</td><td>AFTER UPDATE</td><td>1</td><td>Salary updated from 60000.00 to 60000.00</td></tr>
+    <tr><td>5</td><td>BEFORE DELETE</td><td>1</td><td>Deleting employee Ali</td></tr>
+    <tr><td>6</td><td>AFTER DELETE</td><td>1</td><td>Employee Ali deleted</td></tr>
+  </table>
+</section>
+
+<!-- ─────────────────────────────── SECTION 9 ─────────────────────────────── -->
+<section id="quiz">
+  <div class="section-label">Section 09</div>
+  <h2>⚡ Quiz Prep — Expected Questions & Answers</h2>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q1: What is a trigger in MySQL?</div>
+    <div class="quiz-a">A trigger is a type of stored procedure that automatically executes when a specific DML event (INSERT, UPDATE, or DELETE) occurs on a table. It does not need to be called manually.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q2: What are the two types of triggers based on level?</div>
+    <div class="quiz-a"><strong>Row-level trigger</strong>: fires once for every row affected (uses FOR EACH ROW). <strong>Statement-level trigger</strong>: fires once per SQL statement. MySQL only supports row-level triggers.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q3: What is the difference between BEFORE and AFTER triggers?</div>
+    <div class="quiz-a">A BEFORE trigger fires before the DML operation executes — it can modify the NEW row data. An AFTER trigger fires after the operation is complete — used for logging/auditing since the change is already committed.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q4: What is NEW and OLD in a trigger?</div>
+    <div class="quiz-a">NEW refers to the row being inserted or the new version of a row being updated. OLD refers to the row before it was updated or deleted. In INSERT triggers: only NEW. In DELETE triggers: only OLD. In UPDATE triggers: both are available.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q5: Why do we use DELIMITER // in MySQL triggers?</div>
+    <div class="quiz-a">MySQL uses semicolons (;) as statement terminators. Since trigger bodies also contain semicolons, MySQL would misinterpret them. By changing the delimiter to //, we tell MySQL to treat // as the end of the full CREATE TRIGGER statement, then restore ; afterward.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q6: In the lab, what happens when you INSERT salary = -10000?</div>
+    <div class="quiz-a">The BEFORE INSERT trigger fires. It checks if NEW.salary &lt; 0 — true, so it sets NEW.salary = 0. The row is then inserted with salary = 0.00, not -10000. The AFTER INSERT trigger then logs the insertion.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q7: What is the purpose of the employee_log table in the lab?</div>
+    <div class="quiz-a">It serves as an audit log — a permanent record of all database operations (insertions, updates, deletions). Every AFTER trigger in the lab writes a row into this table with the action type, employee ID, timestamp, and a message describing what happened.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q8: How many triggers fire when you DELETE one row from employees?</div>
+    <div class="quiz-a">Two triggers fire: the BEFORE DELETE trigger (logs 'Deleting employee X') and the AFTER DELETE trigger (logs 'Employee X deleted'). So 2 log entries are created per deletion.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q9: How would you view all triggers in a database?</div>
+    <div class="quiz-a"><code>SHOW TRIGGERS FROM emp_db;</code> — this lists all triggers with their event, table, timing, and body.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">Q10: Can triggers be used for DDL operations (CREATE, DROP) in MySQL?</div>
+    <div class="quiz-a">No. In MySQL, triggers only work with DML operations (INSERT, UPDATE, DELETE). DDL triggers are not supported in MySQL, though PostgreSQL supports both DDL and DML triggers.</div>
+  </div>
+
+  <div class="box box-gold" style="margin-top:30px">
+    <div class="box-title">🎯 Key Vocabulary to Know for the Quiz</div>
+    <ul style="list-style:disc;padding-left:20px;line-height:2.2">
+      <li><strong>Trigger</strong> — automated stored procedure that fires on DML events</li>
+      <li><strong>Stored Procedure</strong> — pre-written block of SQL saved in the database</li>
+      <li><strong>DML</strong> (Data Manipulation Language) — INSERT, UPDATE, DELETE</li>
+      <li><strong>DDL</strong> (Data Definition Language) — CREATE, DROP, ALTER</li>
+      <li><strong>Audit log</strong> — record of database changes for accountability</li>
+      <li><strong>Data validation</strong> — checking and enforcing correct data before saving</li>
+      <li><strong>FOR EACH ROW</strong> — the keyword making it a row-level trigger</li>
+      <li><strong>NEW / OLD</strong> — special row references inside trigger bodies</li>
+      <li><strong>DELIMITER</strong> — MySQL client instruction to change statement terminator</li>
+      <li><strong>CONCAT()</strong> — MySQL function to join strings together</li>
+    </ul>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

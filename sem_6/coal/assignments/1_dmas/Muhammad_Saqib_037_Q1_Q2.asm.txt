@@ -1,0 +1,139 @@
+; Name: Muhammad Saqib 
+; RegNo: 04072313037
+
+; Q1. Write a program to display your first name and last name in two different lines.
+
+DOSSEG
+.MODEL small
+.STACK 100h
+
+.DATA
+        msg1 DB 'Muhammad$'
+        msg2 DB 'Saqib$'
+
+.CODE
+MAIN PROC
+
+        MOV AX, @DATA
+        MOV DS, AX
+
+        MOV DX, offset msg1
+        MOV AH, 9
+        INT 21H
+        
+        MOV dl, 13
+        MOV AH, 2
+        INT 21H
+
+        MOV dl, 10
+        MOV AH, 2
+        INT 21H
+
+        MOV dx, offset msg2
+        MOV AH, 9
+        INT 21H
+
+        MOV AH, 4CH
+        INT 21H
+
+MAIN ENDP
+END MAIN
+
+
+
+; Q2. Write a program to input two integers and the add, sub, multiply  and divide these numbers and display the result on screen.  
+
+.MODEL small
+.STACK 100H
+.DATA
+        msg1 DB 'Enter 1st number (0-9): $ '
+        msg2 DB 0DH,0AH, 'Enter second number (0-9):$'
+
+        addmsg DB 0DH,0AH, 'Addition: $'
+        SUBMSG DB 0DH, 0AH, 'Subtraction:$'
+        MULMSG DB 0DH,0AH, 'Multiplication:$'
+        divmsg DB 0DH,0AH,'Division:$'
+
+.CODE
+MAIN PROC
+        MOV AX, @DATA
+        MOV DS, AX
+
+        ;--------Input first number---------
+        LEA DX,msg1
+        MOV AH,09H
+        INT 21H
+
+        MOV AH,01H   ; read char
+        INT 21H
+        SUB AL, '0'       ; Convert ascii to number
+        MOV BL, AL        ;Store first number
+
+        ;--------input second number-----------
+        LEA DX,msg2
+        MOV AH,09H
+        INT 21H
+
+        MOV AH,01H
+        INT 21H
+        SUB AL,'0'
+        MOV CL,AL   ;Store second number
+
+        ;----Addition-----------------
+        LEA DX, addmsg
+        MOV AH,09H
+        INT 21H
+
+        MOV AL , BL
+        ADD AL,CL
+        ADD AL,'0'
+        MOV DL,AL
+        MOV AH,02H
+        INT 21H
+
+
+        ;-------------SUBTRACTION------------
+        LEA DX,SUBMSG
+        MOV AH,09H
+        INT 21H
+
+        MOV AL,BL
+        SUB AL,CL
+        ADD AL,'0'
+        MOV DL, AL
+        MOV AH , 02H
+        INT 21H
+
+        ;-----------------MULTIPLICATION---------
+        LEA DX, MULMSG
+        MOV AH,09H
+        INT 21H
+     
+        MOV AL,BL
+        MUL CL        ; AX = AL* CL
+        ADD AL,'0'                          
+        MOV DL,AL
+        MOV AH,02H
+        INT 21H
+
+
+        ;-----------------DIVISION---------------
+        LEA DX,divmsg
+        MOV AH,09H
+        INT 21H
+
+        MOV AL,BL
+        MOV AH,00
+        DIV CL
+        ADD AL , '0'
+        MOV DL,AL
+        MOV AH,02H
+        INT 21H
+
+        ;----------------EXIT-------------------
+        MOV AH,4CH
+        INT 21H
+   
+
+MAIN ENDP
+END MAIN

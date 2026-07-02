@@ -1,0 +1,25 @@
+Pivot Table in Excel:
+- Task: Analyze sales data (given dataset)
+- Attributes:
+    - Create a pivot table to summarize sales by region and product category
+    - Use filters and grouping
+    - Generate insights (top-selling products, etc.)
+
+Graphs in Excel:
+- Task: Visualize student performance data
+- Attributes:
+    - Create bar/line graphs for marks vs subjects
+    - Use charts to compare class performance
+
+SQL Cube:
+- Task: Build a data cube for sales analysis
+- Attributes:
+    - Create dimensions (time, product, location)
+    - Use aggregate functions (SUM, AVG)
+    - Query the cube for insights
+
+Roll-up:
+- Task: Perform roll-up operations on sales data
+- Attributes:
+    - Aggregate data from city -> region -> country level
+    - Compare sales trends

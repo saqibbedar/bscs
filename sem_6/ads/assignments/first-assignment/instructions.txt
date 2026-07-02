@@ -1,0 +1,45 @@
+Create a document using MS Word, which covers the following artifacts for your project. 
+
+ 
+
+1.      Title of mini-world 
+
+2.      Motivation behind the idea of creating a database system for the mini-world. 
+
+3.      Different user roles for the system 
+
+4.      Data Requirements 
+
+5.      Transaction Requirements, role which will initiate the transaction and the frequency of each transaction. 
+
+6.      Mission Statement 
+
+7.      System Definition 
+
+8.      Mission Objectives 
+
+9.      Major user views for the proposed database system 
+
+10.  Cross-reference of user views with the main types of data used by each 
+
+11.    Other Requirements   
+
+• initial database size; 
+
+• database rate of growth; 
+
+• the types and average number of record searches; 
+
+• networking and shared access requirements; 
+
+• performance; 
+
+• security; 
+
+• backup and recovery; 
+
+12.  Conceptual Database Design – EERD 
+
+13.  Logical Relational Database Design 
+
+14.  Physical Design with reference to the DBMS to be utilized (MySQL)

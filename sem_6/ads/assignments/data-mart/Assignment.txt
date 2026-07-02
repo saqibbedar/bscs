@@ -1,0 +1,3 @@
+Create 5 single fact data marts of your DB case study/scenario in SQL Server
+Upload a document explaining the design and results of Data Mart
+Generate the synthetic data for the source Rel DB, with the help of ChatGPT

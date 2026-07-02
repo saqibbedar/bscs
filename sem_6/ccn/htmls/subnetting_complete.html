@@ -1,0 +1,1656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subnetting — The Complete Beginner's Bible</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1814;
+  --ink2: #3d3a34;
+  --ink3: #6b6760;
+  --ink4: #9e9b95;
+  --bg: #f7f4ee;
+  --bg2: #eeeade;
+  --bg3: #e4dfd4;
+  --card: #fdfbf7;
+  --dark: #18180f;
+  --dark2: #232318;
+  --red: #c93a10;
+  --red2: #e04d20;
+  --blue: #1558a0;
+  --blue2: #1e70c4;
+  --green: #1d6b3d;
+  --green2: #22824a;
+  --amber: #b06a00;
+  --purple: #6b35a0;
+  --teal: #0e7c7b;
+  --border: #d4cfc6;
+  --border2: #c4bfb6;
+  --mono: 'IBM Plex Mono', monospace;
+  --serif: 'Lora', Georgia, serif;
+  --sans: 'DM Sans', system-ui, sans-serif;
+  --r: 8px;
+  --r2: 12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:16px;line-height:1.8}
+
+/* ─── PROGRESS BAR ─── */
+#prog{position:fixed;top:0;left:0;height:3px;background:var(--red);z-index:9999;transition:width .08s}
+
+/* ─── STICKY NAV ─── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(247,244,238,0.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--border);padding:0 2rem}
+.nav-inner{max-width:920px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;height:52px;overflow-x:auto;white-space:nowrap}
+.nav a{font-size:12px;font-family:var(--mono);color:var(--ink3);text-decoration:none;letter-spacing:.05em;padding:4px 0;border-bottom:2px solid transparent;transition:.15s;flex-shrink:0}
+.nav a:hover{color:var(--red);border-color:var(--red)}
+
+/* ─── COVER ─── */
+.cover{background:var(--dark);color:#f0ece2;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:5rem 2rem;position:relative;overflow:hidden}
+.cover-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(240,236,226,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(240,236,226,.035) 1px,transparent 1px);background-size:48px 48px}
+.cover-glow{position:absolute;top:30%;left:50%;transform:translate(-50%,-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(201,58,16,.18) 0%,transparent 70%);pointer-events:none}
+.cover-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--red2);margin-bottom:1.5rem;position:relative}
+.cover h1{font-family:var(--serif);font-size:clamp(3.2rem,9vw,7rem);font-weight:700;line-height:1.02;position:relative;margin-bottom:1.25rem}
+.cover h1 em{color:var(--red2);font-style:normal}
+.cover-desc{font-size:1.1rem;color:rgba(240,236,226,.6);max-width:520px;margin:0 auto 2.5rem;position:relative;line-height:1.7}
+.cover-pills{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;position:relative}
+.pill{font-family:var(--mono);font-size:11px;padding:5px 13px;border:1px solid rgba(240,236,226,.18);border-radius:30px;color:rgba(240,236,226,.6);letter-spacing:.04em}
+.cover-scroll{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:10px;letter-spacing:.18em;color:rgba(240,236,226,.3);text-transform:uppercase}
+
+/* ─── SECTION WRAPPER ─── */
+.sec{max-width:920px;margin:0 auto;padding:5rem 2rem}
+.sec+.sec{border-top:1px solid var(--border)}
+
+/* ─── CHAPTER HEADER ─── */
+.ch-tag{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink4);display:block;margin-bottom:.5rem}
+.ch-num{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--red);display:block;margin-bottom:.4rem}
+.ch-title{font-family:var(--serif);font-size:clamp(2rem,5vw,3.2rem);font-weight:700;line-height:1.12;margin-bottom:1rem}
+.ch-lead{font-size:1.05rem;color:var(--ink2);max-width:660px;border-left:3px solid var(--red);padding-left:1.2rem;line-height:1.75;margin-bottom:2.5rem}
+
+/* ─── BODY TEXT ─── */
+h3{font-family:var(--serif);font-size:1.55rem;font-weight:600;margin:2.5rem 0 .9rem;color:var(--ink)}
+h4{font-family:var(--sans);font-size:.8rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);margin:2rem 0 .7rem}
+p{color:var(--ink2);margin-bottom:1.15rem;line-height:1.8}
+p:last-child{margin-bottom:0}
+strong{color:var(--ink);font-weight:600}
+em{font-style:italic}
+code{font-family:var(--mono);font-size:.88em;background:var(--bg3);padding:2px 6px;border-radius:4px;color:var(--red)}
+
+/* ─── DIAGRAM FRAME ─── */
+.dframe{margin:2.5rem 0;border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;background:var(--card)}
+.dframe-label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink4);padding:9px 16px;border-bottom:1px solid var(--border);background:var(--bg)}
+.dframe svg{display:block;width:100%}
+
+/* ─── CALLOUTS ─── */
+.box{border-radius:var(--r);padding:1.3rem 1.5rem;margin:1.8rem 0;border-left:4px solid}
+.box-why {background:#fef3ee;border-color:var(--red)}
+.box-note{background:#e8f3fc;border-color:var(--blue)}
+.box-tip {background:#eaf6ef;border-color:var(--green)}
+.box-key {background:#f4eefe;border-color:var(--purple)}
+.box-warn{background:#fff8e0;border-color:var(--amber)}
+.box-head{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;font-weight:600;margin-bottom:.5rem;color:var(--ink)}
+.box p{font-size:14.5px;margin:0;color:var(--ink)}
+
+/* ─── BINARY DISPLAY ─── */
+.binblock{font-family:var(--mono);background:var(--dark);color:#c8e6ff;padding:1.4rem 1.6rem;border-radius:var(--r);margin:1.6rem 0;overflow-x:auto;font-size:14px;line-height:2}
+.binblock .lbl{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(200,230,255,.3);display:block;margin-bottom:3px}
+.nn{color:#ffb347}  /* network bits */
+.hh{color:#7dd87a}  /* host bits */
+.mm{color:#ff8080}  /* mask */
+.br{color:#aaddff}  /* broadcast */
+.hl{background:rgba(255,179,71,.15);border-radius:3px;padding:0 2px}
+
+/* ─── TABLES ─── */
+.tbl{width:100%;border-collapse:collapse;margin:1.6rem 0;font-size:13.5px}
+.tbl th{font-family:var(--mono);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink4);padding:10px 14px;text-align:left;border-bottom:2px solid var(--border)}
+.tbl td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--ink2);font-family:var(--mono)}
+.tbl tr:hover td{background:var(--bg2)}
+.tbl td.hi{color:var(--red);font-weight:600}
+.tbl td.hi2{color:var(--blue);font-weight:600}
+.tbl td.hi3{color:var(--green);font-weight:600}
+
+/* ─── FORMULA ─── */
+.fml{display:inline-block;background:var(--dark);color:#f0ece2;font-family:var(--mono);font-size:15px;padding:8px 16px;border-radius:var(--r);margin:.4rem 0}
+.fml .fv{color:#ffb347}
+.fml .fo{color:#7dd87a}
+
+/* ─── CLASS CARDS ─── */
+.class-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:1.8rem 0}
+.cc{border:1px solid var(--border);border-radius:var(--r2);padding:1.3rem;background:var(--card)}
+.cc .letter{font-family:var(--serif);font-size:3rem;font-weight:700;line-height:1;margin-bottom:8px}
+.cc h5{font-size:10px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);margin-bottom:8px}
+.cc p{font-size:13px;margin:0;color:var(--ink2)}
+
+/* ─── STEP BOXES ─── */
+.steps{margin:1.5rem 0}
+.step{display:flex;gap:1.2rem;margin-bottom:1.4rem;align-items:flex-start}
+.snum{font-family:var(--mono);font-size:12px;font-weight:600;color:#fff;background:var(--red);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.scontent h5{font-weight:600;font-size:15px;color:var(--ink);margin-bottom:3px}
+.scontent p{font-size:14px;margin:0}
+
+/* ─── TWO-COL ─── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:1.6rem 0}
+@media(max-width:600px){.two-col{grid-template-columns:1fr}}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:1.3rem;text-align:center}
+.metric-card .mlabel{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4);margin-bottom:.4rem}
+.metric-card .mval{font-family:var(--serif);font-size:2.2rem;font-weight:700;color:var(--red);line-height:1}
+.metric-card .msub{font-size:12px;color:var(--ink3);margin-top:.4rem}
+
+/* ─── INTERACTIVE CALCULATOR ─── */
+.calc{background:var(--dark);border-radius:var(--r2);padding:2rem;margin:2rem 0;color:#f0ece2}
+.calc label{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,236,226,.45);display:block;margin-bottom:5px}
+.calc-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1.2rem;align-items:flex-end}
+.cinput{background:rgba(240,236,226,.07);border:1px solid rgba(240,236,226,.14);color:#f0ece2;font-family:var(--mono);font-size:16px;padding:10px 14px;border-radius:6px;outline:none;width:200px;transition:border-color .15s}
+.cinput:focus{border-color:var(--red2)}
+.cslider-wrap{flex:1;min-width:200px}
+.cslider{-webkit-appearance:none;width:100%;height:4px;background:rgba(240,236,226,.14);border-radius:2px;outline:none;margin-top:8px}
+.cslider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--red2);cursor:pointer}
+.cdisplay{font-family:var(--mono);font-size:2rem;font-weight:600;color:var(--red2);min-width:60px}
+.cresults{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-top:1.5rem}
+.ccard{background:rgba(240,236,226,.05);border:1px solid rgba(240,236,226,.1);border-radius:6px;padding:11px 13px}
+.ccard .clbl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:rgba(240,236,226,.3);margin-bottom:3px}
+.ccard .cval{font-family:var(--mono);font-size:14px;font-weight:600;color:#f0ece2;word-break:break-all}
+.cval.acc{color:var(--red2)}.cval.grn{color:#7dd87a}.cval.ylw{color:#ffb347}
+.bitvis{font-family:var(--mono);font-size:12.5px;background:rgba(0,0,0,.3);border-radius:6px;padding:13px 15px;margin-top:1.3rem;line-height:2;word-break:break-all}
+
+/* ─── CHEAT GRID ─── */
+.cheat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin:1.6rem 0}
+.cheat-card{border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;background:var(--card)}
+.cheat-head{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;padding:9px 14px;background:var(--dark2);color:rgba(240,236,226,.65)}
+.cheat-body{padding:10px 14px}
+.crow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px;font-family:var(--mono)}
+.crow:last-child{border:none}
+.crow .k{color:var(--ink3)}.crow .v{color:var(--red);font-weight:600}
+
+/* ─── ANALOGY PANELS ─── */
+.analogy{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);padding:1.5rem;margin:1.8rem 0;display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:center}
+.analogy-block h5{font-size:11px;font-family:var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);margin-bottom:.5rem}
+.analogy-block p{font-size:14px;color:var(--ink);margin:0;font-weight:500}
+.analogy-arr{font-size:1.6rem;color:var(--border2);text-align:center}
+@media(max-width:600px){.analogy{grid-template-columns:1fr}}
+
+/* ─── OCTET TABLE (bit position ref) ─── */
+.oct-table{display:flex;gap:3px;margin:1.5rem 0;flex-wrap:nowrap;overflow-x:auto}
+.oct-bit{flex:1;min-width:52px;border:1px solid var(--border);border-radius:6px;padding:10px 4px;text-align:center;background:var(--card)}
+.oct-bit .ob-pos{font-family:var(--mono);font-size:9px;color:var(--ink4);margin-bottom:3px}
+.oct-bit .ob-val{font-family:var(--mono);font-size:18px;font-weight:700;color:var(--red);line-height:1}
+.oct-bit .ob-pw{font-family:var(--mono);font-size:9px;color:var(--ink4);margin-top:3px}
+
+/* ─── FOOTER ─── */
+.footer{background:var(--dark);color:rgba(240,236,226,.25);text-align:center;padding:3rem 2rem;font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+
+/* ─── HIGHLIGHT ROW ─── */
+.tbl tr.row-hi td{background:rgba(201,58,16,.06);color:var(--ink)}
+
+/* ─── VISUAL ADDR BAR ─── */
+.addr-bar{display:flex;gap:3px;margin:1.2rem 0;overflow-x:auto}
+.ab-seg{padding:8px 12px;border-radius:5px;font-family:var(--mono);font-size:13px;font-weight:600;text-align:center;white-space:nowrap}
+.ab-net{background:rgba(201,58,16,.15);color:var(--red);border:1px solid rgba(201,58,16,.3)}
+.ab-host{background:rgba(21,88,160,.12);color:var(--blue);border:1px solid rgba(21,88,160,.25)}
+.ab-bcast{background:rgba(107,53,160,.12);color:var(--purple);border:1px solid rgba(107,53,160,.25)}
+.ab-dot{display:flex;align-items:center;color:var(--ink4);font-family:var(--mono);font-size:18px;padding:0 2px}
+
+/* ─── QUIZ / PRACTICE BOX ─── */
+.practice{background:var(--dark2);border-radius:var(--r2);padding:1.8rem;margin:2rem 0;color:#f0ece2}
+.practice h4{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(240,236,226,.45);margin-bottom:1rem}
+.pq{margin-bottom:1rem;font-size:14.5px}
+.pq .qtext{color:rgba(240,236,226,.85);margin-bottom:.5rem}
+.pa-btn{font-family:var(--mono);font-size:12px;padding:6px 14px;border:1px solid rgba(240,236,226,.2);background:transparent;color:rgba(240,236,226,.6);border-radius:5px;cursor:pointer;transition:.15s}
+.pa-btn:hover{background:rgba(240,236,226,.08);color:#f0ece2}
+.answer{display:none;font-family:var(--mono);font-size:13px;color:#7dd87a;margin-top:.5rem;padding:.5rem .75rem;background:rgba(125,216,122,.08);border-radius:4px}
+</style>
+</head>
+<body>
+<div id="prog"></div>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#ch1">1 · IP Addresses</a>
+    <a href="#ch2">2 · Binary</a>
+    <a href="#ch3">3 · Octets</a>
+    <a href="#ch4">4 · Classes</a>
+    <a href="#ch5">5 · Subnet Mask</a>
+    <a href="#ch6">6 · CIDR</a>
+    <a href="#ch7">7 · Subnetting</a>
+    <a href="#ch8">8 · Net/Bcast/Hosts</a>
+    <a href="#ch9">9 · Worked Examples</a>
+    <a href="#ch10">10 · VLSM</a>
+    <a href="#ch11">11 · Summarization</a>
+    <a href="#ch12">12 · Special IPs</a>
+    <a href="#ch13">13 · Calculator</a>
+    <a href="#ch14">14 · Cheat Sheet</a>
+  </div>
+</nav>
+
+<!-- ═══ COVER ═══ -->
+<div class="cover">
+  <div class="cover-grid"></div>
+  <div class="cover-glow"></div>
+  <p class="cover-eyebrow">The Absolute Beginner's Complete Bible</p>
+  <h1>Sub<em>netting</em><br>From Zero</h1>
+  <p class="cover-desc">You know nothing about subnetting right now. By the end of this booklet, you will understand every bit of it — literally. This is the explanation nobody gave you.</p>
+  <div class="cover-pills">
+    <span class="pill">Zero assumed knowledge</span>
+    <span class="pill">Every concept explained</span>
+    <span class="pill">Diagrams at every step</span>
+    <span class="pill">CCNA exam ready</span>
+    <span class="pill">Live calculator</span>
+    <span class="pill">Practice problems</span>
+  </div>
+  <div class="cover-scroll">↓ scroll to begin</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 1 — WHAT IS AN IP ADDRESS?
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch1">
+  <span class="ch-num">Chapter 01</span>
+  <h2 class="ch-title">What is an IP Address?</h2>
+  <p class="ch-lead">Before we can subnet anything, we need to know what we're working with. An IP address is simply a number — but a very specific kind of number that identifies every device on a network, like a home address identifies every house on a street.</p>
+
+  <h3>The Problem IP Addresses Solve</h3>
+  <p>Imagine you want to send a letter to your friend in Lahore. You write their address on the envelope — street, city, country — and the postal system knows exactly where to deliver it. The internet works the same way.</p>
+  <p>When your phone sends a message to WhatsApp's servers, that message needs to travel through dozens of routers and switches. Each one reads the destination address on the packet and forwards it in the right direction. <strong>Without IP addresses, routers would have no idea where to send your data.</strong></p>
+  <p>An <strong>IP address</strong> (Internet Protocol address) is the unique label assigned to every device that communicates over a network. Your laptop has one. Your phone has one. Your router has one. Every server on the internet has one (or many).</p>
+
+  <div class="box box-why">
+    <p class="box-head">🏠 Real-World Analogy</p>
+    <p>Think of the entire internet as a massive city. Every building in that city has a unique address. When you want to visit someone, you use their address to navigate. IP addresses are exactly that — mailing addresses for computers. Without them, data would have nowhere to go.</p>
+  </div>
+
+  <h3>IPv4 — The Version We're Learning</h3>
+  <p>There are two versions of IP addresses: <strong>IPv4</strong> (the classic, 32-bit version) and IPv6 (the newer, 128-bit version). Subnetting as taught in CCNA deals with <strong>IPv4</strong>. IPv4 addresses look like this:</p>
+
+  <div class="addr-bar">
+    <div class="ab-seg ab-net">192</div><div class="ab-dot">.</div>
+    <div class="ab-seg ab-net">168</div><div class="ab-dot">.</div>
+    <div class="ab-seg ab-host">1</div><div class="ab-dot">.</div>
+    <div class="ab-seg ab-host">100</div>
+  </div>
+
+  <p>Four groups of numbers, separated by dots. This format is called <strong>dotted decimal notation</strong>. Each group is called an <strong>octet</strong> (you'll learn why soon). Each number ranges from <strong>0 to 255</strong>. That's it. That's an IPv4 address.</p>
+
+  <h3>The Address Has Two Parts</h3>
+  <p>Here's the most important concept to grasp from Chapter 1: <strong>every IP address has two logical parts</strong>.</p>
+
+  <div class="analogy">
+    <div class="analogy-block">
+      <h5>Physical Address</h5>
+      <p>House 47, <strong>Street 4, Gulberg, Lahore</strong><br><br>Street + area = <em>which neighborhood</em><br>House number = <em>which specific house</em></p>
+    </div>
+    <div class="analogy-arr">→</div>
+    <div class="analogy-block">
+      <h5>IP Address: 192.168.1.100</h5>
+      <p><strong>192.168.1</strong>.100<br><br>Network part = <em>which network</em><br>Host part = <em>which specific device</em></p>
+    </div>
+  </div>
+
+  <p>The <strong>network portion</strong> identifies which network (or "neighborhood") the device belongs to. The <strong>host portion</strong> identifies the specific device (the "house number") within that network. Two devices on the same network share the same network portion but have different host portions.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 1.1 — Two devices on the same network</div>
+    <svg viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Network cloud -->
+      <rect x="280" y="70" width="260" height="80" rx="16" fill="#f0ece2" stroke="#d4cfc6" stroke-width="1"/>
+      <text x="410" y="104" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="13" font-weight="600" fill="#3d3a34">Network: 192.168.1.0</text>
+      <text x="410" y="124" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#9e9b95">"The neighborhood"</text>
+
+      <!-- Device A -->
+      <rect x="40" y="80" width="190" height="60" rx="8" fill="#c93a10" opacity=".9"/>
+      <text x="135" y="106" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="white">Laptop</text>
+      <text x="135" y="126" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="rgba(255,255,255,.8)">192.168.1.10</text>
+
+      <!-- Device B -->
+      <rect x="590" y="80" width="190" height="60" rx="8" fill="#1558a0" opacity=".9"/>
+      <text x="685" y="106" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="white">Printer</text>
+      <text x="685" y="126" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="rgba(255,255,255,.8)">192.168.1.25</text>
+
+      <!-- Lines -->
+      <line x1="230" y1="110" x2="280" y2="110" stroke="#d4cfc6" stroke-width="1.5"/>
+      <line x1="540" y1="110" x2="590" y2="110" stroke="#d4cfc6" stroke-width="1.5"/>
+
+      <!-- Annotations -->
+      <text x="135" y="165" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#c93a10">Same network: 192.168.1</text>
+      <text x="135" y="182" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#9e9b95">Different host: .10</text>
+      <text x="685" y="165" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#1558a0">Same network: 192.168.1</text>
+      <text x="685" y="182" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#9e9b95">Different host: .25</text>
+
+      <text x="410" y="195" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#9e9b95">Both devices share the same network ID — they can communicate directly</text>
+    </svg>
+  </div>
+
+  <div class="box box-note">
+    <p class="box-head">📌 Why Does This Matter for Subnetting?</p>
+    <p>Subnetting is about <strong>controlling exactly how many bits belong to the network part versus the host part</strong>. When you subnet, you're essentially redrawing the boundary between "which network" and "which device." Everything in this booklet builds on this single concept.</p>
+  </div>
+
+  <h3>How Many IP Addresses Exist?</h3>
+  <p>An IPv4 address is 32 bits long. That means there are 2³² possible combinations — exactly <strong>4,294,967,296</strong> addresses (about 4.3 billion). Sounds like a lot, but the world has 8 billion people and even more internet-connected devices. This is why IPv6 was invented, and also why subnetting and efficient address allocation are so critical.</p>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 2 — UNDERSTANDING BINARY
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch2">
+  <span class="ch-num">Chapter 02</span>
+  <h2 class="ch-title">Binary — The Language Computers Speak</h2>
+  <p class="ch-lead">This is the chapter most people skip, and it's exactly why subnetting feels impossible. Don't skip it. Binary is not complicated — it's just counting, but in a different way. You already know how to count. Let me show you the pattern.</p>
+
+  <h3>What is Binary?</h3>
+  <p>Every system of counting uses a <strong>base</strong>. Our everyday number system uses base-10, meaning we have 10 symbols: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9. When we run out of symbols, we add a column to the left (9 → 10 → 11 → ... → 99 → 100).</p>
+  <p>Binary uses <strong>base-2</strong>. It only has 2 symbols: <strong>0</strong> and <strong>1</strong>. When we run out, same rule — add a column to the left. That's it. One rule. Two symbols.</p>
+  <p>Computers use binary because physical transistors are either ON (1) or OFF (0). Every piece of data — your photos, videos, IP addresses — is ultimately stored as billions of 0s and 1s.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 2.1 — Decimal vs Binary counting comparison</div>
+    <svg viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Headers -->
+      <text x="120" y="28" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#9e9b95" letter-spacing="1">DECIMAL (base-10)</text>
+      <text x="580" y="28" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#9e9b95" letter-spacing="1">BINARY (base-2)</text>
+
+      <!-- Decimal column -->
+      <g font-family="'IBM Plex Mono',monospace" font-size="15" text-anchor="middle" fill="#3d3a34">
+        <text x="80"  y="58">0</text><text x="160" y="58">→</text>
+        <text x="80"  y="82">1</text><text x="160" y="82">→</text>
+        <text x="80" y="106">2</text><text x="160" y="106">→</text>
+        <text x="80" y="130">3</text><text x="160" y="130">→</text>
+        <text x="80" y="154">4</text><text x="160" y="154">→</text>
+        <text x="80" y="178">5</text><text x="160" y="178">→</text>
+      </g>
+      <!-- Binary column -->
+      <g font-family="'IBM Plex Mono',monospace" font-size="15" text-anchor="middle">
+        <text x="540" y="58" fill="#9e9b95">0000</text>
+        <text x="540" y="82" fill="#9e9b95">000</text><text x="564" y="82" fill="#c93a10" font-weight="700">1</text>
+        <text x="540" y="106" fill="#9e9b95">00</text><text x="555" y="106" fill="#c93a10" font-weight="700">1</text><text x="570" y="106" fill="#9e9b95">0</text>
+        <text x="540" y="130" fill="#9e9b95">00</text><text x="556" y="130" fill="#c93a10" font-weight="700">11</text>
+        <text x="540" y="154" fill="#9e9b95">0</text><text x="551" y="154" fill="#c93a10" font-weight="700">1</text><text x="563" y="154" fill="#9e9b95">00</text>
+        <text x="540" y="178" fill="#9e9b95">0</text><text x="551" y="178" fill="#c93a10" font-weight="700">1</text><text x="563" y="178" fill="#9e9b95">0</text><text x="574" y="178" fill="#c93a10" font-weight="700">1</text>
+      </g>
+      <!-- Annotations -->
+      <text x="680" y="58"  font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">zero</text>
+      <text x="680" y="82"  font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">one</text>
+      <text x="680" y="106" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">ran out → add column!</text>
+      <text x="680" y="130" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">three</text>
+      <text x="680" y="154" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">four</text>
+      <text x="680" y="178" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">five</text>
+
+      <line x1="380" y1="36" x2="380" y2="190" stroke="#d4cfc6" stroke-width="1" stroke-dasharray="4,3"/>
+    </svg>
+  </div>
+
+  <h3>Place Values in Binary</h3>
+  <p>In decimal, each column has a place value that is a power of 10: ones (10⁰=1), tens (10¹=10), hundreds (10²=100), thousands (10³=1000), etc.</p>
+  <p>In binary, each column has a place value that is a power of 2: 2⁰=1, 2¹=2, 2²=4, 2³=8, 2⁴=16, 2⁵=32, 2⁶=64, 2⁷=128.</p>
+  <p>We work with 8-bit groups (one octet). Here are the <strong>8 place values you must memorize</strong>:</p>
+
+  <div class="oct-table">
+    <div class="oct-bit"><div class="ob-pos">Bit 7</div><div class="ob-val">128</div><div class="ob-pw">2⁷</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 6</div><div class="ob-val">64</div><div class="ob-pw">2⁶</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 5</div><div class="ob-val">32</div><div class="ob-pw">2⁵</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 4</div><div class="ob-val">16</div><div class="ob-pw">2⁴</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 3</div><div class="ob-val">8</div><div class="ob-pw">2³</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 2</div><div class="ob-val">4</div><div class="ob-pw">2²</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 1</div><div class="ob-val">2</div><div class="ob-pw">2¹</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 0</div><div class="ob-val">1</div><div class="ob-pw">2⁰</div></div>
+  </div>
+
+  <div class="box box-key">
+    <p class="box-head">🔑 Memorize the Magic Eight</p>
+    <p><strong>128 · 64 · 32 · 16 · 8 · 4 · 2 · 1</strong><br>Each number is exactly double the previous one. Their sum is 255. These eight numbers are the entire foundation of all subnet math. If you know these, you know subnetting.</p>
+  </div>
+
+  <h3>Binary to Decimal Conversion</h3>
+  <p>To convert binary to decimal: look at each bit from left to right. If a bit is <strong>1</strong>, add its place value to your total. If it's <strong>0</strong>, skip it (add nothing).</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 2.2 — Converting 11000000 to decimal (step by step)</div>
+    <svg viewBox="0 0 820 210" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Place value row -->
+      <g font-family="'IBM Plex Mono',monospace" font-size="11" text-anchor="middle" fill="#9e9b95">
+        <text x="82"  y="25">128</text><text x="180" y="25">64</text><text x="278" y="25">32</text>
+        <text x="376" y="25">16</text><text x="474" y="25">8</text><text x="572" y="25">4</text>
+        <text x="670" y="25">2</text><text x="768" y="25">1</text>
+      </g>
+      <!-- Bit boxes -->
+      <!-- Bit 1=1 → 128, active -->
+      <rect x="42"  y="35" width="78" height="68" rx="8" fill="#c93a10"/>
+      <text x="82"  y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" font-weight="700" fill="white">1</text>
+      <!-- Bit 2=1 → 64, active -->
+      <rect x="140" y="35" width="78" height="68" rx="8" fill="#c93a10"/>
+      <text x="180" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" font-weight="700" fill="white">1</text>
+      <!-- Bits 3-8 = 0, inactive -->
+      <rect x="238" y="35" width="78" height="68" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="278" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" fill="#c4bfb6">0</text>
+      <rect x="336" y="35" width="78" height="68" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="376" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" fill="#c4bfb6">0</text>
+      <rect x="434" y="35" width="78" height="68" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="474" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" fill="#c4bfb6">0</text>
+      <rect x="532" y="35" width="78" height="68" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="572" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" fill="#c4bfb6">0</text>
+      <rect x="630" y="35" width="78" height="68" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="670" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" fill="#c4bfb6">0</text>
+      <rect x="728" y="35" width="78" height="68" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="768" y="78" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="32" fill="#c4bfb6">0</text>
+
+      <!-- Active labels -->
+      <text x="82"  y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#c93a10">+128</text>
+      <text x="180" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#c93a10">+64</text>
+      <text x="278" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#9e9b95">+0</text>
+      <text x="376" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#9e9b95">+0</text>
+      <text x="474" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#9e9b95">+0</text>
+      <text x="572" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#9e9b95">+0</text>
+      <text x="670" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#9e9b95">+0</text>
+      <text x="768" y="120" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="#9e9b95">+0</text>
+
+      <!-- Equation -->
+      <text x="410" y="160" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="15" fill="#3d3a34">128 + 64 = <tspan font-weight="700" fill="#c93a10">192</tspan></text>
+      <text x="410" y="185" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">So: 11000000 in binary = 192 in decimal</text>
+    </svg>
+  </div>
+
+  <h3>Decimal to Binary Conversion</h3>
+  <p>This direction is equally important. The method: work through the place values left to right (128, 64, 32, 16, 8, 4, 2, 1). For each value, ask: "Is my remaining number ≥ this place value?" If YES: write 1, subtract. If NO: write 0, move on.</p>
+
+  <div class="binblock">
+<span class="lbl">Example: Convert 172 to 8-bit binary</span>
+Start:     172
+
+172 ≥ 128?  <span class="nn">YES</span> → write <span class="nn">1</span>, subtract: 172 - 128 = 44
+ 44 ≥  64?   NO → write 0
+ 44 ≥  32?  <span class="nn">YES</span> → write <span class="nn">1</span>, subtract:  44 -  32 = 12
+ 12 ≥  16?   NO → write 0
+ 12 ≥   8?  <span class="nn">YES</span> → write <span class="nn">1</span>, subtract:  12 -   8 =  4
+  4 ≥   4?  <span class="nn">YES</span> → write <span class="nn">1</span>, subtract:   4 -   4 =  0
+  0 ≥   2?   NO → write 0
+  0 ≥   1?   NO → write 0
+
+Result: 172 = <span class="nn">10101100</span>
+
+Verify: 128+0+32+0+8+4+0+0 = 172 ✓
+  </div>
+
+  <h3>The Bitwise AND Operation</h3>
+  <p>There's one more binary operation you need: <strong>AND</strong>. It's used to find network addresses. The rule is brutally simple:</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 2.3 — AND truth table (the only rule you need)</div>
+    <svg viewBox="0 0 820 130" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <g font-family="'IBM Plex Mono',monospace" text-anchor="middle">
+        <text x="90" y="30" font-size="11" fill="#9e9b95">Bit A</text>
+        <text x="200" y="30" font-size="11" fill="#9e9b95">Bit B</text>
+        <text x="330" y="30" font-size="11" fill="#9e9b95">A AND B</text>
+        <text x="510" y="30" font-size="11" fill="#9e9b95">Think of it as...</text>
+
+        <text x="90" y="65" font-size="22" font-weight="700" fill="#1558a0">1</text>
+        <text x="200" y="65" font-size="22" font-weight="700" fill="#1558a0">1</text>
+        <rect x="280" y="48" width="100" height="30" rx="6" fill="#1d6b3d"/>
+        <text x="330" y="68" font-size="22" font-weight="700" fill="white">1</text>
+        <text x="510" y="68" font-size="13" fill="#3d3a34">Both are ON → result ON</text>
+
+        <text x="90" y="98" font-size="22" font-weight="700" fill="#1558a0">1</text>
+        <text x="200" y="98" font-size="22" fill="#9e9b95">0</text>
+        <rect x="280" y="80" width="100" height="30" rx="6" fill="#eeeade" stroke="#d4cfc6"/>
+        <text x="330" y="100" font-size="22" fill="#c4bfb6">0</text>
+        <text x="510" y="100" font-size="13" fill="#9e9b95">One is OFF → result OFF</text>
+
+        <text x="90" y="120" font-size="22" fill="#9e9b95">0</text>
+        <text x="200" y="120" font-size="22" fill="#9e9b95">0</text>
+        <rect x="280" y="108" width="100" height="20" rx="6" fill="#eeeade" stroke="#d4cfc6"/>
+        <text x="330" y="122" font-size="16" fill="#c4bfb6">0</text>
+        <text x="510" y="122" font-size="13" fill="#9e9b95">Both OFF → result OFF</text>
+      </g>
+    </svg>
+  </div>
+
+  <p>We'll use AND later to find a network address from an IP + subnet mask. For now, just remember: <strong>1 AND 1 = 1. Everything else = 0.</strong></p>
+
+  <div class="practice">
+    <h4>🧠 Practice Problems — Binary Conversion</h4>
+    <div class="pq">
+      <div class="qtext">Q1: Convert <strong>10110000</strong> from binary to decimal.</div>
+      <button class="pa-btn" onclick="toggle('a1')">Show Answer</button>
+      <div class="answer" id="a1">128 + 0 + 32 + 16 + 0 + 0 + 0 + 0 = <strong>176</strong></div>
+    </div>
+    <div class="pq">
+      <div class="qtext">Q2: Convert <strong>200</strong> from decimal to binary.</div>
+      <button class="pa-btn" onclick="toggle('a2')">Show Answer</button>
+      <div class="answer" id="a2">200≥128→1(rem 72), 72≥64→1(rem 8), 8≥32→0, 8≥16→0, 8≥8→1(rem 0), all rest 0 → <strong>11001000</strong></div>
+    </div>
+    <div class="pq">
+      <div class="qtext">Q3: What is 11111111 in decimal?</div>
+      <button class="pa-btn" onclick="toggle('a3')">Show Answer</button>
+      <div class="answer" id="a3">128+64+32+16+8+4+2+1 = <strong>255</strong> — the maximum value any octet can hold.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 3 — OCTETS DEEP DIVE
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch3">
+  <span class="ch-num">Chapter 03</span>
+  <h2 class="ch-title">Octets — The Building Blocks of an IP Address</h2>
+  <p class="ch-lead">An IP address is 32 bits. We split those 32 bits into four groups of 8 bits each. Each group is called an "octet." Understanding octets is the bridge between binary theory and real IP addresses.</p>
+
+  <h3>Why 8 Bits? Why 4 Groups?</h3>
+  <p>Eight bits is called a <strong>byte</strong>, and it's the fundamental unit of computer data. One byte can represent 2⁸ = 256 different values (0 through 255). Splitting the 32-bit IP address into four 8-bit octets was a design decision that made IP addresses human-readable and manageable.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 3.1 — A 32-bit IP address split into 4 octets</div>
+    <svg viewBox="0 0 820 250" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- 32-bit bar -->
+      <text x="30" y="28" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#9e9b95" letter-spacing="1">32 BITS TOTAL</text>
+      <rect x="30" y="35" width="760" height="28" rx="4" fill="#eeeade" stroke="#d4cfc6"/>
+      <!-- Split markers -->
+      <rect x="30"  y="35" width="188" height="28" rx="4" fill="rgba(201,58,16,.12)" stroke="#c93a10" stroke-width="1"/>
+      <rect x="220" y="35" width="188" height="28" rx="4" fill="rgba(21,88,160,.1)" stroke="#1558a0" stroke-width="1"/>
+      <rect x="410" y="35" width="188" height="28" rx="4" fill="rgba(29,107,61,.1)" stroke="#1d6b3d" stroke-width="1"/>
+      <rect x="600" y="35" width="190" height="28" rx="4" fill="rgba(107,53,160,.1)" stroke="#6b35a0" stroke-width="1"/>
+      <text x="124" y="55" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#c93a10">Octet 1 (8 bits)</text>
+      <text x="314" y="55" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#1558a0">Octet 2 (8 bits)</text>
+      <text x="504" y="55" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#1d6b3d">Octet 3 (8 bits)</text>
+      <text x="695" y="55" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#6b35a0">Octet 4 (8 bits)</text>
+
+      <!-- Binary representation -->
+      <text x="124" y="95" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="14" font-weight="600" fill="#c93a10">11000000</text>
+      <text x="314" y="95" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="14" font-weight="600" fill="#1558a0">10101000</text>
+      <text x="504" y="95" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="14" font-weight="600" fill="#1d6b3d">00000001</text>
+      <text x="695" y="95" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="14" font-weight="600" fill="#6b35a0">01100100</text>
+
+      <!-- Arrows -->
+      <line x1="124" y1="102" x2="124" y2="130" stroke="#9e9b95" stroke-width="1"/>
+      <line x1="314" y1="102" x2="314" y2="130" stroke="#9e9b95" stroke-width="1"/>
+      <line x1="504" y1="102" x2="504" y2="130" stroke="#9e9b95" stroke-width="1"/>
+      <line x1="695" y1="102" x2="695" y2="130" stroke="#9e9b95" stroke-width="1"/>
+
+      <!-- Decimal boxes -->
+      <rect x="74"  y="133" width="100" height="44" rx="8" fill="#c93a10"/>
+      <text x="124" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="white">192</text>
+      <rect x="264" y="133" width="100" height="44" rx="8" fill="#1558a0"/>
+      <text x="314" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="white">168</text>
+      <rect x="454" y="133" width="100" height="44" rx="8" fill="#1d6b3d"/>
+      <text x="504" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="white">1</text>
+      <rect x="645" y="133" width="100" height="44" rx="8" fill="#6b35a0"/>
+      <text x="695" y="162" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="white">100</text>
+
+      <!-- Dots -->
+      <text x="207" y="162" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="#3d3a34">.</text>
+      <text x="397" y="162" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="#3d3a34">.</text>
+      <text x="587" y="162" font-family="'IBM Plex Mono',monospace" font-size="24" font-weight="700" fill="#3d3a34">.</text>
+
+      <text x="410" y="220" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="18" font-weight="600" fill="#3d3a34">192 . 168 . 1 . 100</text>
+      <text x="410" y="242" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">This is the dotted-decimal notation humans use to read IP addresses</text>
+    </svg>
+  </div>
+
+  <h3>Octet Value Ranges</h3>
+  <p>Because 8 bits can represent 256 values, each octet holds a decimal number from <strong>0</strong> (binary: 00000000) to <strong>255</strong> (binary: 11111111). An octet can never be 256 or higher — that would require 9 bits.</p>
+  <p>This means valid IP addresses use only numbers 0–255 in each position. <code>192.168.300.1</code> is <strong>not valid</strong> — 300 exceeds 255.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Binary</th><th>Decimal</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td>00000000</td><td class="hi">0</td><td>All bits off — minimum octet value</td></tr>
+      <tr><td>00000001</td><td class="hi">1</td><td>Only the 1s-place is on</td></tr>
+      <tr><td>10000000</td><td class="hi">128</td><td>Only the 128s-place is on</td></tr>
+      <tr><td>11000000</td><td class="hi">192</td><td>128 + 64 = 192</td></tr>
+      <tr><td>11111110</td><td class="hi">254</td><td>All bits on except the last</td></tr>
+      <tr><td>11111111</td><td class="hi">255</td><td>All bits on — maximum octet value</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-note">
+    <p class="box-head">📌 The Dot is Just a Separator</p>
+    <p>The dots in <code>192.168.1.100</code> have no mathematical meaning. They're purely visual separators — like commas in 1,000,000. The actual IP address is a single 32-bit binary number: 11000000.10101000.00000001.01100100. We write dots between octets just so humans can read it.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 4 — IP ADDRESS CLASSES
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch4">
+  <span class="ch-num">Chapter 04</span>
+  <h2 class="ch-title">IP Address Classes — The Original (Flawed) System</h2>
+  <p class="ch-lead">Before subnetting was common, IPv4 addresses were divided into rigid "classes" — A, B, C, D, and E. You must understand classes for the CCNA exam, and understanding why they failed explains why subnetting exists.</p>
+
+  <h3>The Classful System</h3>
+  <p>When IPv4 was designed, engineers needed a way to know — just by looking at an address — how much of it was "network" and how much was "host." Their solution was the <strong>class system</strong>: the value of the first octet tells you the class, and the class dictates the default split.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 4.1 — IP address class identification from the first octet</div>
+    <svg viewBox="0 0 820 280" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Number line 0-255 -->
+      <rect x="30" y="50" width="760" height="28" rx="4" fill="#eeeade" stroke="#d4cfc6"/>
+
+      <!-- Class A: 1-126 = 49.6% of space -->
+      <rect x="33"  y="53" width="376" height="22" rx="3" fill="#c93a10" opacity=".85"/>
+      <text x="221" y="69" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">Class A (1–126)</text>
+
+      <!-- Class B: 128-191 = 25% -->
+      <rect x="412" y="53" width="188" height="22" rx="3" fill="#1558a0" opacity=".85"/>
+      <text x="506" y="69" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">Class B (128–191)</text>
+
+      <!-- Class C: 192-223 = 12.5% -->
+      <rect x="603" y="53" width="94" height="22" rx="3" fill="#1d6b3d" opacity=".85"/>
+      <text x="650" y="69" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">C (192–223)</text>
+
+      <!-- Class D: 224-239 -->
+      <rect x="700" y="53" width="46" height="22" rx="3" fill="#b06a00" opacity=".85"/>
+      <text x="723" y="69" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="white">D</text>
+
+      <!-- Class E: 240-255 -->
+      <rect x="748" y="53" width="40" height="22" rx="3" fill="#6b35a0" opacity=".85"/>
+      <text x="768" y="69" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="white">E</text>
+
+      <!-- Tick marks at 0, 127, 128, 191, 192, 223, 224, 239, 240, 255 -->
+      <text x="30"  y="95" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">0</text>
+      <text x="385" y="95" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">127</text>
+      <text x="406" y="95" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">128</text>
+      <text x="593" y="95" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">191</text>
+      <text x="597" y="95" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">192</text>
+      <text x="783" y="95" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">255</text>
+
+      <!-- Class detail boxes -->
+      <g font-family="'DM Sans',sans-serif" font-size="12">
+        <rect x="30"  y="112" width="220" height="140" rx="8" fill="rgba(201,58,16,.06)" stroke="#c93a10" stroke-width="0.8"/>
+        <text x="140" y="133" text-anchor="middle" font-weight="600" fill="#c93a10" font-size="14">Class A</text>
+        <text x="140" y="153" text-anchor="middle" fill="#3d3a34">First octet: 1 – 126</text>
+        <text x="140" y="170" text-anchor="middle" fill="#3d3a34">Default mask: /8</text>
+        <text x="140" y="187" text-anchor="middle" fill="#3d3a34">255.0.0.0</text>
+        <text x="140" y="207" text-anchor="middle" fill="#9e9b95" font-size="11">8 net bits | 24 host bits</text>
+        <text x="140" y="224" text-anchor="middle" fill="#9e9b95" font-size="11">126 networks</text>
+        <text x="140" y="241" text-anchor="middle" fill="#9e9b95" font-size="11">16,777,214 hosts/net</text>
+
+        <rect x="260" y="112" width="220" height="140" rx="8" fill="rgba(21,88,160,.06)" stroke="#1558a0" stroke-width="0.8"/>
+        <text x="370" y="133" text-anchor="middle" font-weight="600" fill="#1558a0" font-size="14">Class B</text>
+        <text x="370" y="153" text-anchor="middle" fill="#3d3a34">First octet: 128 – 191</text>
+        <text x="370" y="170" text-anchor="middle" fill="#3d3a34">Default mask: /16</text>
+        <text x="370" y="187" text-anchor="middle" fill="#3d3a34">255.255.0.0</text>
+        <text x="370" y="207" text-anchor="middle" fill="#9e9b95" font-size="11">16 net bits | 16 host bits</text>
+        <text x="370" y="224" text-anchor="middle" fill="#9e9b95" font-size="11">16,384 networks</text>
+        <text x="370" y="241" text-anchor="middle" fill="#9e9b95" font-size="11">65,534 hosts/net</text>
+
+        <rect x="490" y="112" width="220" height="140" rx="8" fill="rgba(29,107,61,.06)" stroke="#1d6b3d" stroke-width="0.8"/>
+        <text x="600" y="133" text-anchor="middle" font-weight="600" fill="#1d6b3d" font-size="14">Class C</text>
+        <text x="600" y="153" text-anchor="middle" fill="#3d3a34">First octet: 192 – 223</text>
+        <text x="600" y="170" text-anchor="middle" fill="#3d3a34">Default mask: /24</text>
+        <text x="600" y="187" text-anchor="middle" fill="#3d3a34">255.255.255.0</text>
+        <text x="600" y="207" text-anchor="middle" fill="#9e9b95" font-size="11">24 net bits | 8 host bits</text>
+        <text x="600" y="224" text-anchor="middle" fill="#9e9b95" font-size="11">2,097,152 networks</text>
+        <text x="600" y="241" text-anchor="middle" fill="#9e9b95" font-size="11">254 hosts/net</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3>Why the Class System Failed</h3>
+  <p>The class system sounds organized, but it caused massive waste. Suppose a university needed 5,000 host addresses. A Class C gives only 254 — not enough. So they'd be assigned a <strong>Class B</strong>, which provides 65,534 addresses. That's <strong>60,534 wasted addresses</strong> — given to one organization but unusable by anyone else.</p>
+  <p>This inefficiency caused IPv4 address exhaustion much faster than necessary. The solution? <strong>Subnetting</strong> — taking a classful block and dividing it into smaller, right-sized pieces. That's what this entire booklet is about.</p>
+
+  <div class="box box-warn">
+    <p class="box-head">⚠️ CCNA Exam: Quick Class Identification</p>
+    <p>Memorize these ranges cold — you'll need them instantly:<br>
+    <strong>1–126 = Class A</strong> &nbsp;|&nbsp; <strong>128–191 = Class B</strong> &nbsp;|&nbsp; <strong>192–223 = Class C</strong><br>
+    <strong>224–239 = Class D (multicast)</strong> &nbsp;|&nbsp; <strong>240–255 = Class E (experimental)</strong><br>
+    <strong>127.x.x.x = Loopback</strong> (technically Class A range but reserved — never assigned to hosts)</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 5 — THE SUBNET MASK
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch5">
+  <span class="ch-num">Chapter 05</span>
+  <h2 class="ch-title">The Subnet Mask — The Key That Splits an IP Address</h2>
+  <p class="ch-lead">If an IP address is the phone number, the subnet mask is the key that tells you which digits are the area code and which are the local number. Without a subnet mask, an IP address is meaningless — you can't tell where the network ends and the host begins.</p>
+
+  <h3>What is a Subnet Mask?</h3>
+  <p>A subnet mask is also a 32-bit number. But it has a very specific structure that makes it unique: it always consists of a run of <strong>consecutive 1 bits</strong> from the left, followed by a run of <strong>consecutive 0 bits</strong> to the right. Never mixed. Never alternating. Always all-1s then all-0s.</p>
+  <p>The <strong>1 bits mark the network portion</strong> of the IP address — these bits identify which network you're on. The <strong>0 bits mark the host portion</strong> — these bits identify which specific device on that network.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 5.1 — Anatomy of a /24 subnet mask</div>
+    <svg viewBox="0 0 820 230" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Network bits section -->
+      <rect x="30" y="30" width="566" height="50" rx="6" fill="#c93a10" opacity=".88"/>
+      <text x="313" y="51" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="white">← 24 network bits (all 1s) →</text>
+      <text x="313" y="70" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="rgba(255,255,255,.7)">255 . 255 . 255</text>
+
+      <!-- Host bits section -->
+      <rect x="600" y="30" width="190" height="50" rx="6" fill="#1558a0" opacity=".88"/>
+      <text x="695" y="51" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="white">← 8 host bits →</text>
+      <text x="695" y="70" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="rgba(255,255,255,.7)">. 0</text>
+
+      <!-- Annotations below -->
+      <text x="313" y="110" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="13" font-weight="600" fill="#c93a10">Network portion</text>
+      <text x="313" y="130" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#3d3a34">11111111.11111111.11111111</text>
+      <text x="313" y="150" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">"These bits define WHICH network you're on"</text>
+      <text x="313" y="170" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">"All devices on the same network share these bits"</text>
+
+      <text x="695" y="110" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="13" font-weight="600" fill="#1558a0">Host portion</text>
+      <text x="695" y="130" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#3d3a34">00000000</text>
+      <text x="695" y="150" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">"Free bits — assign to devices"</text>
+      <text x="695" y="170" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">"0 = 0 hosts, more = more devices"</text>
+
+      <!-- Summary -->
+      <text x="410" y="210" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="14" font-weight="600" fill="#3d3a34">255.255.255.0 = /24 subnet mask</text>
+    </svg>
+  </div>
+
+  <h3>Why the Mask Must Be All 1s Then All 0s</h3>
+  <p>You might wonder: why can't we have a mask like <code>11001100</code>? Because the subnet mask is used in a bitwise AND operation with the IP address to extract the network address. For this to work correctly and produce meaningful results, the 1s must be consecutive. A non-contiguous mask would produce ambiguous, unusable results.</p>
+
+  <h3>Valid Values in Any Octet of a Subnet Mask</h3>
+  <p>Because of the "all 1s then all 0s" rule, only 9 decimal values are valid in any octet of a subnet mask. These are the only combinations where 1-bits are always to the left of 0-bits:</p>
+
+  <table class="tbl">
+    <thead><tr><th>Binary Pattern</th><th>Decimal Value</th><th>1-bits contributed</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>00000000</td><td class="hi">0</td><td>0 bits</td><td>This octet is entirely host bits</td></tr>
+      <tr><td>10000000</td><td class="hi">128</td><td>1 bit</td><td>Only the 128-place is network</td></tr>
+      <tr><td>11000000</td><td class="hi">192</td><td>2 bits</td><td>128+64 places are network</td></tr>
+      <tr><td>11100000</td><td class="hi">224</td><td>3 bits</td><td>128+64+32 are network</td></tr>
+      <tr><td>11110000</td><td class="hi">240</td><td>4 bits</td><td>128+64+32+16 are network</td></tr>
+      <tr><td>11111000</td><td class="hi">248</td><td>5 bits</td><td>Top 5 bits are network</td></tr>
+      <tr><td>11111100</td><td class="hi">252</td><td>6 bits</td><td>Top 6 bits are network</td></tr>
+      <tr><td>11111110</td><td class="hi">254</td><td>7 bits</td><td>Top 7 bits are network</td></tr>
+      <tr><td>11111111</td><td class="hi">255</td><td>8 bits</td><td>Entire octet is network</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-tip">
+    <p class="box-head">✅ Quick Validity Check</p>
+    <p>Any octet value in a subnet mask that is NOT in this table (0, 128, 192, 224, 240, 248, 252, 254, 255) is <strong>invalid</strong>. So if you see a mask like <code>255.255.200.0</code>, stop — 200 is not in the list, so this is not a valid subnet mask. The CCNA exam tests this.</p>
+  </div>
+
+  <h3>How the Mask is Used — The AND Operation</h3>
+  <p>Here's the practical magic. To find what <em>network</em> an IP address belongs to, you perform a bitwise AND between the IP address and the subnet mask. This "zeroes out" all the host bits, leaving only the network portion:</p>
+
+  <div class="binblock">
+<span class="lbl">Finding the Network Address of 192.168.10.77 with mask 255.255.255.0 (/24)</span>
+IP Address:    <span class="nn">11000000.10101000.00001010</span>.<span class="hh">01001101</span>   (192.168.10.77)
+Subnet Mask:   <span class="mm">11111111.11111111.11111111</span>.<span class="mm">00000000</span>   (255.255.255.0)
+               ────────────────────────────────────────────
+AND Result:    <span class="nn">11000000.10101000.00001010</span>.<span class="hh">00000000</span>   = 192.168.10.0
+
+The AND operation: where mask=1, copy the IP bit. Where mask=0, force to 0.
+Network Address = <span class="nn">192.168.10.0</span>  (the .77 device belongs to the .0 network)
+  </div>
+
+  <div class="box box-why">
+    <p class="box-head">💡 The AND Makes Total Sense</p>
+    <p>Think of the mask's 1-bits as "copy this bit from the IP" and the 0-bits as "replace with zero." The result is the network address — the IP address with all host bits erased. Two devices on the same network will produce <em>the same result</em> when you AND their IPs with the mask. That's how routers know they're on the same network.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 6 — CIDR NOTATION
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch6">
+  <span class="ch-num">Chapter 06</span>
+  <h2 class="ch-title">CIDR Notation — The Shorthand That Changed Networking</h2>
+  <p class="ch-lead">Writing "255.255.255.0" every time is tedious and error-prone. In 1993, engineers standardized a shorthand: write the IP address, then a slash, then the number of network bits. This is CIDR notation, and it's what you'll use everywhere.</p>
+
+  <h3>What CIDR Stands For</h3>
+  <p><strong>CIDR</strong> = Classless Inter-Domain Routing. The "classless" part is important: CIDR replaced the rigid classful system and allowed <em>any</em> prefix length, not just /8, /16, and /24. This flexibility is what makes subnetting possible.</p>
+
+  <h3>The Slash Notation</h3>
+  <p>Instead of writing <code>192.168.1.0</code> with subnet mask <code>255.255.255.0</code>, you write:</p>
+  <p style="text-align:center;font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--red);margin:1rem 0">192.168.1.0<span style="color:var(--blue)">/24</span></p>
+  <p>The <code>/24</code> means "the first 24 bits are the network portion." That's it. The entire subnet mask is encoded in that one number.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 6.1 — How prefix length maps to subnet masks and host capacity</div>
+    <svg viewBox="0 0 820 370" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Legend -->
+      <rect x="30" y="16" width="16" height="12" rx="2" fill="#c93a10" opacity=".85"/>
+      <text x="52" y="26" font-family="'DM Sans',sans-serif" font-size="11" fill="#3d3a34">Network bits</text>
+      <rect x="160" y="16" width="16" height="12" rx="2" fill="#1558a0" opacity=".85"/>
+      <text x="182" y="26" font-family="'DM Sans',sans-serif" font-size="11" fill="#3d3a34">Host bits</text>
+
+      <!-- /8 row -->
+      <text x="30" y="60" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#c93a10">/8</text>
+      <rect x="70"  y="44" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="160" y="62" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">255 (8 bits)</text>
+      <rect x="253" y="44" width="180" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <rect x="436" y="44" width="180" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <rect x="619" y="44" width="180" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <text x="530" y="62" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">24 host bits = 16,777,214 hosts</text>
+      <text x="570" y="62" text-anchor="start" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white"> </text>
+
+      <!-- /16 row -->
+      <text x="30" y="100" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#c93a10">/16</text>
+      <rect x="70"  y="84" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="160" y="102" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">255 (8 bits)</text>
+      <rect x="253" y="84" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="343" y="102" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">255 (8 bits)</text>
+      <rect x="436" y="84" width="180" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <rect x="619" y="84" width="180" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <text x="620" y="102" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">16 host bits = 65,534 hosts</text>
+
+      <!-- /24 row -->
+      <text x="30" y="140" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#c93a10">/24</text>
+      <rect x="70"  y="124" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="160" y="142" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">255</text>
+      <rect x="253" y="124" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="343" y="142" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">255</text>
+      <rect x="436" y="124" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="526" y="142" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">255</text>
+      <rect x="619" y="124" width="180" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <text x="709" y="142" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">8 bits = 254 hosts</text>
+
+      <!-- /25 row -->
+      <text x="30" y="180" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#c93a10">/25</text>
+      <rect x="70"  y="164" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="253" y="164" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="436" y="164" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="619" y="164" width="90" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="664" y="182" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">128</text>
+      <rect x="712" y="164" width="87" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <text x="755" y="182" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">7 bits=126</text>
+
+      <!-- /26 row -->
+      <text x="30" y="220" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#c93a10">/26</text>
+      <rect x="70"  y="204" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="253" y="204" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="436" y="204" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="619" y="204" width="135" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="686" y="222" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">192</text>
+      <rect x="757" y="204" width="42" height="26" rx="4" fill="#1558a0" opacity=".5"/>
+      <text x="778" y="222" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">62</text>
+
+      <!-- /30 row -->
+      <text x="30" y="260" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#c93a10">/30</text>
+      <rect x="70"  y="244" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="253" y="244" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="436" y="244" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <rect x="619" y="244" width="180" height="26" rx="4" fill="#c93a10" opacity=".85"/>
+      <text x="709" y="262" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="white">252 (only 2 hosts!)</text>
+      <rect x="782" y="244" width="17" height="26" rx="3" fill="#1558a0" opacity=".5"/>
+
+      <!-- Key insight -->
+      <text x="410" y="310" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="13" font-weight="600" fill="#3d3a34">The Fundamental Tradeoff:</text>
+      <text x="410" y="330" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">Longer prefix (/30) = more network bits = fewer hosts per subnet = more subnets possible</text>
+      <text x="410" y="350" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">Shorter prefix (/8)  = fewer network bits = more hosts per subnet = fewer subnets</text>
+    </svg>
+  </div>
+
+  <h3>Converting Between CIDR and Dotted Decimal</h3>
+  <p>This conversion comes up constantly. The trick: count 1-bits from the left and group them into octets of 8.</p>
+
+  <div class="binblock">
+<span class="lbl">Example: Convert /27 to dotted decimal mask</span>
+/27 means 27 network bits = 27 ones followed by 5 zeros
+
+Group into octets:
+  <span class="nn">11111111</span> | <span class="nn">11111111</span> | <span class="nn">11111111</span> | <span class="nn">111</span><span class="hh">00000</span>
+    = 255    |    255    |    255    |   224
+    
+128+64+32+16+8+4+2+1=255 | 255 | 255 | 128+64+32+0+0+0+0+0 = 224
+
+Result: /27 = 255.255.255.224
+
+<span class="lbl">Example: Convert 255.255.240.0 to CIDR prefix</span>
+  255      = 11111111  = 8 ones
+  255      = 11111111  = 8 ones
+  240      = 11110000  = 4 ones
+  0        = 00000000  = 0 ones
+
+Total = 8+8+4+0 = 20 ones → /20
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 7 — THE ART OF SUBNETTING
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch7">
+  <span class="ch-num">Chapter 07</span>
+  <h2 class="ch-title">Subnetting — How to Divide a Network</h2>
+  <p class="ch-lead">This is the core chapter. Subnetting means taking one large block of IP addresses and slicing it into smaller blocks. Here's how to do it systematically, every time, without guessing.</p>
+
+  <h3>The Big Picture — What Subnetting Does</h3>
+  <p>Imagine you have a building with 256 offices. You could leave it as one giant open floor, or you could build walls and divide it into departments — Finance (64 offices), HR (32 offices), IT (32 offices), Management (16 offices), etc. Each department gets its own "neighborhood" with its own internal address range.</p>
+  <p>Subnetting does exactly that with IP addresses. You take a block like <code>192.168.10.0/24</code> (256 addresses) and build "walls" by borrowing bits from the host portion to create subnet bits.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 7.1 — What happens when we borrow bits to create subnets</div>
+    <svg viewBox="0 0 820 300" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Before: /24 -->
+      <text x="30" y="28" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#9e9b95">BEFORE subnetting: /24</text>
+      <rect x="30"  y="36" width="566" height="38" rx="6" fill="#c93a10" opacity=".85"/>
+      <text x="313" y="62" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="white">24 network bits</text>
+      <rect x="600" y="36" width="190" height="38" rx="6" fill="#1558a0" opacity=".7"/>
+      <text x="695" y="62" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="white">8 host bits</text>
+
+      <!-- Arrow down -->
+      <text x="410" y="105" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">← borrow 2 bits from host portion for subnet →</text>
+      <line x1="410" y1="112" x2="410" y2="130" stroke="#9e9b95" stroke-width="1"/>
+      <polygon points="405,130 415,130 410,140" fill="#9e9b95"/>
+
+      <!-- After: /26 showing the bit theft -->
+      <text x="30" y="160" font-family="'IBM Plex Mono',monospace" font-size="11" fill="#9e9b95">AFTER subnetting: /26 (borrowed 2 bits)</text>
+      <rect x="30"  y="168" width="566" height="38" rx="6" fill="#c93a10" opacity=".85"/>
+      <text x="313" y="194" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" fill="white">24 original network bits</text>
+      <rect x="600" y="168" width="95" height="38" rx="6" fill="#1d6b3d" opacity=".9"/>
+      <text x="647" y="188" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">2 subnet</text>
+      <text x="647" y="202" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="rgba(255,255,255,.7)">bits</text>
+      <rect x="698" y="168" width="92" height="38" rx="6" fill="#1558a0" opacity=".7"/>
+      <text x="744" y="188" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">6 host</text>
+      <text x="744" y="202" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="rgba(255,255,255,.7)">bits</text>
+
+      <!-- Results -->
+      <rect x="30" y="230" width="750" height="55" rx="8" fill="#eeeade" stroke="#d4cfc6"/>
+      <g font-family="'DM Sans',sans-serif" font-size="13" text-anchor="middle">
+        <text x="188" y="252" font-weight="600" fill="#3d3a34">New prefix: /26</text>
+        <text x="188" y="270" fill="#9e9b95">255.255.255.192</text>
+        <text x="410" y="252" font-weight="600" fill="#1d6b3d">Subnets: 2² = 4</text>
+        <text x="410" y="270" fill="#9e9b95">2 borrowed bits → 4 subnets</text>
+        <text x="632" y="252" font-weight="600" fill="#1558a0">Hosts each: 2⁶–2 = 62</text>
+        <text x="632" y="270" fill="#9e9b95">6 remaining host bits</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3>The Two Core Formulas</h3>
+  <p>Everything in subnetting flows from two formulas. Memorize these before anything else:</p>
+
+  <div class="two-col">
+    <div class="metric-card">
+      <div class="mlabel">Number of Subnets</div>
+      <div class="mval">2<sup style="font-size:1.2rem">s</sup></div>
+      <div class="msub"><em>s</em> = number of bits borrowed from the host portion to create subnet bits</div>
+    </div>
+    <div class="metric-card">
+      <div class="mlabel">Usable Hosts per Subnet</div>
+      <div class="mval">2<sup style="font-size:1.2rem">h</sup> − 2</div>
+      <div class="msub"><em>h</em> = remaining host bits. Minus 2 for network address and broadcast address</div>
+    </div>
+  </div>
+
+  <div class="box box-why">
+    <p class="box-head">💡 Why Subtract 2?</p>
+    <p>Every subnet reserves two addresses that can't be assigned to hosts:<br>
+    <strong>1. Network address</strong> (all host bits = 0) — identifies the subnet itself<br>
+    <strong>2. Broadcast address</strong> (all host bits = 1) — sends to all hosts in the subnet<br>
+    So if you have 8 host bits: 2⁸ = 256 total addresses, minus 2 reserved = <strong>254 usable</strong>.</p>
+  </div>
+
+  <h3>The Block Size — Your Most Important Tool</h3>
+  <p>The <strong>block size</strong> (also called the subnet increment) tells you how far apart each subnet's starting address is. It's the single most useful number in subnetting because it lets you instantly list all subnets without complex binary math.</p>
+
+  <p style="text-align:center"><span class="fml">Block Size = 256 − <span class="fv">(interesting octet value of mask)</span></span></p>
+
+  <p>The "interesting octet" is the last non-255 octet in the subnet mask (the octet where subnetting is happening). For /26 (255.255.255.<strong>192</strong>), the interesting octet is 192, so block size = 256 − 192 = <strong>64</strong>. Subnets start at 0, 64, 128, 192, and the next one would be 256 (meaning we've exhausted the /24).</p>
+
+  <table class="tbl">
+    <thead><tr><th>Prefix</th><th>Last octet mask value</th><th>Block Size</th><th>Subnets in a /24</th><th>Hosts/Subnet</th></tr></thead>
+    <tbody>
+      <tr><td>/25</td><td class="hi">128</td><td>256−128 = <strong>128</strong></td><td>2</td><td>126</td></tr>
+      <tr><td>/26</td><td class="hi">192</td><td>256−192 = <strong>64</strong></td><td>4</td><td>62</td></tr>
+      <tr><td>/27</td><td class="hi">224</td><td>256−224 = <strong>32</strong></td><td>8</td><td>30</td></tr>
+      <tr><td>/28</td><td class="hi">240</td><td>256−240 = <strong>16</strong></td><td>16</td><td>14</td></tr>
+      <tr><td>/29</td><td class="hi">248</td><td>256−248 = <strong>8</strong></td><td>32</td><td>6</td></tr>
+      <tr><td>/30</td><td class="hi">252</td><td>256−252 = <strong>4</strong></td><td>64</td><td>2</td></tr>
+    </tbody>
+  </table>
+
+  <h3>The 5-Step Subnetting Method</h3>
+  <p>Follow these steps every single time. They work for every subnetting question on CCNA.</p>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>Identify how many subnets (or hosts) you need</h5><p>This tells you how many bits to borrow, or what prefix length to use.</p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>Calculate the new prefix length</h5><p>New prefix = original prefix + borrowed bits. Or: find the prefix that gives enough hosts: 2ʰ−2 ≥ required hosts.</p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>Determine the subnet mask</h5><p>Write out the new prefix in dotted decimal. Use the valid-mask-values table.</p></div></div>
+    <div class="step"><div class="snum">4</div><div class="scontent"><h5>Calculate the block size</h5><p>Block size = 256 − interesting-octet-value. This is your subnet increment.</p></div></div>
+    <div class="step"><div class="snum">5</div><div class="scontent"><h5>List all subnets with their ranges</h5><p>Start at the base network address, add block size repeatedly. For each subnet: network=first, broadcast=next-network−1, hosts=network+1 through broadcast−1.</p></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 8 — NETWORK, BROADCAST, AND HOST ADDRESSES
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch8">
+  <span class="ch-num">Chapter 08</span>
+  <h2 class="ch-title">Network, Broadcast, and Host Addresses</h2>
+  <p class="ch-lead">Every subnet you create has three special categories of addresses. Confusing them is one of the most common mistakes in subnetting. Let's make each one crystal clear.</p>
+
+  <h3>The Network Address</h3>
+  <p>The <strong>network address</strong> is the first address in a subnet. It has all host bits set to <strong>0</strong>. It does not represent any device — it's the name of the subnet itself. Routers use it to identify the entire subnet in their routing tables.</p>
+  <p>You cannot assign the network address to a router, PC, phone, or any device. If you try, that device won't communicate.</p>
+
+  <div class="binblock">
+<span class="lbl">Network Address of 192.168.10.0/26:</span>
+The /26 gives 6 host bits (32−26=6).
+Network address = 26 network bits + 6 host bits all set to ZERO
+
+Binary:   11000000.10101000.00001010.01<span class="hh">000000</span>
+Decimal:  192.168.10.<span class="nn">64</span>
+
+(For the second /26 subnet, network address = 192.168.10.<span class="nn">128</span>)
+  </div>
+
+  <h3>The Broadcast Address</h3>
+  <p>The <strong>broadcast address</strong> is the last address in a subnet. It has all host bits set to <strong>1</strong>. When a device sends data to the broadcast address, every host in that subnet receives it. Think of it as "shout to everyone on this floor."</p>
+  <p>Like the network address, the broadcast address cannot be assigned to any device.</p>
+
+  <div class="binblock">
+<span class="lbl">Broadcast Address of 192.168.10.64/26:</span>
+Broadcast = 26 network bits + 6 host bits all set to ONE
+
+Binary:   11000000.10101000.00001010.01<span class="br">111111</span>
+Decimal:  192.168.10.<span class="br">127</span>
+
+Shortcut: broadcast = network address + block size − 1
+          = 64 + 64 − 1 = <span class="br">127</span>  ✓
+  </div>
+
+  <h3>Host Addresses</h3>
+  <p>Every address between the network address and broadcast address (exclusive) is a <strong>usable host address</strong> — assignable to real devices. First host = network + 1. Last host = broadcast − 1.</p>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 8.1 — Complete anatomy of the 192.168.10.64/26 subnet</div>
+    <svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Address bar -->
+      <text x="30" y="28" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#9e9b95">192.168.10.64/26 — 64 addresses total (.64 through .127)</text>
+
+      <!-- Network addr box -->
+      <rect x="30"  y="38" width="100" height="60" rx="6" fill="#c93a10" opacity=".9"/>
+      <text x="80" y="62" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="600" fill="white">Network</text>
+      <text x="80" y="82" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="18" font-weight="700" fill="white">.64</text>
+
+      <!-- Host range -->
+      <rect x="134" y="38" width="552" height="60" rx="6" fill="#eaf6ef" stroke="#1d6b3d" stroke-width="1"/>
+      <text x="410" y="62" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="13" font-weight="600" fill="#1d6b3d">Usable Host Addresses</text>
+      <text x="410" y="84" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="12" fill="#1d6b3d">.65 through .126 — 62 hosts you can assign to real devices</text>
+
+      <!-- Broadcast addr box -->
+      <rect x="690" y="38" width="100" height="60" rx="6" fill="#6b35a0" opacity=".9"/>
+      <text x="740" y="62" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" font-weight="600" fill="white">Broadcast</text>
+      <text x="740" y="82" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="18" font-weight="700" fill="white">.127</text>
+
+      <!-- Annotations -->
+      <text x="80"  y="122" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#c93a10" font-weight="600">192.168.10.64</text>
+      <text x="80"  y="140" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">All host bits = 0</text>
+      <text x="80"  y="156" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">Names the subnet</text>
+      <text x="80"  y="172" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">Cannot assign</text>
+      <text x="80"  y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">to any device</text>
+
+      <text x="410" y="122" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#1d6b3d" font-weight="600">192.168.10.65 — 192.168.10.126</text>
+      <text x="410" y="140" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">62 addresses, all assignable to PCs, servers, printers, phones, etc.</text>
+      <text x="410" y="158" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">First host = network + 1 = .64 + 1 = .65</text>
+      <text x="410" y="176" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">Last host = broadcast − 1 = .127 − 1 = .126</text>
+
+      <text x="740" y="122" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="11" fill="#6b35a0" font-weight="600">192.168.10.127</text>
+      <text x="740" y="140" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">All host bits = 1</text>
+      <text x="740" y="156" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">Sends to ALL</text>
+      <text x="740" y="172" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">hosts in subnet</text>
+      <text x="740" y="188" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">Cannot assign</text>
+      <text x="740" y="204" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">to any device</text>
+
+      <!-- Separator lines -->
+      <line x1="30" y1="215" x2="790" y2="215" stroke="#d4cfc6" stroke-width="0.5"/>
+      <text x="30" y="240" font-family="'DM Sans',sans-serif" font-size="13" font-weight="600" fill="#3d3a34">Memory Rule:</text>
+      <text x="30" y="260" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">• Network address = All host bits are 0 = "the name of the street"</text>
+      <text x="30" y="278" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">• Broadcast address = All host bits are 1 = "PA system announcing to entire street"</text>
+      <text x="30" y="296" font-family="'DM Sans',sans-serif" font-size="12" fill="#9e9b95">• Host addresses = Everything in between = "individual houses on the street"</text>
+      <text x="30" y="318" font-family="'DM Sans',sans-serif" font-size="12" fill="#c93a10">First and last addresses ALWAYS reserved. Never assign them to devices.</text>
+    </svg>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 9 — WORKED EXAMPLES (LOTS)
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch9">
+  <span class="ch-num">Chapter 09</span>
+  <h2 class="ch-title">Worked Examples — Practice Until It's Automatic</h2>
+  <p class="ch-lead">Reading about subnetting isn't enough. You need to see problems solved, step by step, multiple times, until the method is second nature. Here are five complete worked examples of increasing complexity.</p>
+
+  <h3>Example 1 — Divide 192.168.1.0/24 into 4 subnets</h3>
+  <p><strong>Problem:</strong> Your company has 192.168.1.0/24. Divide it into exactly 4 equal subnets. Find the subnet mask, and list all subnets with their host ranges.</p>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>How many bits to borrow?</h5><p>We need 4 subnets. 2<sup>s</sup> ≥ 4 → 2² = 4. We borrow <strong>2 bits</strong>.</p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>New prefix length</h5><p>/24 + 2 borrowed bits = <strong>/26</strong></p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>New subnet mask</h5><p>/26 = 26 ones: 11111111.11111111.11111111.<strong>11</strong>000000 → <strong>255.255.255.192</strong></p></div></div>
+    <div class="step"><div class="snum">4</div><div class="scontent"><h5>Block size</h5><p>256 − 192 = <strong>64</strong>. Subnets start at: 0, 64, 128, 192.</p></div></div>
+    <div class="step"><div class="snum">5</div><div class="scontent"><h5>Host count per subnet</h5><p>6 host bits remaining. 2⁶ − 2 = <strong>62 usable hosts</strong> per subnet.</p></div></div>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th>#</th><th>Network Address</th><th>First Host</th><th>Last Host</th><th>Broadcast</th><th>Usable</th></tr></thead>
+    <tbody>
+      <tr class="row-hi"><td>1</td><td class="hi">192.168.1.0/26</td><td>192.168.1.1</td><td>192.168.1.62</td><td>192.168.1.63</td><td>62</td></tr>
+      <tr><td>2</td><td class="hi2">192.168.1.64/26</td><td>192.168.1.65</td><td>192.168.1.126</td><td>192.168.1.127</td><td>62</td></tr>
+      <tr><td>3</td><td class="hi3">192.168.1.128/26</td><td>192.168.1.129</td><td>192.168.1.190</td><td>192.168.1.191</td><td>62</td></tr>
+      <tr><td>4</td><td class="hi">192.168.1.192/26</td><td>192.168.1.193</td><td>192.168.1.254</td><td>192.168.1.255</td><td>62</td></tr>
+    </tbody>
+  </table>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 9.1 — Visual split: 192.168.1.0/24 → 4 × /26 subnets</div>
+    <svg viewBox="0 0 820 130" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Original bar -->
+      <rect x="30" y="18" width="760" height="22" rx="4" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="410" y="34" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="10" fill="#9e9b95">192.168.1.0/24 — 256 total addresses</text>
+      <!-- 4 subnets -->
+      <rect x="30"  y="54" width="187" height="50" rx="6" fill="#c93a10" opacity=".85"/>
+      <text x="123" y="76" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">.0/26</text>
+      <text x="123" y="94" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.0–.63 (62 hosts)</text>
+      <rect x="221" y="54" width="187" height="50" rx="6" fill="#1558a0" opacity=".85"/>
+      <text x="314" y="76" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">.64/26</text>
+      <text x="314" y="94" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.64–.127 (62 hosts)</text>
+      <rect x="412" y="54" width="187" height="50" rx="6" fill="#1d6b3d" opacity=".85"/>
+      <text x="505" y="76" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">.128/26</text>
+      <text x="505" y="94" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.128–.191 (62 hosts)</text>
+      <rect x="603" y="54" width="187" height="50" rx="6" fill="#6b35a0" opacity=".85"/>
+      <text x="696" y="76" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">.192/26</text>
+      <text x="696" y="94" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.192–.255 (62 hosts)</text>
+      <text x="410" y="122" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">4 × 64 addresses = 256 total — perfectly fills the original /24 ✓</text>
+    </svg>
+  </div>
+
+  <h3>Example 2 — Given a host requirement, find the right subnet size</h3>
+  <p><strong>Problem:</strong> You need a subnet that can host at least 50 devices. What is the minimum prefix length to use?</p>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>Apply the formula: 2ʰ − 2 ≥ 50</h5><p>Try h=5: 2⁵−2=30 — not enough.<br>Try h=6: 2⁶−2=62 — <strong>yes, 62 ≥ 50 ✓</strong></p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>Find the prefix length</h5><p>h=6 host bits → prefix = 32−6 = <strong>/26</strong></p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>Answer</h5><p>Use <strong>/26</strong> (255.255.255.192). It provides 62 usable host addresses — enough for 50 devices with 12 to spare.</p></div></div>
+  </div>
+
+  <h3>Example 3 — Which subnet does this IP belong to?</h3>
+  <p><strong>Problem:</strong> IP address <code>10.0.0.97</code> with mask <code>/27</code>. What network is it on? What is the first and last host? What is the broadcast address?</p>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>Find the block size for /27</h5><p>Mask is 255.255.255.224. Block size = 256−224 = <strong>32</strong>.</p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>List the /27 subnets in the last octet</h5><p>0, 32, 64, 96, 128, 160, 192, 224 (adding 32 each time)</p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>Find which range .97 falls in</h5><p>96 ≤ 97 &lt; 128 → it's in the subnet starting at <strong>10.0.0.96</strong>.</p></div></div>
+    <div class="step"><div class="snum">4</div><div class="scontent"><h5>Calculate all addresses</h5>
+      <p>Network: <strong>10.0.0.96</strong><br>
+      Broadcast: 96 + 32 − 1 = <strong>10.0.0.127</strong><br>
+      First host: <strong>10.0.0.97</strong> (network + 1)<br>
+      Last host: <strong>10.0.0.126</strong> (broadcast − 1)<br>
+      Usable hosts: 2⁵ − 2 = <strong>30</strong></p>
+    </div></div>
+  </div>
+
+  <h3>Example 4 — Subnetting a Class B network</h3>
+  <p><strong>Problem:</strong> You have <code>172.16.0.0/16</code>. You need subnets that each support at least 500 hosts. How many subnets do you get, and what are the first three?</p>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>Find minimum host bits for 500+ hosts</h5><p>2⁸−2=254 (not enough). 2⁹−2=510 ≥ 500 ✓. Need h=9 host bits.</p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>New prefix length</h5><p>32 − 9 = <strong>/23</strong>. Original was /16, so we borrowed 23−16=7 bits.</p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>Subnet mask</h5><p>/23 = 23 ones: 11111111.11111111.11111110.00000000 = <strong>255.255.254.0</strong></p></div></div>
+    <div class="step"><div class="snum">4</div><div class="scontent"><h5>Block size and subnets</h5><p>Interesting octet is the 3rd: 254. Block size = 256−254=<strong>2</strong>. Subnets jump in the 3rd octet by 2. Number of subnets: 2⁷=<strong>128</strong>.</p></div></div>
+  </div>
+
+  <div class="binblock">
+<span class="lbl">First 3 subnets of 172.16.0.0/23:</span>
+Subnet 1: <span class="nn">172.16.0.0/23</span>   — hosts: .0.1 → .1.254  — broadcast: 172.16.1.255
+Subnet 2: <span class="nn">172.16.2.0/23</span>   — hosts: .2.1 → .3.254  — broadcast: 172.16.3.255
+Subnet 3: <span class="nn">172.16.4.0/23</span>   — hosts: .4.1 → .5.254  — broadcast: 172.16.5.255
+
+Note: block size of 2 means the 3rd octet jumps by 2.
+Each /23 subnet spans TWO consecutive third-octet values.
+510 usable hosts per subnet.
+  </div>
+
+  <h3>Example 5 — Finding all information from an IP/Mask pair</h3>
+  <p><strong>Problem:</strong> IP = <code>192.168.50.150</code>, Mask = <code>255.255.255.240</code>. Find everything.</p>
+
+  <div class="binblock">
+<span class="lbl">Step-by-step solution:</span>
+Mask 255.255.255.240 → last octet is 240 (11110000) → prefix = /28
+
+Block size = 256 − 240 = 16
+Subnets in last octet: 0, 16, 32, 48, 64, 80, 96, 112, 128, 144, 160 ...
+
+IP last octet = 150
+144 ≤ 150 &lt; 160 → belongs to subnet starting at .144
+
+Network Address:   192.168.50.<span class="nn">144</span>
+Broadcast Address: 192.168.50.<span class="br">159</span>  (144 + 16 − 1)
+First Host:        192.168.50.<span class="hh">145</span>
+Last Host:         192.168.50.<span class="hh">158</span>
+Usable Hosts:      2⁴ − 2 = <span class="hh">14</span>
+CIDR Notation:     192.168.50.144/28
+Subnet Mask:       255.255.255.240
+  </div>
+
+  <div class="practice">
+    <h4>🧠 Practice Problems — Subnetting</h4>
+    <div class="pq">
+      <div class="qtext">Q1: You need 8 subnets from 10.10.0.0/24. What prefix do you use? How many hosts per subnet?</div>
+      <button class="pa-btn" onclick="toggle('b1')">Show Answer</button>
+      <div class="answer" id="b1">8 subnets → 2³ = 8 → borrow 3 bits → /24+3 = /27. Mask: 255.255.255.224. Block: 32. Hosts: 2⁵−2 = 30.</div>
+    </div>
+    <div class="pq">
+      <div class="qtext">Q2: IP 172.20.5.200/29 — what are the network address and broadcast?</div>
+      <button class="pa-btn" onclick="toggle('b2')">Show Answer</button>
+      <div class="answer" id="b2">Mask: 255.255.255.248. Block=8. Last octet subnets: 0,8,16...192,200,208... → 200 is on boundary. Network: 172.20.5.200. Broadcast: 172.20.5.207. Hosts: .201–.206 (6 usable).</div>
+    </div>
+    <div class="pq">
+      <div class="qtext">Q3: IP 192.168.1.100/26 — is this the network address, a host address, or the broadcast address?</div>
+      <button class="pa-btn" onclick="toggle('b3')">Show Answer</button>
+      <div class="answer" id="b3">Block=64. Subnets: .0, .64, .128, .192. The .100 falls in .64 subnet (.64–.127). Network=.64, Broadcast=.127. .100 is between them → it's a HOST address.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 10 — VLSM
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch10">
+  <span class="ch-num">Chapter 10</span>
+  <h2 class="ch-title">VLSM — Variable Length Subnet Masking</h2>
+  <p class="ch-lead">Fixed subnetting gives every subnet the same size. But real networks have departments of wildly different sizes — 200 hosts here, 10 there, 2 on a WAN link. VLSM lets you size each subnet exactly right, eliminating waste.</p>
+
+  <h3>The Problem VLSM Solves</h3>
+  <p>Imagine you have 192.168.100.0/24 (254 usable hosts). You need to connect 4 departments:</p>
+  <ul style="margin:1rem 0 1rem 1.5rem;color:var(--ink2);line-height:2">
+    <li>HR: needs 100 hosts</li>
+    <li>Finance: needs 50 hosts</li>
+    <li>IT: needs 20 hosts</li>
+    <li>Management: needs 10 hosts</li>
+    <li>WAN link between two routers: needs exactly 2 hosts</li>
+  </ul>
+  <p>With equal subnetting, you'd divide /24 into 8 equal /27 subnets (30 hosts each). HR with 100 hosts wouldn't fit into a /27 at all. You'd need to give HR a /25 (126 hosts) — then HR uses 100, wasting 26. And so on.</p>
+  <p><strong>VLSM allocates exactly the right size for each subnet, in the same address space, simultaneously.</strong></p>
+
+  <h3>The Golden VLSM Rule: Largest First</h3>
+  <p>Always allocate from the <strong>largest requirement to the smallest</strong>. This ensures you don't paint yourself into a corner where a large subnet can't fit because you already allocated its space to small ones.</p>
+
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>Sort requirements largest to smallest</h5><p>100 → 50 → 20 → 10 → 2</p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>Allocate HR (100 hosts)</h5><p>Need 2ʰ−2 ≥ 100 → h=7 (128−2=126 ✓) → <strong>/25</strong>, block=128<br>Allocate: <strong>192.168.100.0/25</strong> → .0 to .127 (126 hosts)</p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>Allocate Finance (50 hosts)</h5><p>Need 2ʰ−2 ≥ 50 → h=6 (64−2=62 ✓) → <strong>/26</strong>, block=64<br>Next free start: .128. Allocate: <strong>192.168.100.128/26</strong> → .128 to .191 (62 hosts)</p></div></div>
+    <div class="step"><div class="snum">4</div><div class="scontent"><h5>Allocate IT (20 hosts)</h5><p>Need 2ʰ−2 ≥ 20 → h=5 (32−2=30 ✓) → <strong>/27</strong>, block=32<br>Next free: .192. Allocate: <strong>192.168.100.192/27</strong> → .192 to .223 (30 hosts)</p></div></div>
+    <div class="step"><div class="snum">5</div><div class="scontent"><h5>Allocate Management (10 hosts)</h5><p>Need 2ʰ−2 ≥ 10 → h=4 (16−2=14 ✓) → <strong>/28</strong>, block=16<br>Next free: .224. Allocate: <strong>192.168.100.224/28</strong> → .224 to .239 (14 hosts)</p></div></div>
+    <div class="step"><div class="snum">6</div><div class="scontent"><h5>Allocate WAN link (2 hosts)</h5><p>Need exactly 2 hosts → h=2 (4−2=2 ✓) → <strong>/30</strong>, block=4<br>Next free: .240. Allocate: <strong>192.168.100.240/30</strong> → .240 to .243 (2 hosts)</p></div></div>
+  </div>
+
+  <div class="dframe">
+    <div class="dframe-label">Fig 10.1 — VLSM allocation map: 192.168.100.0/24</div>
+    <svg viewBox="0 0 820 160" xmlns="http://www.w3.org/2000/svg" style="background:#fdfbf7">
+      <!-- Full bar -->
+      <rect x="30" y="16" width="760" height="18" rx="3" fill="#eeeade" stroke="#d4cfc6"/>
+      <text x="410" y="29" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">192.168.100.0/24 (256 addresses)</text>
+
+      <!-- HR /25 = 128 addrs = 760*(128/256) = 380px -->
+      <rect x="30"  y="46" width="380" height="55" rx="5" fill="#c93a10" opacity=".85"/>
+      <text x="220" y="70" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="white">HR /25</text>
+      <text x="220" y="88" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.0–.127 | 126 hosts</text>
+
+      <!-- Finance /26 = 64 addrs = 190px -->
+      <rect x="413" y="46" width="190" height="55" rx="5" fill="#1558a0" opacity=".85"/>
+      <text x="508" y="70" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="12" fill="white">Finance /26</text>
+      <text x="508" y="88" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.128–.191 | 62</text>
+
+      <!-- IT /27 = 32 addrs = 95px -->
+      <rect x="606" y="46" width="95" height="55" rx="5" fill="#1d6b3d" opacity=".85"/>
+      <text x="653" y="70" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="11" fill="white">IT /27</text>
+      <text x="653" y="88" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="rgba(255,255,255,.8)">.192–.223</text>
+
+      <!-- Management /28 = 16 addrs = 47.5px -->
+      <rect x="704" y="46" width="48" height="55" rx="5" fill="#6b35a0" opacity=".85"/>
+      <text x="728" y="68" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="white">Mgmt</text>
+      <text x="728" y="82" text-anchor="middle" font-family="'IBM Plex Mono',monospace" font-size="9" fill="rgba(255,255,255,.7)">/28</text>
+      <text x="728" y="96" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="9" fill="rgba(255,255,255,.7)">14 h</text>
+
+      <!-- WAN /30 = 4 addrs = 11.8px -->
+      <rect x="755" y="46" width="12" height="55" rx="3" fill="#b06a00" opacity=".85"/>
+
+      <!-- Remaining space -->
+      <rect x="770" y="46" width="20" height="55" rx="3" fill="#eeeade" stroke="#d4cfc6" stroke-dasharray="3,2"/>
+
+      <!-- Labels below -->
+      <text x="30"  y="130" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">.0</text>
+      <text x="406" y="130" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">.128</text>
+      <text x="600" y="130" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">.192</text>
+      <text x="700" y="130" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#9e9b95">.224</text>
+      <text x="750" y="130" font-family="'IBM Plex Mono',monospace" font-size="9" fill="#b06a00">.240 WAN/30</text>
+      <text x="410" y="150" text-anchor="middle" font-family="'DM Sans',sans-serif" font-size="10" fill="#9e9b95">Only .244–.255 remain unallocated — 12 addresses of slack vs hundreds wasted with equal subnetting</text>
+    </svg>
+  </div>
+
+  <div class="box box-note">
+    <p class="box-head">📌 VLSM on CCNA Exams</p>
+    <p>VLSM questions on CCNA typically ask you to: (1) design a VLSM scheme for a given set of requirements, (2) verify that a given scheme is valid (no overlapping subnets, starts on correct boundaries), or (3) find the network/broadcast/host addresses for a specific subnet in a VLSM design. The largest-first rule and boundary alignment are critical.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 11 — ROUTE SUMMARIZATION
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch11">
+  <span class="ch-num">Chapter 11</span>
+  <h2 class="ch-title">Route Summarization — Collapsing Routes</h2>
+  <p class="ch-lead">The opposite of subnetting. Instead of dividing one network into many, we collapse many networks into one summary route. This shrinks routing tables and makes networks more efficient.</p>
+
+  <h3>Why Summarize Routes?</h3>
+  <p>Every route in a routing table consumes memory and processing time. A router on the internet might have hundreds of thousands of routes. Route summarization (also called <em>supernetting</em> or <em>route aggregation</em>) lets one advertisement replace dozens, reducing overhead.</p>
+
+  <h3>How to Find the Summary Route</h3>
+  <div class="steps">
+    <div class="step"><div class="snum">1</div><div class="scontent"><h5>Write all network addresses in binary</h5><p>Line them up vertically. Look at the bits from left to right.</p></div></div>
+    <div class="step"><div class="snum">2</div><div class="scontent"><h5>Find where bits start to differ</h5><p>Count the matching bits from the left up to (but not including) the first position where they differ.</p></div></div>
+    <div class="step"><div class="snum">3</div><div class="scontent"><h5>That count is your summary prefix</h5><p>The summary network = common bits + all zeros, with that prefix length.</p></div></div>
+  </div>
+
+  <div class="binblock">
+<span class="lbl">Example: Summarize 192.168.4.0/24, 192.168.5.0/24, 192.168.6.0/24, 192.168.7.0/24</span>
+192.168.<span class="nn">000001</span><span class="hh">00</span>.0  = 192.168.4.0
+192.168.<span class="nn">000001</span><span class="hh">01</span>.0  = 192.168.5.0
+192.168.<span class="nn">000001</span><span class="hh">10</span>.0  = 192.168.6.0
+192.168.<span class="nn">000001</span><span class="hh">11</span>.0  = 192.168.7.0
+         ──────── ──
+         6 match  2 differ
+
+Common bits: 192.168 (16) + first 6 bits of 3rd octet (000001)
+Total matching bits = 16 + 6 = <span class="nn">22</span>
+
+Summary prefix = /22
+Summary address: 192.168.4.0/22
+(covers .4.0 through .7.255 — all 4 networks in one advertisement)
+
+Verification: 4 networks × /24 = 4 × 256 = 1024 addresses
+              /22 = 2^(32-22) = 2^10 = 1024 addresses ✓
+  </div>
+
+  <div class="box box-warn">
+    <p class="box-head">⚠️ Summarization Pitfall</p>
+    <p>Summarization only works cleanly when the networks are <strong>contiguous</strong> and start on a <strong>power-of-2 boundary</strong>. You cannot summarize 192.168.5.0/24 and 192.168.7.0/24 alone — the summary /22 would start at 192.168.4.0, inadvertently advertising .4.x and .6.x addresses that don't belong to you. Always check that your summary covers exactly your networks and nothing extra.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 12 — SPECIAL IP ADDRESSES
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch12">
+  <span class="ch-num">Chapter 12</span>
+  <h2 class="ch-title">Private, Reserved, and Special IP Addresses</h2>
+  <p class="ch-lead">Not all IP addresses are equal. Some ranges are reserved for private networks, some for testing, some for multicast. The CCNA exam tests all of these, and mixing them up causes real-world network failures.</p>
+
+  <h3>RFC 1918 — Private Address Ranges</h3>
+  <p>RFC 1918 reserves three blocks of IPv4 addresses for private (non-internet-routable) use. These are the addresses your home router and office network use internally. They are <strong>never routed on the public internet</strong> — your ISP will drop any packet with these as a destination.</p>
+
+  <table class="tbl">
+    <thead><tr><th>Address Range</th><th>CIDR Block</th><th>Class</th><th># of Addresses</th><th>Typical Use</th></tr></thead>
+    <tbody>
+      <tr><td>10.0.0.0 – 10.255.255.255</td><td class="hi">10.0.0.0/8</td><td>A</td><td>16,777,216</td><td>Large enterprises, ISP networks</td></tr>
+      <tr><td>172.16.0.0 – 172.31.255.255</td><td class="hi">172.16.0.0/12</td><td>B</td><td>1,048,576</td><td>Medium organizations</td></tr>
+      <tr><td>192.168.0.0 – 192.168.255.255</td><td class="hi">192.168.0.0/16</td><td>C</td><td>65,536</td><td>Home networks, small offices (most common)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="box box-note">
+    <p class="box-head">📌 NAT — How Private IPs Reach the Internet</p>
+    <p>Since private IPs can't be routed on the internet, your home router uses <strong>Network Address Translation (NAT)</strong>. It replaces your private IP (e.g. 192.168.1.100) with its own public IP before packets leave for the internet. When replies come back, it translates them back to your private IP. One public IP can serve hundreds of private devices through NAT.</p>
+  </div>
+
+  <h3>Other Special Ranges to Know</h3>
+
+  <table class="tbl">
+    <thead><tr><th>Address / Range</th><th>Name</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="hi">127.0.0.0/8</td><td>Loopback</td><td>Traffic sent here stays on the local device. Used to test the TCP/IP stack without sending any data over a network. Ping 127.0.0.1 — if it responds, your TCP/IP is working.</td></tr>
+      <tr><td class="hi">127.0.0.1</td><td>Localhost</td><td>The standard loopback address. "myself."</td></tr>
+      <tr><td class="hi">169.254.0.0/16</td><td>APIPA / Link-Local</td><td>Automatically assigned when DHCP fails. A device with a 169.254.x.x address couldn't get a proper address from a DHCP server. It can only talk to other 169.254.x.x devices on the same link.</td></tr>
+      <tr><td class="hi">0.0.0.0/0</td><td>Default Route</td><td>Matches all addresses — the "gateway of last resort." Routers use this to say "if you don't know where else to send it, send it here (usually to the ISP)."</td></tr>
+      <tr><td class="hi">255.255.255.255</td><td>Limited Broadcast</td><td>Broadcast to all devices on the local subnet. Routers do not forward this — it stays on the local segment only.</td></tr>
+      <tr><td class="hi">224.0.0.0/4</td><td>Multicast (Class D)</td><td>One-to-many communication. Used by routing protocols (OSPF uses 224.0.0.5, RIP uses 224.0.0.9), video streaming, IPTV. Not assignable to hosts.</td></tr>
+      <tr><td class="hi">240.0.0.0/4</td><td>Reserved (Class E)</td><td>Experimental — reserved for future use. Not used in real deployments.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 13 — LIVE CALCULATOR
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch13">
+  <span class="ch-num">Chapter 13</span>
+  <h2 class="ch-title">Live Subnet Calculator</h2>
+  <p class="ch-lead">Type any valid IP address and drag the prefix slider. Every value recalculates in real time — use this to check your manual calculations or explore how changing the prefix length affects subnets and hosts.</p>
+
+  <div class="calc">
+    <div class="calc-row">
+      <div>
+        <label>IP Address</label>
+        <input class="cinput" type="text" id="ipIn" value="192.168.10.77" oninput="doCalc()">
+      </div>
+      <div class="cslider-wrap">
+        <label>Prefix Length</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+          <input class="cslider" type="range" id="prefIn" min="1" max="30" value="26" oninput="doCalc()">
+          <span class="cdisplay" id="cidrOut">/26</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="cresults" id="cres"></div>
+    <div class="bitvis" id="bvis"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CHAPTER 14 — CCNA CHEAT SHEET
+═══════════════════════════════════════════════════════════════ -->
+<div class="sec" id="ch14">
+  <span class="ch-num">Chapter 14</span>
+  <h2 class="ch-title">Complete CCNA Cheat Sheet</h2>
+  <p class="ch-lead">Everything you need, condensed into quick-reference tables. Print this page. Study it daily until every number is automatic.</p>
+
+  <h3>The Magic Eight (Memorize These)</h3>
+  <div class="oct-table">
+    <div class="oct-bit"><div class="ob-pos">Bit 7</div><div class="ob-val">128</div><div class="ob-pw">2⁷</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 6</div><div class="ob-val">64</div><div class="ob-pw">2⁶</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 5</div><div class="ob-val">32</div><div class="ob-pw">2⁵</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 4</div><div class="ob-val">16</div><div class="ob-pw">2⁴</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 3</div><div class="ob-val">8</div><div class="ob-pw">2³</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 2</div><div class="ob-val">4</div><div class="ob-pw">2²</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 1</div><div class="ob-val">2</div><div class="ob-pw">2¹</div></div>
+    <div class="oct-bit"><div class="ob-pos">Bit 0</div><div class="ob-val">1</div><div class="ob-pw">2⁰</div></div>
+  </div>
+
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <div class="cheat-head">Prefix → Mask → Block Size</div>
+      <div class="cheat-body">
+        <div class="crow"><span class="k">/8</span><span class="v">255.0.0.0</span></div>
+        <div class="crow"><span class="k">/16</span><span class="v">255.255.0.0</span></div>
+        <div class="crow"><span class="k">/24</span><span class="v">255.255.255.0 — block 256</span></div>
+        <div class="crow"><span class="k">/25</span><span class="v">255.255.255.128 — block 128</span></div>
+        <div class="crow"><span class="k">/26</span><span class="v">255.255.255.192 — block 64</span></div>
+        <div class="crow"><span class="k">/27</span><span class="v">255.255.255.224 — block 32</span></div>
+        <div class="crow"><span class="k">/28</span><span class="v">255.255.255.240 — block 16</span></div>
+        <div class="crow"><span class="k">/29</span><span class="v">255.255.255.248 — block 8</span></div>
+        <div class="crow"><span class="k">/30</span><span class="v">255.255.255.252 — block 4</span></div>
+      </div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-head">Prefix → Hosts Per Subnet</div>
+      <div class="cheat-body">
+        <div class="crow"><span class="k">/8</span><span class="v">16,777,214</span></div>
+        <div class="crow"><span class="k">/16</span><span class="v">65,534</span></div>
+        <div class="crow"><span class="k">/24 — 8 host bits</span><span class="v">254</span></div>
+        <div class="crow"><span class="k">/25 — 7 host bits</span><span class="v">126</span></div>
+        <div class="crow"><span class="k">/26 — 6 host bits</span><span class="v">62</span></div>
+        <div class="crow"><span class="k">/27 — 5 host bits</span><span class="v">30</span></div>
+        <div class="crow"><span class="k">/28 — 4 host bits</span><span class="v">14</span></div>
+        <div class="crow"><span class="k">/29 — 3 host bits</span><span class="v">6</span></div>
+        <div class="crow"><span class="k">/30 — 2 host bits</span><span class="v">2</span></div>
+      </div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-head">Key Formulas</div>
+      <div class="cheat-body">
+        <div class="crow"><span class="k">Subnets created</span><span class="v">2ˢ</span></div>
+        <div class="crow"><span class="k">Hosts per subnet</span><span class="v">2ʰ − 2</span></div>
+        <div class="crow"><span class="k">Block size</span><span class="v">256 − mask octet</span></div>
+        <div class="crow"><span class="k">Broadcast addr</span><span class="v">net + block − 1</span></div>
+        <div class="crow"><span class="k">First host</span><span class="v">network + 1</span></div>
+        <div class="crow"><span class="k">Last host</span><span class="v">broadcast − 1</span></div>
+        <div class="crow"><span class="k">Total addresses</span><span class="v">2ʰ (includes net+bcast)</span></div>
+        <div class="crow"><span class="k">New prefix</span><span class="v">old prefix + s bits</span></div>
+      </div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-head">IP Address Classes</div>
+      <div class="cheat-body">
+        <div class="crow"><span class="k">Class A</span><span class="v">1.0.0.0–126.x — /8</span></div>
+        <div class="crow"><span class="k">Class B</span><span class="v">128.0–191.x — /16</span></div>
+        <div class="crow"><span class="k">Class C</span><span class="v">192.0–223.x — /24</span></div>
+        <div class="crow"><span class="k">Class D</span><span class="v">224–239.x — multicast</span></div>
+        <div class="crow"><span class="k">Class E</span><span class="v">240–255.x — experimental</span></div>
+        <div class="crow"><span class="k">Loopback</span><span class="v">127.0.0.0/8</span></div>
+        <div class="crow"><span class="k">APIPA</span><span class="v">169.254.0.0/16</span></div>
+      </div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-head">Private Ranges (RFC 1918)</div>
+      <div class="cheat-body">
+        <div class="crow"><span class="k">10.0.0.0/8</span><span class="v">Class A private</span></div>
+        <div class="crow"><span class="k">172.16.0.0/12</span><span class="v">Class B private</span></div>
+        <div class="crow"><span class="k">192.168.0.0/16</span><span class="v">Class C private</span></div>
+        <div class="crow" style="margin-top:8px"><span class="k">NOT on internet</span><span class="v">NAT required</span></div>
+      </div>
+    </div>
+
+    <div class="cheat-card">
+      <div class="cheat-head">Exam Quick Rules</div>
+      <div class="cheat-body">
+        <div class="crow"><span class="k">1 borrowed bit</span><span class="v">2 subnets</span></div>
+        <div class="crow"><span class="k">2 borrowed bits</span><span class="v">4 subnets</span></div>
+        <div class="crow"><span class="k">3 borrowed bits</span><span class="v">8 subnets</span></div>
+        <div class="crow"><span class="k">4 borrowed bits</span><span class="v">16 subnets</span></div>
+        <div class="crow"><span class="k">/30 WAN links</span><span class="v">2 hosts — router-to-router</span></div>
+        <div class="crow"><span class="k">First addr</span><span class="v">= Network (never a host)</span></div>
+        <div class="crow"><span class="k">Last addr</span><span class="v">= Broadcast (never a host)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <h3>The VLSM Host-to-Prefix Quick Reference</h3>
+  <table class="tbl">
+    <thead><tr><th>Hosts Needed</th><th>Min Host Bits (h)</th><th>Prefix</th><th>Usable Hosts</th><th>Block Size</th></tr></thead>
+    <tbody>
+      <tr><td>1–2</td><td>2</td><td class="hi">/30</td><td>2</td><td>4</td></tr>
+      <tr><td>3–6</td><td>3</td><td class="hi">/29</td><td>6</td><td>8</td></tr>
+      <tr><td>7–14</td><td>4</td><td class="hi">/28</td><td>14</td><td>16</td></tr>
+      <tr><td>15–30</td><td>5</td><td class="hi">/27</td><td>30</td><td>32</td></tr>
+      <tr><td>31–62</td><td>6</td><td class="hi">/26</td><td>62</td><td>64</td></tr>
+      <tr><td>63–126</td><td>7</td><td class="hi">/25</td><td>126</td><td>128</td></tr>
+      <tr><td>127–254</td><td>8</td><td class="hi">/24</td><td>254</td><td>256</td></tr>
+      <tr><td>255–510</td><td>9</td><td class="hi">/23</td><td>510</td><td>512</td></tr>
+      <tr><td>511–1022</td><td>10</td><td class="hi">/22</td><td>1022</td><td>1024</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<div class="footer">
+  Subnetting Complete Beginner's Bible &nbsp;·&nbsp; CCNA Level &nbsp;·&nbsp; Every concept, every diagram, every formula
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════════════ -->
+<script>
+// Reading progress bar
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  document.getElementById('prog').style.width =
+    (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+});
+
+// Practice answer toggle
+function toggle(id) {
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === 'block' ? 'none' : 'block';
+}
+
+// ─── SUBNET CALCULATOR ───
+function ip2n(ip) {
+  return ip.trim().split('.').reduce((a, b) => (a << 8) + parseInt(b), 0) >>> 0;
+}
+function n2ip(n) {
+  return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.');
+}
+function n2bin(n) {
+  return ('00000000000000000000000000000000' + (n>>>0).toString(2)).slice(-32);
+}
+function validIp(s) {
+  const p = s.trim().split('.');
+  return p.length===4 && p.every(x=>!isNaN(x)&&+x>=0&&+x<=255);
+}
+function ccard(lbl, val, cls='') {
+  return `<div class="ccard"><div class="clbl">${lbl}</div><div class="cval ${cls}">${val}</div></div>`;
+}
+
+function doCalc() {
+  const ipStr = document.getElementById('ipIn').value;
+  const pfx = +document.getElementById('prefIn').value;
+  document.getElementById('cidrOut').textContent = '/' + pfx;
+
+  if (!validIp(ipStr)) {
+    document.getElementById('cres').innerHTML = '<div style="color:rgba(240,236,226,.35);font-family:var(--mono);font-size:13px">Enter a valid IPv4 address like 192.168.1.1</div>';
+    document.getElementById('bvis').innerHTML = '';
+    return;
+  }
+
+  const ipNum = ip2n(ipStr);
+  const hBits = 32 - pfx;
+  const mask  = (0xFFFFFFFF << hBits) >>> 0;
+  const net   = (ipNum & mask) >>> 0;
+  const bcast = (net | (~mask >>> 0)) >>> 0;
+  const fHost = net + 1;
+  const lHost = bcast - 1;
+  const total = Math.pow(2, hBits);
+  const usable = Math.max(0, total - 2);
+  const block  = total;
+
+  document.getElementById('cres').innerHTML =
+    ccard('Network Address',   n2ip(net),   'acc') +
+    ccard('Subnet Mask',       n2ip(mask),  'ylw') +
+    ccard('Broadcast Address', n2ip(bcast), 'ylw') +
+    ccard('First Host',        n2ip(fHost), 'grn') +
+    ccard('Last Host',         n2ip(lHost), 'grn') +
+    ccard('Usable Hosts',      usable.toLocaleString(), 'grn') +
+    ccard('Total Addresses',   total.toLocaleString()) +
+    ccard('Block Size',        block.toLocaleString());
+
+  // Bit visualization
+  const ib = n2bin(ipNum), nb = n2bin(net), mb = n2bin(mask);
+  function fmt(b) {
+    let o = '';
+    for (let i=0;i<32;i++) {
+      if (i>0&&i%8===0) o+='<span style="color:rgba(240,236,226,.2)">.</span>';
+      o+=`<span class="${i<pfx?'bv-net':'bv-host'}">${b[i]}</span>`;
+    }
+    return o;
+  }
+
+  document.getElementById('bvis').innerHTML =
+    `<span style="color:rgba(240,236,226,.3);font-size:10px;letter-spacing:.1em">IP ADDR &nbsp;</span>${fmt(ib)}<br>` +
+    `<span style="color:rgba(240,236,226,.3);font-size:10px;letter-spacing:.1em">MASK &nbsp;&nbsp;&nbsp;</span>${fmt(mb)}<br>` +
+    `<span style="color:rgba(240,236,226,.3);font-size:10px;letter-spacing:.1em">NETWORK&nbsp;</span>${fmt(nb)}<br>` +
+    `<span style="font-size:10px;color:rgba(240,236,226,.25)">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;` +
+    `<span style="color:#ffb347">■ network (${pfx} bits)</span> &nbsp; <span style="color:#7dd87a">■ host (${hBits} bits)</span></span>`;
+}
+
+// Add CSS for bit vis colors
+const style = document.createElement('style');
+style.textContent = '.bv-net{color:#ffb347}.bv-host{color:#7dd87a}';
+document.head.appendChild(style);
+
+doCalc();
+</script>
+</body>
+</html>

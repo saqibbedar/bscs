@@ -1,0 +1,1671 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apache Spark — Distributed Computing Deep Dive</title>
+<style>
+:root {
+  --bg:#09090f; --bg2:#0f1118; --bg3:#14161f; --bg4:#1a1d2a; --bg5:#1f2235;
+  --border:#23283a; --border2:#2e3450; --border3:#3a4060;
+  --txt:#e2e8f4; --txt2:#8892aa; --txt3:#50586e;
+  --orange:#f97316; --orange-d:#3d1f08; --orange-l:#fdba74;
+  --blue:#3b82f6; --blue-d:#0d1f45; --blue-l:#93c5fd;
+  --teal:#14b8a6; --teal-d:#052e2a; --teal-l:#5eead4;
+  --purple:#a78bfa; --purple-d:#1e1245; --purple-l:#c4b5fd;
+  --green:#22c55e; --green-d:#052e12; --green-l:#86efac;
+  --red:#ef4444; --red-d:#2e0d0d; --red-l:#fca5a5;
+  --amber:#f59e0b; --amber-d:#2e1c02; --amber-l:#fcd34d;
+  --pink:#ec4899; --pink-d:#2d0d1f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Georgia',serif;background:var(--bg);color:var(--txt);line-height:1.75;font-size:16px}
+.wrapper{max-width:940px;margin:0 auto;padding:40px 24px 100px}
+
+/* HEADER */
+.hdr{border-bottom:1px solid var(--border);padding-bottom:36px;margin-bottom:56px}
+.hdr-label{font-family:monospace;font-size:11px;letter-spacing:3px;color:var(--orange);text-transform:uppercase;margin-bottom:10px}
+.hdr-title{font-size:34px;font-weight:700;font-family:sans-serif;color:#f1f5fb;line-height:1.2;margin-bottom:8px}
+.hdr-sub{font-size:15px;color:var(--txt2);font-style:italic}
+
+/* TOC */
+.toc{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px 28px;margin-top:28px}
+.toc-lbl{font-family:sans-serif;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--txt3);margin-bottom:14px}
+.toc a{display:flex;justify-content:space-between;color:var(--txt2);text-decoration:none;padding:5px 0;font-family:sans-serif;font-size:13px;border-bottom:1px solid var(--border);transition:color .15s}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{color:var(--orange-l)}
+.toc .pg{color:var(--txt3);font-size:11px;font-family:monospace}
+
+/* SECTION */
+.sec{margin-bottom:60px;scroll-margin-top:24px}
+.sec-num{font-family:monospace;font-size:10px;letter-spacing:2px;color:var(--orange);text-transform:uppercase;margin-bottom:6px}
+h2{font-family:sans-serif;font-size:22px;font-weight:600;color:#f1f5fb;margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+h3{font-family:sans-serif;font-size:16px;font-weight:600;color:#cbd5e1;margin:28px 0 12px}
+h4{font-family:sans-serif;font-size:13px;font-weight:700;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;margin:20px 0 8px}
+p{margin-bottom:14px;color:var(--txt)}
+p:last-child{margin-bottom:0}
+
+/* DEFINITION */
+.def{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:8px;padding:16px 20px;margin:14px 0}
+.def-term{font-family:sans-serif;font-size:11px;font-weight:700;color:var(--blue-l);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+.def-text{color:var(--txt);font-style:italic}
+
+/* CALLOUT */
+.callout{border-radius:8px;padding:14px 18px;margin:18px 0;border:1px solid;font-family:sans-serif;font-size:14px;line-height:1.6}
+.callout .lbl{font-size:9px;letter-spacing:2px;text-transform:uppercase;margin-bottom:6px;font-weight:700;opacity:.8}
+.c-orange{background:var(--orange-d);border-color:var(--orange);color:var(--orange-l)}
+.c-blue{background:var(--blue-d);border-color:var(--blue);color:var(--blue-l)}
+.c-teal{background:var(--teal-d);border-color:var(--teal);color:var(--teal-l)}
+.c-purple{background:var(--purple-d);border-color:var(--purple);color:var(--purple-l)}
+.c-green{background:var(--green-d);border-color:var(--green);color:var(--green-l)}
+.c-amber{background:var(--amber-d);border-color:var(--amber);color:var(--amber-l)}
+.c-red{background:var(--red-d);border-color:var(--red);color:var(--red-l)}
+
+/* FIGURE */
+.fig{margin:28px 0;background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.fig-body{padding:24px}
+.fig-cap{background:var(--bg3);border-top:1px solid var(--border);padding:9px 20px;font-family:sans-serif;font-size:12px;color:var(--txt2)}
+.fig-cap strong{color:var(--orange-l)}
+
+/* GRID */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin:14px 0}
+@media(max-width:600px){.g2,.g3{grid-template-columns:1fr}}
+
+/* CARD */
+.card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px;font-family:sans-serif;font-size:13px;color:var(--txt2);line-height:1.6}
+.card .ct{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+.card-o{border-left:3px solid var(--orange)}.card-o .ct{color:var(--orange-l)}
+.card-b{border-left:3px solid var(--blue)}.card-b .ct{color:var(--blue-l)}
+.card-t{border-left:3px solid var(--teal)}.card-t .ct{color:var(--teal-l)}
+.card-p{border-left:3px solid var(--purple)}.card-p .ct{color:var(--purple-l)}
+.card-g{border-left:3px solid var(--green)}.card-g .ct{color:var(--green-l)}
+.card-a{border-left:3px solid var(--amber)}.card-a .ct{color:var(--amber-l)}
+.card-r{border-left:3px solid var(--red)}.card-r .ct{color:var(--red-l)}
+
+/* CODE */
+.code{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-family:monospace;font-size:13px;color:#e2e8f4;margin:12px 0;overflow-x:auto;line-height:1.65}
+.kw{color:#60a5fa}.str{color:#86efac}.cmt{color:#475569;font-style:italic}.num{color:#fcd34d}.op{color:#f59e0b}
+
+/* MATH BOX */
+.math{background:var(--bg4);border:1px solid var(--border2);border-radius:8px;padding:14px 20px;font-family:monospace;font-size:14px;color:var(--amber-l);margin:12px 0;text-align:center;line-height:2}
+
+/* STEPS */
+.steps{list-style:none;margin:12px 0}
+.steps li{display:flex;gap:14px;margin-bottom:12px;font-family:sans-serif;font-size:14px;align-items:flex-start}
+.sn{min-width:24px;height:24px;background:var(--orange-d);color:var(--orange-l);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-family:sans-serif;font-size:13px;margin:14px 0}
+.tbl th{background:var(--bg3);color:var(--txt2);font-weight:600;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.tbl td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--txt);vertical-align:top}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:nth-child(even) td{background:var(--bg2)}
+.good{color:var(--green-l);font-weight:600}.bad{color:var(--red-l);font-weight:600}.mid{color:var(--amber-l)}
+
+ul.bull{padding-left:20px;margin:10px 0}
+ul.bull li{margin-bottom:6px;color:var(--txt);font-family:sans-serif;font-size:14px}
+ul.bull li::marker{color:var(--orange)}
+
+hr{border:none;border-top:1px solid var(--border);margin:44px 0}
+
+/* MEMORY STACK */
+.mem-stack{display:flex;flex-direction:column;gap:3px;font-family:monospace;font-size:12px}
+.mem-row{display:flex;align-items:center;gap:10px}
+.mem-bar{height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:1px solid}
+.mem-label{width:140px;text-align:right;color:var(--txt2);font-size:12px;flex-shrink:0}
+.mem-pct{width:48px;color:var(--txt3);font-size:11px}
+
+/* ANNOTATION */
+.annot{font-family:monospace;font-size:10px;color:var(--txt3);background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:1px 6px;margin-left:4px}
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-label">Lab Notes · ADS Course · 21 May 2026</div>
+  <h1 class="hdr-title">Apache Spark — Distributed Computing<br>Architecture & Internals</h1>
+  <p class="hdr-sub">From vertical scaling to adaptive query execution — every concept taught in lab, with zero ambiguity.</p>
+  <nav class="toc">
+    <div class="toc-lbl">Contents</div>
+    <a href="#s1"><span>1 &nbsp; Vertical vs Horizontal Scaling</span><span class="pg">the why</span></a>
+    <a href="#s2"><span>2 &nbsp; Hadoop MapReduce → Apache Spark</span><span class="pg">history</span></a>
+    <a href="#s3"><span>3 &nbsp; Spark Architecture (Driver · Cluster Manager · Workers)</span><span class="pg">core</span></a>
+    <a href="#s4"><span>4 &nbsp; Why Databricks Came</span><span class="pg">motivation</span></a>
+    <a href="#s5"><span>5 &nbsp; Deep Dive: Driver Node & Py4J Bridge</span><span class="pg">internals</span></a>
+    <a href="#s6"><span>6 &nbsp; Lazy Evaluation & RDD</span><span class="pg">execution model</span></a>
+    <a href="#s7"><span>7 &nbsp; Narrow vs Wide Transformations</span><span class="pg">shuffle boundary</span></a>
+    <a href="#s8"><span>8 &nbsp; Joins in Spark (all 3 strategies)</span><span class="pg">★ exam core</span></a>
+    <a href="#s9"><span>9 &nbsp; Query Plan Pipeline</span><span class="pg">catalyst optimizer</span></a>
+    <a href="#s10"><span>10 &nbsp; Driver Memory Management</span><span class="pg">numbers & math</span></a>
+    <a href="#s11"><span>11 &nbsp; Worker / Executor Memory (JVM Heap)</span><span class="pg">numbers & math</span></a>
+    <a href="#s12"><span>12 &nbsp; Worker Memory Out-of-Order: Spill & Salting</span><span class="pg">failure modes</span></a>
+    <a href="#s13"><span>13 &nbsp; Partition Pruning</span><span class="pg">optimization 1</span></a>
+    <a href="#s14"><span>14 &nbsp; Adaptive Query Execution (AQE)</span><span class="pg">optimization 2</span></a>
+  </nav>
+</header>
+
+
+<!-- ═══════════════════════════════════════════
+  1. VERTICAL vs HORIZONTAL SCALING
+═══════════════════════════════════════════ -->
+<section class="sec" id="s1">
+  <div class="sec-num">Section 01</div>
+  <h2>Vertical vs Horizontal Scaling</h2>
+
+  <p>Before Spark even enters the picture, you need to understand <em>why</em> distributed computing exists. It comes down to one question: when your data grows beyond what one machine can handle, what do you do?</p>
+
+  <div class="g2">
+    <div class="card card-r">
+      <div class="ct">① Vertical Scaling (Monolithic Approach)</div>
+      Buy a bigger, more powerful single machine. More RAM, faster CPU, larger disk — all in one box. The application itself doesn't change; you just throw better hardware at it.
+      <br><br>
+      <strong style="color:var(--red-l)">Problem:</strong> There is a physical ceiling. The world's most powerful single server still cannot process petabytes of live data. And if that one machine dies, <em>everything</em> dies — zero fault tolerance. Also called the <strong>monolithic approach</strong> because the entire system is one unit.
+    </div>
+    <div class="card card-g">
+      <div class="ct">② Horizontal Scaling</div>
+      Add more machines to the cluster. Data and computation are distributed across all nodes. When one node dies, only its slice of work is affected — other nodes continue. The cluster reroutes or retries.
+      <br><br>
+      <strong style="color:var(--green-l)">Advantage:</strong> Near-unlimited scalability. Commodity hardware. True fault tolerance — dying of one node wouldn't lose data (your instructor's exact words).
+    </div>
+  </div>
+
+  <!-- SVG: scaling diagram -->
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- VERTICAL side -->
+        <text x="170" y="16" text-anchor="middle" font-size="12" fill="#fca5a5" font-family="sans-serif" font-weight="600">Vertical Scaling</text>
+        <rect x="120" y="25" width="100" height="60" rx="6" fill="#2e0d0d" stroke="#ef4444" stroke-width="1"/>
+        <text x="170" y="55" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif">Server</text>
+        <text x="170" y="70" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">4 GB RAM</text>
+
+        <line x1="170" y1="90" x2="170" y2="108" stroke="#475569" stroke-width="1" marker-end="url(#a)"/>
+        <text x="188" y="103" font-size="9" fill="#64748b" font-family="sans-serif">upgrade</text>
+
+        <rect x="105" y="112" width="130" height="75" rx="6" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="170" y="140" text-anchor="middle" font-size="11" fill="#fca5a5" font-family="sans-serif" font-weight="600">BIGGER Server</text>
+        <text x="170" y="155" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">256 GB RAM</text>
+        <text x="170" y="168" text-anchor="middle" font-size="9" fill="#7f1d1d" font-family="sans-serif">Single point of failure</text>
+        <text x="170" y="181" text-anchor="middle" font-size="9" fill="#7f1d1d" font-family="sans-serif">physical ceiling exists</text>
+
+        <!-- divider -->
+        <line x1="340" y1="10" x2="340" y2="195" stroke="#23283a" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <!-- HORIZONTAL side -->
+        <text x="580" y="16" text-anchor="middle" font-size="12" fill="#86efac" font-family="sans-serif" font-weight="600">Horizontal Scaling</text>
+        <!-- 4 small servers -->
+        <rect x="365" y="30" width="70" height="44" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="400" y="48" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Node 1</text>
+        <text x="400" y="62" text-anchor="middle" font-size="8" fill="#4ade80" font-family="sans-serif">slice of data</text>
+
+        <rect x="455" y="30" width="70" height="44" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="490" y="48" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Node 2</text>
+        <text x="490" y="62" text-anchor="middle" font-size="8" fill="#4ade80" font-family="sans-serif">slice of data</text>
+
+        <rect x="545" y="30" width="70" height="44" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="580" y="48" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Node 3</text>
+        <text x="580" y="62" text-anchor="middle" font-size="8" fill="#4ade80" font-family="sans-serif">slice of data</text>
+
+        <rect x="635" y="30" width="70" height="44" rx="5" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="670" y="48" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif">Node 4</text>
+        <text x="670" y="60" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">💀 DEAD</text>
+        <text x="670" y="72" text-anchor="middle" font-size="8" fill="#7f1d1d" font-family="sans-serif">cluster continues</text>
+
+        <!-- Add more arrow -->
+        <line x1="715" y1="52" x2="748" y2="52" stroke="#475569" stroke-width="1" marker-end="url(#a)"/>
+        <rect x="750" y="30" width="55" height="44" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="777" y="52" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">+ Node 5</text>
+
+        <!-- network mesh -->
+        <line x1="400" y1="74" x2="490" y2="100" stroke="#22c55e" stroke-width="0.5" opacity=".3"/>
+        <line x1="490" y1="74" x2="580" y2="100" stroke="#22c55e" stroke-width="0.5" opacity=".3"/>
+        <line x1="400" y1="74" x2="580" y2="100" stroke="#22c55e" stroke-width="0.5" opacity=".2"/>
+
+        <rect x="365" y="104" width="330" height="30" rx="5" fill="#0a1f12" stroke="#1a4731" stroke-width="0.8"/>
+        <text x="530" y="123" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Network connects all nodes — data distributed across cluster</text>
+
+        <text x="530" y="152" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">Node 4 dies → cluster retries its tasks on surviving nodes → no data lost</text>
+        <text x="530" y="168" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">Want more power? Add Node 5, 6, 7 ... no ceiling</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 1</strong> — Vertical scaling hits a physical ceiling and is a single point of failure. Horizontal scaling distributes work across commodity machines; one failure doesn't kill the cluster.</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  2. HADOOP → SPARK
+═══════════════════════════════════════════ -->
+<section class="sec" id="s2">
+  <div class="sec-num">Section 02</div>
+  <h2>Hadoop MapReduce → Apache Spark</h2>
+
+  <h3>The Problem with Hadoop MapReduce</h3>
+  <p>Hadoop MapReduce was the first major horizontal scaling solution for big data. It worked, but it had a fundamental architectural flaw: <strong>after every Map and Reduce step, it wrote intermediate results to disk (HDFS)</strong>. Disk I/O is orders of magnitude slower than memory access.</p>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 130" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Hadoop pipeline -->
+        <text x="410" y="14" text-anchor="middle" font-size="11" fill="#fca5a5" font-family="sans-serif" font-weight="600">Hadoop MapReduce — Every step writes to DISK (slow)</text>
+
+        <rect x="10" y="22" width="80" height="38" rx="5" fill="#14161f" stroke="#3a4060" stroke-width="1"/>
+        <text x="50" y="38" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Input</text>
+        <text x="50" y="52" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">HDFS</text>
+
+        <line x1="90" y1="41" x2="108" y2="41" stroke="#475569" stroke-width="1" marker-end="url(#a2)"/>
+
+        <rect x="110" y="22" width="80" height="38" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="150" y="42" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">MAP</text>
+
+        <line x1="190" y1="41" x2="208" y2="41" stroke="#ef4444" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="199" y="33" font-size="8" fill="#ef4444" font-family="sans-serif">💾 disk</text>
+
+        <rect x="210" y="22" width="80" height="38" rx="5" fill="#14161f" stroke="#3a4060" stroke-width="1"/>
+        <text x="250" y="38" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Intermediate</text>
+        <text x="250" y="52" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">HDFS write</text>
+
+        <line x1="290" y1="41" x2="308" y2="41" stroke="#ef4444" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="299" y="33" font-size="8" fill="#ef4444" font-family="sans-serif">💾 disk</text>
+
+        <rect x="310" y="22" width="80" height="38" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="350" y="42" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">REDUCE</text>
+
+        <line x1="390" y1="41" x2="408" y2="41" stroke="#ef4444" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="399" y="33" font-size="8" fill="#ef4444" font-family="sans-serif">💾 disk</text>
+
+        <rect x="410" y="22" width="80" height="38" rx="5" fill="#14161f" stroke="#3a4060" stroke-width="1"/>
+        <text x="450" y="38" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Intermediate</text>
+        <text x="450" y="52" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">HDFS write</text>
+
+        <line x1="490" y1="41" x2="508" y2="41" stroke="#ef4444" stroke-width="2" marker-end="url(#a2)"/>
+
+        <rect x="510" y="22" width="80" height="38" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="550" y="42" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">MAP 2</text>
+
+        <line x1="590" y1="41" x2="608" y2="41" stroke="#ef4444" stroke-width="2" marker-end="url(#a2)"/>
+        <text x="599" y="33" font-size="8" fill="#ef4444" font-family="sans-serif">💾 disk</text>
+
+        <rect x="610" y="22" width="80" height="38" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="650" y="42" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">REDUCE 2</text>
+
+        <line x1="690" y1="41" x2="708" y2="41" stroke="#ef4444" stroke-width="2" marker-end="url(#a2)"/>
+
+        <rect x="710" y="22" width="80" height="38" rx="5" fill="#14161f" stroke="#3a4060" stroke-width="1"/>
+        <text x="750" y="38" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Output</text>
+        <text x="750" y="52" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">HDFS</text>
+
+        <rect x="10" y="80" width="800" height="36" rx="6" fill="#2e0d0d" stroke="#ef4444" stroke-width="0.8"/>
+        <text x="410" y="94" text-anchor="middle" font-size="11" fill="#fca5a5" font-family="sans-serif" font-weight="600">Every arrow = disk write + disk read. At petabyte scale, this killed performance.</text>
+        <text x="410" y="110" text-anchor="middle" font-size="10" fill="#7f1d1d" font-family="sans-serif">Real-time processing was impossible. Even batch jobs were agonizingly slow.</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 2</strong> — Hadoop MapReduce's fatal flaw: every intermediate step forces a disk write to HDFS and a disk read back. Disk is ~100× slower than RAM.</div>
+  </div>
+
+  <h3>Apache Spark's Solution: In-Memory Processing</h3>
+  <p>Spark keeps intermediate data <strong>in RAM</strong> across operations. It doesn't write to disk between steps unless memory runs out (spill). This is why Spark is <strong>100× faster than Hadoop</strong> for iterative workloads — the data just stays in memory, operations chain together without touching disk.</p>
+
+  <div class="math">
+    Disk sequential read speed ≈ 100–200 MB/s<br>
+    RAM read speed ≈ 10,000–50,000 MB/s<br>
+    <span style="color:var(--teal-l)">Ratio ≈ 50–500× faster in memory → "100× faster" is the conservative practical number</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  3. SPARK ARCHITECTURE
+═══════════════════════════════════════════ -->
+<section class="sec" id="s3">
+  <div class="sec-num">Section 03</div>
+  <h2>Spark Architecture: Driver · Cluster Manager · Workers</h2>
+
+  <p>Spark follows a <strong>master-slave architecture</strong>. One Driver node coordinates; many Worker nodes execute. A Cluster Manager sits between them handling resource allocation.</p>
+
+  <!-- MAIN ARCHITECTURE DIAGRAM -->
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 400" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr-g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="arr-o" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- DRIVER NODE -->
+        <rect x="20" y="40" width="180" height="200" rx="10" fill="#0d1f45" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="110" y="64" text-anchor="middle" font-size="13" fill="#60a5fa" font-family="sans-serif" font-weight="700">Driver Node</text>
+        <line x1="20" y1="72" x2="200" y2="72" stroke="#1e3a5f" stroke-width="0.8"/>
+        <rect x="35" y="82" width="150" height="32" rx="5" fill="#0f1a35" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="110" y="98" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif">SparkContext / SparkSession</text>
+        <text x="110" y="112" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">entry point to Spark</text>
+        <rect x="35" y="122" width="150" height="28" rx="5" fill="#0f1a35" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="110" y="140" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif">DAG Scheduler</text>
+        <rect x="35" y="158" width="150" height="28" rx="5" fill="#0f1a35" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="110" y="176" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif">Task Scheduler</text>
+        <rect x="35" y="194" width="150" height="28" rx="5" fill="#0f1a35" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="110" y="212" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif">Block Manager</text>
+
+        <!-- CLUSTER MANAGER -->
+        <rect x="300" y="120" width="200" height="110" rx="10" fill="#1e1245" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="400" y="146" text-anchor="middle" font-size="13" fill="#c4b5fd" font-family="sans-serif" font-weight="700">Cluster Manager</text>
+        <line x1="300" y1="154" x2="500" y2="154" stroke="#2d1b6b" stroke-width="0.8"/>
+        <rect x="315" y="162" width="170" height="24" rx="4" fill="#1a0f3d" stroke="#2d1b6b" stroke-width="0.8"/>
+        <text x="400" y="178" text-anchor="middle" font-size="10" fill="#c4b5fd" font-family="sans-serif">YARN / Kubernetes / Standalone</text>
+        <rect x="315" y="192" width="170" height="24" rx="4" fill="#1a0f3d" stroke="#2d1b6b" stroke-width="0.8"/>
+        <text x="400" y="208" text-anchor="middle" font-size="10" fill="#c4b5fd" font-family="sans-serif">Allocates CPU + Memory to executors</text>
+
+        <!-- WORKER NODE 1 -->
+        <rect x="570" y="30" width="230" height="155" rx="10" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="685" y="54" text-anchor="middle" font-size="12" fill="#86efac" font-family="sans-serif" font-weight="700">Worker Node 1</text>
+        <line x1="570" y1="62" x2="800" y2="62" stroke="#0a4020" stroke-width="0.8"/>
+        <rect x="585" y="72" width="200" height="100" rx="6" fill="#062315" stroke="#166534" stroke-width="0.8"/>
+        <text x="685" y="92" text-anchor="middle" font-size="11" fill="#4ade80" font-family="sans-serif" font-weight="600">Executor JVM</text>
+        <rect x="598" y="100" width="80" height="28" rx="4" fill="#052e12" stroke="#15803d" stroke-width="0.8"/>
+        <text x="638" y="115" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Task threads</text>
+        <rect x="690" y="100" width="80" height="28" rx="4" fill="#052e12" stroke="#15803d" stroke-width="0.8"/>
+        <text x="730" y="115" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Cache (RAM)</text>
+        <text x="685" y="148" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Heartbeats back to Driver</text>
+        <text x="685" y="162" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Reports task status + results</text>
+
+        <!-- WORKER NODE 2 -->
+        <rect x="570" y="205" width="230" height="155" rx="10" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="685" y="229" text-anchor="middle" font-size="12" fill="#86efac" font-family="sans-serif" font-weight="700">Worker Node 2</text>
+        <line x1="570" y1="237" x2="800" y2="237" stroke="#0a4020" stroke-width="0.8"/>
+        <rect x="585" y="247" width="200" height="100" rx="6" fill="#062315" stroke="#166534" stroke-width="0.8"/>
+        <text x="685" y="267" text-anchor="middle" font-size="11" fill="#4ade80" font-family="sans-serif" font-weight="600">Executor JVM</text>
+        <rect x="598" y="275" width="80" height="28" rx="4" fill="#052e12" stroke="#15803d" stroke-width="0.8"/>
+        <text x="638" y="290" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Task threads</text>
+        <rect x="690" y="275" width="80" height="28" rx="4" fill="#052e12" stroke="#15803d" stroke-width="0.8"/>
+        <text x="730" y="290" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Cache (RAM)</text>
+        <text x="685" y="323" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Heartbeats back to Driver</text>
+        <text x="685" y="337" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Reports task status + results</text>
+
+        <!-- ARROWS -->
+        <!-- Driver → Cluster Manager: resource request -->
+        <path d="M200 130 C250 130 260 150 298 160" fill="none" stroke="#3b82f6" stroke-width="1.2" marker-end="url(#arr)"/>
+        <text x="230" y="128" font-size="9" fill="#60a5fa" font-family="sans-serif">resource request</text>
+
+        <!-- Cluster Manager → Workers: launch executors -->
+        <path d="M500 155 C530 130 545 110 568 100" fill="none" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arr-g)"/>
+        <path d="M500 175 C530 200 545 250 568 270" fill="none" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#arr-g)"/>
+        <text x="510" y="88" font-size="9" fill="#c4b5fd" font-family="sans-serif">launch executors</text>
+
+        <!-- Driver → Workers: send tasks -->
+        <path d="M200 150 C350 100 480 90 568 108" fill="none" stroke="#f97316" stroke-width="1.2" stroke-dasharray="5,3" marker-end="url(#arr-o)"/>
+        <text x="340" y="78" font-size="9" fill="#f97316" font-family="sans-serif">send compiled tasks</text>
+
+        <!-- Workers → Driver: results -->
+        <path d="M568 130 C480 130 350 160 202 165" fill="none" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arr-g)"/>
+        <text x="340" y="185" font-size="9" fill="#22c55e" font-family="sans-serif">return results / heartbeat</text>
+
+        <!-- labels -->
+        <text x="110" y="260" text-anchor="middle" font-size="9" fill="#1e3a5f" font-family="sans-serif">JVM process</text>
+        <text x="685" y="390" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Each executor is a JVM process; tasks are threads inside it</text>
+        <text x="400" y="370" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">Cluster manager is replaceable (YARN ↔ Kubernetes ↔ Standalone) — Spark is agnostic</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 3</strong> — Full Spark cluster architecture (from official docs + lab notes). Orange dashed = task dispatch. Green dashed = result return. Blue = resource negotiation.</div>
+  </div>
+
+  <h3>Component Responsibilities (unambiguous breakdown)</h3>
+  <div class="g3">
+    <div class="card card-b">
+      <div class="ct">Driver Node</div>
+      The brain. Runs your Spark application code (main function). Creates SparkContext. Converts logical plan → DAG → tasks. Talks to Cluster Manager for resources. Coordinates all executors. Collects final results. It is a <strong>JVM process</strong>.
+    </div>
+    <div class="card card-p">
+      <div class="ct">Cluster Manager</div>
+      The landlord. Doesn't know about Spark jobs specifically — just manages CPU/RAM across the cluster. Spark supports: Standalone (built-in), YARN (Hadoop's resource manager), Kubernetes, Apache Mesos. After resources are allocated, Cluster Manager steps back.
+    </div>
+    <div class="card card-g">
+      <div class="ct">Worker Node / Executor</div>
+      The muscles. Runs actual computation tasks. Each worker node has one or more <strong>Executor JVM processes</strong>. Each Executor has task threads (parallel workers) and a cache in RAM. Registers with Driver. Sends heartbeats. Returns results.
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  4. WHY DATABRICKS CAME
+═══════════════════════════════════════════ -->
+<section class="sec" id="s4">
+  <div class="sec-num">Section 04</div>
+  <h2>Why Databricks Came</h2>
+
+  <p>Your instructor's exact words: <em>"Databricks came because it hard-coded the code required to make nodes as in Apache Spark. After all lists are passed, resource manager goes away and Driver node becomes master. Then orchestration tools (YARN or Kubernetes) are used to take orders."</em></p>
+
+  <p>Let's unpack this precisely:</p>
+
+  <div class="card card-o" style="margin:16px 0">
+    <div class="ct">The Problem Databricks Solved</div>
+    Setting up Apache Spark from scratch requires: configuring the cluster, installing Spark on every node, configuring YARN or Kubernetes, writing cluster bootstrap scripts, managing node provisioning, handling Spark version compatibility, configuring networking between nodes... This is enormous infrastructure work before you write a single line of data processing code. Every organization was repeating the same cluster setup boilerplate.
+  </div>
+
+  <div class="card card-g" style="margin:16px 0">
+    <div class="ct">What Databricks Did</div>
+    The founders of Apache Spark (from UC Berkeley AMPLab) built Databricks to <strong>abstract away all cluster management</strong>. You get a managed Spark environment — just write your DataFrame code. The platform handles: node provisioning, Spark installation, YARN/Kubernetes orchestration, autoscaling, job scheduling, and monitoring. The "hard-coded" part your instructor mentioned = Databricks internally runs all the Spark cluster wiring automatically, no manual configuration.
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 160" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="a3" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Job submitted -->
+        <rect x="10" y="50" width="100" height="40" rx="6" fill="#14161f" stroke="#3a4060" stroke-width="1"/>
+        <text x="60" y="65" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">User submits</text>
+        <text x="60" y="80" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif">Spark job</text>
+
+        <line x1="110" y1="70" x2="130" y2="70" stroke="#475569" stroke-width="1" marker-end="url(#a3)"/>
+
+        <!-- Resource Manager -->
+        <rect x="132" y="40" width="130" height="60" rx="6" fill="#1e1245" stroke="#a78bfa" stroke-width="1"/>
+        <text x="197" y="64" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif" font-weight="600">Resource Manager</text>
+        <text x="197" y="80" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">(YARN/Kubernetes)</text>
+        <text x="197" y="94" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">allocates containers</text>
+
+        <line x1="262" y1="70" x2="282" y2="70" stroke="#a78bfa" stroke-width="1" marker-end="url(#a3)"/>
+
+        <!-- AMC container with Driver -->
+        <rect x="284" y="20" width="200" height="110" rx="8" fill="#0d1f45" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="384" y="40" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif">Application Master Container (AMC)</text>
+        <rect x="300" y="50" width="168" height="68" rx="5" fill="#0a1730" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="384" y="70" text-anchor="middle" font-size="11" fill="#93c5fd" font-family="sans-serif" font-weight="600">Driver Node</text>
+        <text x="384" y="86" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">SparkContext created here</text>
+        <text x="384" y="100" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">Talks back to Resource Manager</text>
+        <text x="384" y="114" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">to request executor containers</text>
+
+        <!-- arrow: once tasks distributed, RM steps aside -->
+        <line x1="484" y1="70" x2="504" y2="70" stroke="#3b82f6" stroke-width="1" marker-end="url(#a3)"/>
+
+        <!-- Executor containers -->
+        <rect x="506" y="20" width="120" height="56" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="566" y="44" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Executor</text>
+        <text x="566" y="58" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Worker Node 1</text>
+
+        <rect x="506" y="85" width="120" height="56" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="566" y="109" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Executor</text>
+        <text x="566" y="123" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Worker Node 2</text>
+
+        <!-- RM steps away arrow -->
+        <path d="M197 100 L197 145 L100 145" fill="none" stroke="#a78bfa" stroke-width="1" stroke-dasharray="5,3" marker-end="url(#a3)"/>
+        <text x="197" y="140" text-anchor="middle" font-size="8" fill="#7c3aed" font-family="sans-serif">Resource Manager steps back after allocation</text>
+
+        <!-- Driver directly talks to Executors now -->
+        <line x1="632" y1="48" x2="680" y2="48" stroke="#f97316" stroke-width="1" stroke-dasharray="4,2" marker-end="url(#a3)"/>
+        <rect x="682" y="28" width="128" height="40" rx="5" fill="#3d1f08" stroke="#f97316" stroke-width="0.8"/>
+        <text x="746" y="46" text-anchor="middle" font-size="9" fill="#fdba74" font-family="sans-serif">Driver now acts as Master</text>
+        <text x="746" y="60" text-anchor="middle" font-size="8" fill="#92400e" font-family="sans-serif">directly schedules tasks</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 4</strong> — Spark job lifecycle. Resource Manager launches the Application Master Container (AMC) which contains the Driver. Once executors are allocated, the Resource Manager steps back and the Driver directly orchestrates all work.</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  5. DEEP DIVE: DRIVER NODE & PY4J
+═══════════════════════════════════════════ -->
+<section class="sec" id="s5">
+  <div class="sec-num">Section 05</div>
+  <h2>Deep Dive: Driver Node &amp; the Py4J Bridge</h2>
+
+  <p>Spark is written in <strong>Scala/Java and runs on the JVM</strong>. Python is not a JVM language. So when you write PySpark code, how does it actually run? This is the Py4J bridge — one of the most important internal mechanisms in Spark.</p>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 280" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="a4" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="a4b" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="a4g" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- AMC outer container -->
+        <rect x="10" y="10" width="530" height="240" rx="10" fill="#0d1a2e" stroke="#1e3a5f" stroke-width="1.5"/>
+        <text x="270" y="32" text-anchor="middle" font-size="11" fill="#475569" font-family="sans-serif">Application Master Container (AMC) — runs on Driver Node</text>
+        <line x1="10" y1="38" x2="540" y2="38" stroke="#1e3a5f" stroke-width="0.8"/>
+
+        <!-- PySpark process box -->
+        <rect x="30" y="50" width="150" height="80" rx="8" fill="#3d1f08" stroke="#f97316" stroke-width="1.5"/>
+        <text x="105" y="76" text-anchor="middle" font-size="12" fill="#fdba74" font-family="sans-serif" font-weight="700">PySpark</text>
+        <text x="105" y="93" text-anchor="middle" font-size="10" fill="#ea580c" font-family="sans-serif">Python Process</text>
+        <text x="105" y="108" text-anchor="middle" font-size="9" fill="#7c2d12" font-family="sans-serif">CPython interpreter</text>
+        <text x="105" y="122" text-anchor="middle" font-size="9" fill="#7c2d12" font-family="sans-serif">runs your .py code</text>
+
+        <!-- Py4J gateway -->
+        <rect x="210" y="62" width="140" height="56" rx="6" fill="#2d1b6b" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="280" y="84" text-anchor="middle" font-size="12" fill="#c4b5fd" font-family="sans-serif" font-weight="700">Py4J</text>
+        <text x="280" y="100" text-anchor="middle" font-size="10" fill="#7c3aed" font-family="sans-serif">Gateway Server</text>
+        <text x="280" y="114" text-anchor="middle" font-size="9" fill="#4c1d95" font-family="sans-serif">socket-based bridge</text>
+
+        <!-- JVM box -->
+        <rect x="380" y="50" width="140" height="180" rx="8" fill="#0d1f45" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="450" y="76" text-anchor="middle" font-size="12" fill="#60a5fa" font-family="sans-serif" font-weight="700">JVM</text>
+        <text x="450" y="92" text-anchor="middle" font-size="10" fill="#1e3a5f" font-family="sans-serif">(Spark Engine)</text>
+        <rect x="393" y="100" width="114" height="36" rx="4" fill="#0a1730" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="450" y="118" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif">SparkContext</text>
+        <text x="450" y="130" text-anchor="middle" font-size="8" fill="#475569" font-family="sans-serif">full Spark runtime</text>
+        <rect x="393" y="145" width="114" height="36" rx="4" fill="#0a1730" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="450" y="163" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif">DAG Scheduler</text>
+        <rect x="393" y="190" width="114" height="36" rx="4" fill="#0a1730" stroke="#1e3a5f" stroke-width="0.8"/>
+        <text x="450" y="208" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif">Task Scheduler</text>
+
+        <!-- Arrow: PySpark → Py4J -->
+        <line x1="180" y1="90" x2="208" y2="90" stroke="#f97316" stroke-width="1.5" marker-end="url(#a4)"/>
+        <text x="194" y="82" font-size="8" fill="#f97316" font-family="sans-serif" text-anchor="middle">Python calls</text>
+
+        <!-- Arrow: Py4J → JVM -->
+        <line x1="350" y1="90" x2="378" y2="90" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#a4b)"/>
+        <text x="364" y="82" font-size="8" fill="#a78bfa" font-family="sans-serif" text-anchor="middle">Java objects</text>
+
+        <!-- Compiled tasks arrow going right -->
+        <line x1="521" y1="160" x2="570" y2="160" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a4g)"/>
+        <text x="548" y="152" font-size="9" fill="#22c55e" font-family="sans-serif" text-anchor="middle">compiled</text>
+        <text x="548" y="164" font-size="8" fill="#22c55e" font-family="sans-serif" text-anchor="middle">JVM bytecode</text>
+
+        <!-- Worker nodes -->
+        <rect x="572" y="100" width="130" height="68" rx="8" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="637" y="124" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">Worker Node 1</text>
+        <rect x="587" y="132" width="100" height="24" rx="4" fill="#062315" stroke="#166534" stroke-width="0.8"/>
+        <text x="637" y="148" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Executor (JVM only)</text>
+
+        <rect x="572" y="185" width="130" height="68" rx="8" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="637" y="209" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">Worker Node 2</text>
+        <rect x="587" y="217" width="100" height="24" rx="4" fill="#062315" stroke="#166534" stroke-width="0.8"/>
+        <text x="637" y="233" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Executor (JVM only)</text>
+
+        <line x1="521" y1="215" x2="570" y2="215" stroke="#22c55e" stroke-width="1.5" marker-end="url(#a4g)"/>
+
+        <!-- KEY NOTE -->
+        <rect x="572" y="260" width="230" height="16" rx="3" fill="#052e12" stroke="none"/>
+        <text x="687" y="272" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">Workers NEVER run Python — only JVM bytecode</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 5</strong> — The Py4J bridge (from lab notes). PySpark runs as a Python process on the Driver. Py4J translates Python API calls into Java object calls on the Spark JVM. The JVM compiles tasks and sends <em>JVM bytecode</em> to workers — not Python.</div>
+  </div>
+
+  <h3>Why Workers Cannot Run Python Directly</h3>
+  <div class="callout c-amber">
+    <div class="lbl">Critical Point from your notes</div>
+    Your instructor noted: <em>"PySpark main interprets the PySpark code; it can't interpret Python in worker nodes, so there is an optional interpreter to convert Py to Java. Java is used in the backend of many systems."</em><br><br>
+    The worker executors are <strong>pure JVM processes</strong>. They have no Python interpreter. When you write <code>df.filter(...)</code> in PySpark, the Python call goes through Py4J to the Spark JVM on the Driver, which compiles it into a logical plan and ultimately into <strong>JVM bytecode tasks</strong>. These bytecode tasks — not Python — are shipped to executors.
+  </div>
+
+  <div class="callout c-purple">
+    <div class="lbl">Exception: UDFs (User Defined Functions)</div>
+    If you write a Python UDF (<code>udf(lambda x: x*2)</code>), Spark cannot compile that to JVM bytecode automatically. It must launch a Python subprocess on the worker, serialize data from JVM → Python via pickle, run your function, and serialize results back. This is why Python UDFs are dramatically slower than native Spark operations. This is the "optional interpreter" your instructor mentioned.
+  </div>
+
+  <div class="code">
+<span class="cmt"># This goes through Py4J → JVM → compiled plan → workers: FAST</span>
+df.filter(df.city == <span class="str">"Lahore"</span>).groupBy(<span class="str">"dept"</span>).count()
+
+<span class="cmt"># This launches Python subprocess on EACH worker: SLOW</span>
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> udf
+my_udf = udf(<span class="kw">lambda</span> x: x.upper())   <span class="cmt"># Python UDF → runs in Python on worker</span>
+df.withColumn(<span class="str">"upper_city"</span>, my_udf(df.city))</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  6. LAZY EVALUATION & RDD
+═══════════════════════════════════════════ -->
+<section class="sec" id="s6">
+  <div class="sec-num">Section 06</div>
+  <h2>Lazy Evaluation &amp; RDD</h2>
+
+  <h3>Lazy Evaluation</h3>
+  <p>Spark does not execute transformations the moment you write them. It builds up a <strong>DAG (Directed Acyclic Graph)</strong> of all pending operations and only executes when you trigger an <strong>action</strong>.</p>
+
+  <div class="g2">
+    <div class="card card-o">
+      <div class="ct">Transformations (lazy — build the plan)</div>
+      <code style="color:var(--orange-l)">.filter()</code>, <code style="color:var(--orange-l)">.select()</code>, <code style="color:var(--orange-l)">.map()</code>, <code style="color:var(--orange-l)">.groupBy()</code>, <code style="color:var(--orange-l)">.join()</code>, <code style="color:var(--orange-l)">.withColumn()</code>
+      <br><br>Nothing happens. Spark just records what you want to do.
+    </div>
+    <div class="card card-g">
+      <div class="ct">Actions (trigger — execute everything)</div>
+      <code style="color:var(--green-l)">.show()</code>, <code style="color:var(--green-l)">.collect()</code>, <code style="color:var(--green-l)">.count()</code>, <code style="color:var(--green-l)">.write()</code>, <code style="color:var(--green-l)">.save()</code>
+      <br><br>NOW Spark optimizes the full DAG and executes it across the cluster.
+    </div>
+  </div>
+
+  <div class="callout c-blue">
+    <div class="lbl">Why lazy evaluation exists</div>
+    By seeing the <em>full pipeline</em> before executing, Spark's Catalyst Optimizer can: eliminate redundant operations, push filters down (read less data), reorder joins, combine steps into fewer shuffle operations. If Spark executed eagerly (like Pandas), it couldn't see the big picture to optimize. This is a central reason Spark is fast.
+  </div>
+
+  <h3>RDD — Resilient Distributed Dataset</h3>
+
+  <div class="def">
+    <div class="def-term">RDD (Resilient Distributed Dataset)</div>
+    <div class="def-text">The fundamental, immutable, distributed data abstraction in Spark. A logical partition of data spread across nodes, with a lineage graph (DAG) that records every transformation applied to it, enabling automatic recomputation if a partition is lost.</div>
+  </div>
+
+  <p>Three key properties of an RDD, all encoded in the name:</p>
+
+  <div class="g3">
+    <div class="card card-b">
+      <div class="ct">R — Resilient</div>
+      If a partition is lost (node dies), Spark re-derives it by replaying the transformation lineage from the source. No data is permanently lost.
+    </div>
+    <div class="card card-t">
+      <div class="ct">D — Distributed</div>
+      Partitions of the RDD live on different nodes. Operations run in parallel across all partitions simultaneously.
+    </div>
+    <div class="card card-p">
+      <div class="ct">D — Dataset</div>
+      A collection of records. Can be key-value pairs, rows, objects — any typed collection.
+    </div>
+  </div>
+
+  <div class="callout c-teal">
+    <div class="lbl">RDD vs DataFrame</div>
+    DataFrames (and Datasets) are built <em>on top of</em> RDDs. When you write <code>df.filter(...)</code>, Spark ultimately converts it to RDD operations under the hood. DataFrames add a schema (typed columns) and go through the Catalyst Optimizer — that's why they're faster than raw RDDs for structured data. Your lab focused on DataFrames, but RDD is the foundation everything rests on.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  7. NARROW vs WIDE TRANSFORMATIONS
+═══════════════════════════════════════════ -->
+<section class="sec" id="s7">
+  <div class="sec-num">Section 07</div>
+  <h2>Narrow vs Wide Transformations</h2>
+
+  <p>This distinction determines whether Spark needs to <strong>shuffle data across the network</strong> or can process it locally. Shuffle is expensive — it's the main performance bottleneck in Spark jobs.</p>
+
+  <div class="def">
+    <div class="def-term">Narrow Transformation</div>
+    <div class="def-text">A transformation where each output partition depends on <strong>at most one input partition</strong>. No data movement across nodes required. Each worker can independently process its partition.</div>
+  </div>
+
+  <div class="def">
+    <div class="def-term">Wide Transformation (Shuffle)</div>
+    <div class="def-text">A transformation where each output partition may depend on <strong>multiple input partitions</strong> from different nodes. Requires a <em>shuffle</em> — data is physically moved across the network to co-locate records that need to be combined.</div>
+  </div>
+
+  <!-- SVG: Narrow vs Wide -->
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 310" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="an" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="aw" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- NARROW side -->
+        <text x="190" y="18" text-anchor="middle" font-size="13" fill="#86efac" font-family="sans-serif" font-weight="700">Narrow Transformation</text>
+        <text x="190" y="34" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">e.g. filter, select, map, withColumn</text>
+
+        <!-- Partition 1 input -->
+        <rect x="30" y="48" width="90" height="60" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="75" y="70" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Partition 1</text>
+        <text x="75" y="84" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">rows 1-100</text>
+        <text x="75" y="98" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">Worker Node 1</text>
+
+        <rect x="30" y="130" width="90" height="60" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="75" y="152" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Partition 2</text>
+        <text x="75" y="166" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">rows 101-200</text>
+        <text x="75" y="180" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">Worker Node 2</text>
+
+        <rect x="30" y="212" width="90" height="60" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="75" y="234" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Partition 3</text>
+        <text x="75" y="248" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">rows 201-300</text>
+        <text x="75" y="262" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">Worker Node 3</text>
+
+        <!-- arrows straight across — no crossing -->
+        <line x1="120" y1="78" x2="198" y2="78" stroke="#22c55e" stroke-width="1.5" marker-end="url(#an)"/>
+        <line x1="120" y1="160" x2="198" y2="160" stroke="#22c55e" stroke-width="1.5" marker-end="url(#an)"/>
+        <line x1="120" y1="242" x2="198" y2="242" stroke="#22c55e" stroke-width="1.5" marker-end="url(#an)"/>
+
+        <!-- filter symbol in middle -->
+        <text x="158" y="68" text-anchor="middle" font-size="8" fill="#22c55e" font-family="sans-serif">filter</text>
+        <text x="158" y="150" text-anchor="middle" font-size="8" fill="#22c55e" font-family="sans-serif">filter</text>
+        <text x="158" y="232" text-anchor="middle" font-size="8" fill="#22c55e" font-family="sans-serif">filter</text>
+
+        <!-- Output partitions -->
+        <rect x="200" y="48" width="90" height="60" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="245" y="70" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Out P1</text>
+        <text x="245" y="84" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">filtered rows</text>
+        <text x="245" y="98" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">same node</text>
+
+        <rect x="200" y="130" width="90" height="60" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="245" y="152" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Out P2</text>
+        <text x="245" y="166" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">filtered rows</text>
+        <text x="245" y="180" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">same node</text>
+
+        <rect x="200" y="212" width="90" height="60" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1" stroke-dasharray="4,2"/>
+        <text x="245" y="234" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Out P3</text>
+        <text x="245" y="248" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">filtered rows</text>
+        <text x="245" y="262" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">same node</text>
+
+        <text x="155" y="295" text-anchor="middle" font-size="10" fill="#166534" font-family="sans-serif" font-weight="600">✓ No network shuffle. Each partition processed in isolation.</text>
+
+        <!-- DIVIDER -->
+        <line x1="370" y1="10" x2="370" y2="300" stroke="#23283a" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <!-- WIDE side -->
+        <text x="595" y="18" text-anchor="middle" font-size="13" fill="#fca5a5" font-family="sans-serif" font-weight="700">Wide Transformation (Shuffle)</text>
+        <text x="595" y="34" text-anchor="middle" font-size="10" fill="#64748b" font-family="sans-serif">e.g. groupBy(city), join, reduceByKey</text>
+
+        <!-- Input partitions -->
+        <rect x="390" y="48" width="90" height="68" rx="5" fill="#14161f" stroke="#ef4444" stroke-width="1"/>
+        <text x="435" y="68" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif" font-weight="600">Partition 1</text>
+        <text x="435" y="82" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">LHR:5, ISB:3</text>
+        <text x="435" y="96" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">KCh:2, LHR:1</text>
+        <text x="435" y="110" text-anchor="middle" font-size="7" fill="#7f1d1d" font-family="sans-serif">Worker Node 1</text>
+
+        <rect x="390" y="136" width="90" height="68" rx="5" fill="#14161f" stroke="#ef4444" stroke-width="1"/>
+        <text x="435" y="156" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif" font-weight="600">Partition 2</text>
+        <text x="435" y="170" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">ISB:7, LHR:4</text>
+        <text x="435" y="184" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">KCh:6, ISB:1</text>
+        <text x="435" y="198" text-anchor="middle" font-size="7" fill="#7f1d1d" font-family="sans-serif">Worker Node 2</text>
+
+        <!-- Shuffle arrows — crossing lines showing redistribution -->
+        <line x1="480" y1="72" x2="618" y2="72" stroke="#ef4444" stroke-width="1" marker-end="url(#aw)"/>
+        <line x1="480" y1="84" x2="618" y2="160" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#aw)"/>
+        <line x1="480" y1="92" x2="618" y2="248" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#aw)"/>
+        <line x1="480" y1="160" x2="618" y2="72" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#aw)"/>
+        <line x1="480" y1="172" x2="618" y2="160" stroke="#ef4444" stroke-width="1" marker-end="url(#aw)"/>
+        <line x1="480" y1="184" x2="618" y2="248" stroke="#ef4444" stroke-width="1" stroke-dasharray="3,2" marker-end="url(#aw)"/>
+
+        <text x="555" y="115" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">🔀 SHUFFLE</text>
+        <text x="555" y="128" text-anchor="middle" font-size="8" fill="#7f1d1d" font-family="sans-serif">network transfer</text>
+
+        <!-- Output partitions (by city) -->
+        <rect x="620" y="48" width="90" height="56" rx="5" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="665" y="68" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif" font-weight="600">LHR bucket</text>
+        <text x="665" y="82" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">ALL LHR rows</text>
+        <text x="665" y="96" text-anchor="middle" font-size="7" fill="#7f1d1d" font-family="sans-serif">gathered from all P</text>
+
+        <rect x="620" y="136" width="90" height="56" rx="5" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="665" y="156" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif" font-weight="600">ISB bucket</text>
+        <text x="665" y="170" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">ALL ISB rows</text>
+        <text x="665" y="184" text-anchor="middle" font-size="7" fill="#7f1d1d" font-family="sans-serif">gathered from all P</text>
+
+        <rect x="620" y="224" width="90" height="56" rx="5" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="665" y="244" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif" font-weight="600">KCh bucket</text>
+        <text x="665" y="258" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">ALL KCh rows</text>
+        <text x="665" y="272" text-anchor="middle" font-size="7" fill="#7f1d1d" font-family="sans-serif">gathered from all P</text>
+
+        <text x="595" y="295" text-anchor="middle" font-size="10" fill="#7f1d1d" font-family="sans-serif" font-weight="600">✗ All data shuffled over network. Same-city rows must land in same partition.</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 6</strong> — Narrow vs Wide transformations. Narrow: 1-to-1 partition dependency, no network I/O. Wide: many-to-many, requires shuffle — data physically moves between nodes over the network. This is the stage boundary in Spark's DAG.</div>
+  </div>
+
+  <table class="tbl">
+    <thead><tr><th>Property</th><th>Narrow</th><th>Wide (Shuffle)</th></tr></thead>
+    <tbody>
+      <tr><td>Partition dependency</td><td class="good">1 input → 1 output</td><td class="bad">N inputs → 1 output</td></tr>
+      <tr><td>Network I/O</td><td class="good">None</td><td class="bad">Full data movement</td></tr>
+      <tr><td>Fault recovery</td><td class="good">Recompute 1 partition</td><td class="bad">May recompute many partitions</td></tr>
+      <tr><td>DAG stage boundary</td><td class="good">No new stage</td><td class="bad">Creates new stage</td></tr>
+      <tr><td>Examples</td><td>filter, select, map, flatMap, union</td><td>groupBy, join, distinct, repartition, reduceByKey</td></tr>
+    </tbody>
+  </table>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  8. JOINS IN SPARK
+═══════════════════════════════════════════ -->
+<section class="sec" id="s8">
+  <div class="sec-num">Section 08 ★ Exam Core</div>
+  <h2>Joins in Spark — All 3 Strategies</h2>
+
+  <p>When you join two DataFrames in Spark, the engine must decide <em>how</em> to physically execute the join. There are 3 strategies. Spark's Catalyst Optimizer picks automatically, but understanding them is essential for performance tuning.</p>
+
+  <div class="callout c-orange">
+    <div class="lbl">The core problem</div>
+    To join df1 and df2 on a key (e.g. staffNo), rows with the <strong>same key must be on the same machine</strong>. If staffNo=42 is on Worker 1 in df1 but on Worker 3 in df2, the join cannot happen locally. Data must be moved. The 3 strategies differ in <em>how</em> they solve this movement problem.
+  </div>
+
+  <!-- SHUFFLE SORT MERGE JOIN -->
+  <h3>① Shuffle Sort Merge Join (SMJ)</h3>
+
+  <div class="def">
+    <div class="def-term">Shuffle Sort Merge Join</div>
+    <div class="def-text">Both DataFrames are shuffled so that rows with the same key end up on the same partition. Within each partition, rows are sorted by key. Then a merge operation scans both sorted partitions simultaneously to find matching rows.</div>
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="asj" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#f97316" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+          <marker id="asjg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/>
+          </marker>
+        </defs>
+
+        <!-- df1 -->
+        <rect x="10" y="20" width="110" height="130" rx="6" fill="#0d1f45" stroke="#3b82f6" stroke-width="1"/>
+        <text x="65" y="40" text-anchor="middle" font-size="11" fill="#60a5fa" font-family="sans-serif" font-weight="600">df1</text>
+        <text x="65" y="55" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">staffNo | name</text>
+        <text x="65" y="70" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">3 | Ali</text>
+        <text x="65" y="84" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">1 | Sara</text>
+        <text x="65" y="98" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">7 | Hamza</text>
+        <text x="65" y="112" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">2 | Zara</text>
+        <text x="65" y="126" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">5 | Omar</text>
+        <text x="65" y="140" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">4 | Nida</text>
+
+        <!-- df2 -->
+        <rect x="10" y="168" width="110" height="130" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="65" y="188" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="600">df2</text>
+        <text x="65" y="203" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">staffNo | salary</text>
+        <text x="65" y="218" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">5 | 50k</text>
+        <text x="65" y="232" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">2 | 30k</text>
+        <text x="65" y="246" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">7 | 80k</text>
+        <text x="65" y="260" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">1 | 25k</text>
+        <text x="65" y="274" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">4 | 45k</text>
+        <text x="65" y="288" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">3 | 35k</text>
+
+        <!-- SHUFFLE arrows -->
+        <text x="175" y="155" text-anchor="middle" font-size="10" fill="#f97316" font-family="sans-serif" font-weight="700">🔀 SHUFFLE</text>
+        <text x="175" y="169" text-anchor="middle" font-size="9" fill="#92400e" font-family="sans-serif">by hash(staffNo)</text>
+        <line x1="120" y1="80" x2="230" y2="72" stroke="#f97316" stroke-width="1.2" marker-end="url(#asj)"/>
+        <line x1="120" y1="115" x2="230" y2="175" marker-end="url(#asj)" stroke="#f97316" stroke-width="1.2"/>
+        <line x1="120" y1="230" x2="230" y2="175" marker-end="url(#asj)" stroke="#22c55e" stroke-width="1.2"/>
+        <line x1="120" y1="260" x2="230" y2="72" marker-end="url(#asj)" stroke="#22c55e" stroke-width="1.2"/>
+
+        <!-- Partitions after shuffle (sorted) -->
+        <rect x="232" y="30" width="120" height="120" rx="6" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="292" y="50" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif" font-weight="700">Partition A (sorted)</text>
+        <text x="292" y="65" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">1|Sara + 1|25k</text>
+        <text x="292" y="79" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">2|Zara + 2|30k</text>
+        <text x="292" y="93" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">3|Ali  + 3|35k</text>
+        <text x="292" y="107" text-anchor="middle" font-size="8" fill="#f59e0b" font-family="sans-serif">sorted by key ✓</text>
+        <text x="292" y="140" text-anchor="middle" font-size="7" fill="#475569" font-family="sans-serif">Worker Node 1</text>
+
+        <rect x="232" y="165" width="120" height="120" rx="6" fill="#1e2535" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="292" y="185" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif" font-weight="700">Partition B (sorted)</text>
+        <text x="292" y="200" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">4|Nida + 4|45k</text>
+        <text x="292" y="214" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">5|Omar + 5|50k</text>
+        <text x="292" y="228" text-anchor="middle" font-size="8" fill="#94a3b8" font-family="sans-serif">7|Hamza + 7|80k</text>
+        <text x="292" y="242" text-anchor="middle" font-size="8" fill="#f59e0b" font-family="sans-serif">sorted by key ✓</text>
+        <text x="292" y="275" text-anchor="middle" font-size="7" fill="#475569" font-family="sans-serif">Worker Node 2</text>
+
+        <!-- SORT+MERGE arrows -->
+        <text x="415" y="100" text-anchor="middle" font-size="10" fill="#22c55e" font-family="sans-serif" font-weight="700">→ MERGE</text>
+        <text x="415" y="113" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">linear scan</text>
+        <line x1="352" y1="88" x2="470" y2="88" stroke="#22c55e" stroke-width="1.2" marker-end="url(#asjg)"/>
+        <line x1="352" y1="220" x2="470" y2="220" stroke="#22c55e" stroke-width="1.2" marker-end="url(#asjg)"/>
+
+        <!-- Result -->
+        <rect x="472" y="30" width="140" height="120" rx="6" fill="#1a1d2a" stroke="#22c55e" stroke-width="1"/>
+        <text x="542" y="50" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Result A</text>
+        <text x="542" y="65" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">1|Sara|25k</text>
+        <text x="542" y="79" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">2|Zara|30k</text>
+        <text x="542" y="93" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">3|Ali|35k</text>
+
+        <rect x="472" y="165" width="140" height="120" rx="6" fill="#1a1d2a" stroke="#22c55e" stroke-width="1"/>
+        <text x="542" y="185" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Result B</text>
+        <text x="542" y="200" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">4|Nida|45k</text>
+        <text x="542" y="214" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">5|Omar|50k</td>
+        <text x="542" y="228" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">7|Hamza|80k</text>
+
+        <!-- Key insight box -->
+        <rect x="630" y="50" width="180" height="200" rx="8" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="720" y="74" text-anchor="middle" font-size="11" fill="#fcd34d" font-family="sans-serif" font-weight="700">SMJ Steps</text>
+        <text x="640" y="96" font-size="9" fill="#fde68a" font-family="sans-serif">① Shuffle both DFs</text>
+        <text x="640" y="112" font-size="9" fill="#fde68a" font-family="sans-serif">   by hash(join_key)</text>
+        <text x="640" y="130" font-size="9" fill="#fde68a" font-family="sans-serif">② Sort each partition</text>
+        <text x="640" y="146" font-size="9" fill="#fde68a" font-family="sans-serif">   by join_key</text>
+        <text x="640" y="164" font-size="9" fill="#fde68a" font-family="sans-serif">③ Merge-scan both</text>
+        <text x="640" y="180" font-size="9" fill="#fde68a" font-family="sans-serif">   sorted partitions</text>
+        <text x="640" y="200" font-size="9" fill="#92400e" font-family="sans-serif">Default for large-large</text>
+        <text x="640" y="215" font-size="9" fill="#92400e" font-family="sans-serif">joins. Most expensive.</text>
+        <text x="640" y="232" font-size="9" fill="#f59e0b" font-family="sans-serif">Default 200 partitions</text>
+        <text x="640" y="246" font-size="9" fill="#f59e0b" font-family="sans-serif">(spark.sql.shuffle</text>
+        <text x="640" y="260" font-size="9" fill="#f59e0b" font-family="sans-serif">.partitions = 200)</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 7</strong> — Shuffle Sort Merge Join. Both sides shuffled by hash(key), sorted within partitions, then merged. O(N log N) per partition due to sort step. Your instructor noted: "Check start — can't ask in clauses" → meaning SMJ doesn't support non-equi joins (you can't use &lt;, &gt; in the join condition).</div>
+  </div>
+
+  <!-- SHUFFLE HASH JOIN -->
+  <h3>② Shuffle Hash Join (SHJ)</h3>
+
+  <div class="def">
+    <div class="def-term">Shuffle Hash Join</div>
+    <div class="def-text">Both DataFrames are shuffled so same-key rows co-locate. Instead of sorting, Spark builds a <strong>hash table</strong> from the smaller partition in memory, then probes it with rows from the larger partition. Same hash = same partition (your instructor's exact phrasing).</div>
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="ash" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#a78bfa" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <text x="80" y="16" text-anchor="middle" font-size="11" fill="#f97316" font-family="sans-serif" font-weight="700">🔀 Shuffle by hash(key)</text>
+
+        <rect x="10" y="24" width="140" height="80" rx="6" fill="#0d1f45" stroke="#3b82f6" stroke-width="1"/>
+        <text x="80" y="44" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif" font-weight="600">df1 Partition (co-located)</text>
+        <text x="80" y="60" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">key=3 | Ali</text>
+        <text x="80" y="74" text-anchor="middle" font-size="9" fill="#93c5fd" font-family="sans-serif">key=3 | Sara</text>
+        <text x="80" y="88" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">hash(3) = same bucket</text>
+
+        <rect x="10" y="116" width="140" height="68" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="80" y="136" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">df2 Partition (co-located)</text>
+        <text x="80" y="152" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">key=3 | 35k</text>
+        <text x="80" y="166" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">key=3 | 40k</text>
+        <text x="80" y="180" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">hash(3) = same bucket ✓</text>
+
+        <!-- build hash table -->
+        <text x="230" y="90" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">build hash table</text>
+        <text x="230" y="103" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">from SMALLER side</text>
+        <line x1="152" y1="85" x2="258" y2="85" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#ash)"/>
+        <line x1="152" y1="148" x2="258" y2="148" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#ash)"/>
+
+        <!-- Hash table -->
+        <rect x="260" y="30" width="140" height="128" rx="6" fill="#1e1245" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="330" y="50" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif" font-weight="700">Hash Table</text>
+        <text x="330" y="65" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">bucket[hash(3)]</text>
+        <rect x="275" y="72" width="110" height="20" rx="3" fill="#150b35" stroke="#4c1d95" stroke-width="0.5"/>
+        <text x="330" y="85" text-anchor="middle" font-size="9" fill="#c4b5fd" font-family="sans-serif">key=3 → [35k, 40k]</text>
+        <text x="330" y="108" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">Built from df2 side</text>
+        <text x="330" y="122" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">(smaller partition)</text>
+        <text x="330" y="136" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">Probe with df1 rows</text>
+        <text x="330" y="150" text-anchor="middle" font-size="9" fill="#7c3aed" font-family="sans-serif">O(1) lookup per row</text>
+
+        <line x1="400" y1="88" x2="468" y2="88" stroke="#22c55e" stroke-width="1.2" marker-end="url(#ash)"/>
+
+        <rect x="470" y="40" width="160" height="96" rx="6" fill="#1a1d2a" stroke="#22c55e" stroke-width="1"/>
+        <text x="550" y="60" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Joined Result</text>
+        <text x="550" y="76" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">Ali|35k, Ali|40k</text>
+        <text x="550" y="90" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">Sara|35k, Sara|40k</text>
+
+        <rect x="645" y="30" width="165" height="120" rx="8" fill="#2d1b6b" stroke="#a78bfa" stroke-width="1"/>
+        <text x="727" y="50" text-anchor="middle" font-size="10" fill="#c4b5fd" font-family="sans-serif" font-weight="600">SHJ vs SMJ</text>
+        <text x="650" y="68" font-size="9" fill="#a78bfa" font-family="sans-serif">✓ No sort step → faster</text>
+        <text x="650" y="84" font-size="9" fill="#a78bfa" font-family="sans-serif">✓ O(1) hash lookup</text>
+        <text x="650" y="100" font-size="9" fill="#7c3aed" font-family="sans-serif">✗ Hash table must fit in</text>
+        <text x="650" y="114" font-size="9" fill="#7c3aed" font-family="sans-serif">  executor memory</text>
+        <text x="650" y="130" font-size="9" fill="#7c3aed" font-family="sans-serif">  (smaller partition only)</text>
+        <text x="650" y="145" font-size="9" fill="#4c1d95" font-family="sans-serif">Used when partition fits RAM</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 8</strong> — Shuffle Hash Join. Shuffle ensures same-key rows co-locate. Hash table built from smaller partition, probed with larger. O(1) per row vs O(N log N) for sort — faster when data fits in memory.</div>
+  </div>
+
+  <!-- BROADCAST JOIN -->
+  <h3>③ Broadcast Join</h3>
+
+  <div class="def">
+    <div class="def-term">Broadcast Join</div>
+    <div class="def-text">When one DataFrame is <strong>small enough to fit in each executor's memory</strong>, Spark broadcasts a full copy of it to every worker node. Each worker then performs the join locally against its own partition of the large DataFrame — <strong>no shuffle at all</strong>.</div>
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 220" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="abj" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Small DF on Driver -->
+        <rect x="10" y="60" width="130" height="100" rx="6" fill="#052e2a" stroke="#14b8a6" stroke-width="2"/>
+        <text x="75" y="82" text-anchor="middle" font-size="11" fill="#2dd4bf" font-family="sans-serif" font-weight="700">Small DF</text>
+        <text x="75" y="97" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">e.g. Branch table</text>
+        <text x="75" y="111" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">5 rows · 2KB</text>
+        <text x="75" y="130" text-anchor="middle" font-size="8" fill="#0f766e" font-family="sans-serif">Default threshold:</text>
+        <text x="75" y="144" text-anchor="middle" font-size="8" fill="#14b8a6" font-family="sans-serif">10 MB (configurable)</text>
+
+        <!-- Broadcast arrows to all workers -->
+        <text x="195" y="55" text-anchor="middle" font-size="10" fill="#2dd4bf" font-family="sans-serif" font-weight="700">📡 BROADCAST</text>
+        <text x="195" y="68" text-anchor="middle" font-size="9" fill="#0f766e" font-family="sans-serif">copied to ALL workers</text>
+        <text x="195" y="81" text-anchor="middle" font-size="9" fill="#0f766e" font-family="sans-serif">no shuffle of large DF</text>
+        <line x1="140" y1="100" x2="248" y2="72" stroke="#14b8a6" stroke-width="1.5" marker-end="url(#abj)"/>
+        <line x1="140" y1="110" x2="248" y2="132" stroke="#14b8a6" stroke-width="1.5" marker-end="url(#abj)"/>
+        <line x1="140" y1="120" x2="248" y2="192" stroke="#14b8a6" stroke-width="1.5" marker-end="url(#abj)"/>
+
+        <!-- Worker nodes (large DF stays put) -->
+        <rect x="250" y="30" width="150" height="80" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="325" y="50" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Worker 1</text>
+        <text x="325" y="64" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">Large DF: P1 (in place)</text>
+        <rect x="265" y="70" width="120" height="18" rx="3" fill="#0d2e18" stroke="#15803d" stroke-width="0.5"/>
+        <text x="325" y="82" text-anchor="middle" font-size="8" fill="#86efac" font-family="sans-serif">+ local copy of small DF</text>
+        <text x="325" y="103" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">→ join locally, no shuffle</text>
+
+        <rect x="250" y="118" width="150" height="80" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="325" y="138" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Worker 2</text>
+        <text x="325" y="152" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">Large DF: P2 (in place)</text>
+        <rect x="265" y="158" width="120" height="18" rx="3" fill="#0d2e18" stroke="#15803d" stroke-width="0.5"/>
+        <text x="325" y="170" text-anchor="middle" font-size="8" fill="#86efac" font-family="sans-serif">+ local copy of small DF</text>
+        <text x="325" y="191" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">→ join locally, no shuffle</text>
+
+        <rect x="250" y="205" width="150" height="12" rx="3" fill="#052e12" stroke="#22c55e" stroke-width="0.5"/>
+        <text x="325" y="215" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">Worker N ... (same pattern)</text>
+
+        <!-- Results -->
+        <line x1="400" y1="80" x2="448" y2="80" stroke="#22c55e" stroke-width="1.2" marker-end="url(#abj)"/>
+        <line x1="400" y1="160" x2="448" y2="160" stroke="#22c55e" stroke-width="1.2" marker-end="url(#abj)"/>
+
+        <rect x="450" y="40" width="150" height="190" rx="6" fill="#1a1d2a" stroke="#14b8a6" stroke-width="1"/>
+        <text x="525" y="62" text-anchor="middle" font-size="11" fill="#2dd4bf" font-family="sans-serif" font-weight="700">✓ Zero Shuffle</text>
+        <text x="525" y="80" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">Large DF never moves</text>
+        <text x="525" y="95" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="sans-serif">Each worker joins locally</text>
+        <text x="525" y="120" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif" font-weight="600">Trigger manually:</text>
+        <text x="525" y="136" text-anchor="middle" font-size="8" fill="#fde68a" font-family="monospace">broadcast(smallDF)</text>
+        <text x="525" y="160" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif" font-weight="600">Auto-trigger when:</text>
+        <text x="525" y="176" text-anchor="middle" font-size="8" fill="#fde68a" font-family="sans-serif">DF size &lt; 10MB default</text>
+        <text x="525" y="190" text-anchor="middle" font-size="8" fill="#fde68a" font-family="sans-serif">(spark.sql.autoBroadcast</text>
+        <text x="525" y="204" text-anchor="middle" font-size="8" fill="#fde68a" font-family="sans-serif">JoinThreshold = 10MB)</text>
+
+        <!-- Comparison table summary -->
+        <rect x="615" y="20" width="195" height="192" rx="8" fill="#09090f" stroke="#2e3450" stroke-width="1"/>
+        <text x="712" y="40" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">Join Strategy Summary</text>
+        <line x1="615" y1="48" x2="810" y2="48" stroke="#1a1d2a" stroke-width="0.8"/>
+        <text x="620" y="64" font-size="8" fill="#f97316" font-family="sans-serif">SMJ: both shuffle + sort + merge</text>
+        <text x="620" y="78" font-size="8" fill="#92400e" font-family="sans-serif">→ large-large, most general</text>
+        <text x="620" y="98" font-size="8" fill="#a78bfa" font-family="sans-serif">SHJ: both shuffle + hash table</text>
+        <text x="620" y="112" font-size="8" fill="#7c3aed" font-family="sans-serif">→ partition fits in RAM, faster</text>
+        <text x="620" y="132" font-size="8" fill="#2dd4bf" font-family="sans-serif">BJ: broadcast small + local join</text>
+        <text x="620" y="146" font-size="8" fill="#0f766e" font-family="sans-serif">→ &lt;10MB table, zero shuffle</text>
+        <text x="620" y="166" font-size="8" fill="#22c55e" font-family="sans-serif">Speed: BJ &gt; SHJ &gt; SMJ</text>
+        <text x="620" y="180" font-size="8" fill="#64748b" font-family="sans-serif">Spark auto-picks based on</text>
+        <text x="620" y="194" font-size="8" fill="#64748b" font-family="sans-serif">statistics (AQE can override)</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 9</strong> — Broadcast Join. Small table copied to every worker; large table stays in place. No shuffle of the large DF. Fastest join strategy. Default threshold = 10MB.</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  9. QUERY PLAN PIPELINE
+═══════════════════════════════════════════ -->
+<section class="sec" id="s9">
+  <div class="sec-num">Section 09</div>
+  <h2>Query Plan Pipeline — Catalyst Optimizer</h2>
+
+  <p>When you write <code>df.filter(...).groupBy(...).agg(...)</code>, Spark doesn't execute it directly. It passes it through a 4-stage optimization pipeline called the <strong>Catalyst Optimizer</strong>. This is what your instructor drew on the board.</p>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="aqp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Stage 1: Unresolved Logical Plan -->
+        <rect x="10" y="30" width="120" height="80" rx="6" fill="#2e0d0d" stroke="#ef4444" stroke-width="1"/>
+        <text x="70" y="52" text-anchor="middle" font-size="10" fill="#fca5a5" font-family="sans-serif" font-weight="700">User Code</text>
+        <text x="70" y="68" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">df.filter(...)</text>
+        <text x="70" y="82" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">.groupBy(...)</text>
+        <text x="70" y="96" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">.count()</text>
+
+        <line x1="130" y1="70" x2="148" y2="70" stroke="#475569" stroke-width="1" marker-end="url(#aqp)"/>
+
+        <rect x="150" y="30" width="130" height="80" rx="6" fill="#1e2535" stroke="#3b82f6" stroke-width="1"/>
+        <text x="215" y="52" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif" font-weight="700">Unresolved</text>
+        <text x="215" y="66" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif">Logical Plan</text>
+        <text x="215" y="84" text-anchor="middle" font-size="8" fill="#475569" font-family="sans-serif">Column names exist</text>
+        <text x="215" y="98" text-anchor="middle" font-size="8" fill="#475569" font-family="sans-serif">but not yet validated</text>
+
+        <!-- Analysis -->
+        <text x="310" y="62" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">Analysis</text>
+        <text x="310" y="75" text-anchor="middle" font-size="8" fill="#7c3aed" font-family="sans-serif">(catalog lookup)</text>
+        <line x1="280" y1="70" x2="328" y2="70" stroke="#a78bfa" stroke-width="1.2" marker-end="url(#aqp)"/>
+
+        <rect x="330" y="30" width="130" height="80" rx="6" fill="#1e2535" stroke="#22c55e" stroke-width="1"/>
+        <text x="395" y="52" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="700">Resolved</text>
+        <text x="395" y="66" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif">Logical Plan</text>
+        <text x="395" y="84" text-anchor="middle" font-size="8" fill="#475569" font-family="sans-serif">Columns verified in</text>
+        <text x="395" y="98" text-anchor="middle" font-size="8" fill="#475569" font-family="sans-serif">catalog; types resolved</text>
+
+        <!-- Arrow down to optimizer -->
+        <line x1="395" y1="110" x2="395" y2="140" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#aqp)"/>
+        <text x="420" y="128" font-size="9" fill="#f59e0b" font-family="sans-serif">Catalyst Rules</text>
+
+        <rect x="330" y="142" width="130" height="50" rx="6" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="395" y="162" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif" font-weight="700">Optimized</text>
+        <text x="395" y="178" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif">Logical Plan</text>
+
+        <!-- Physical plan generation -->
+        <line x1="460" y1="165" x2="510" y2="165" stroke="#f59e0b" stroke-width="1.5" marker-end="url(#aqp)"/>
+        <text x="485" y="158" text-anchor="middle" font-size="9" fill="#f59e0b" font-family="sans-serif">Cost Model</text>
+
+        <!-- Multiple physical plans -->
+        <rect x="512" y="100" width="100" height="40" rx="5" fill="#14161f" stroke="#3a4060" stroke-width="0.8"/>
+        <text x="562" y="118" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">Physical Plan A</text>
+        <text x="562" y="132" text-anchor="middle" font-size="8" fill="#3a4060" font-family="sans-serif">(SMJ)</text>
+
+        <rect x="512" y="148" width="100" height="40" rx="5" fill="#14161f" stroke="#3a4060" stroke-width="0.8"/>
+        <text x="562" y="166" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">Physical Plan B</text>
+        <text x="562" y="180" text-anchor="middle" font-size="8" fill="#3a4060" font-family="sans-serif">(BroadcastJoin)</text>
+
+        <!-- cost selection -->
+        <ellipse cx="660" cy="162" rx="40" ry="24" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="660" y="157" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif" font-weight="700">Picks</text>
+        <text x="660" y="171" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">cheapest</text>
+
+        <line x1="612" y1="130" x2="620" y2="148" stroke="#22c55e" stroke-width="0.8"/>
+        <line x1="612" y1="168" x2="620" y2="162" stroke="#22c55e" stroke-width="0.8"/>
+
+        <line x1="700" y1="162" x2="726" y2="162" stroke="#22c55e" stroke-width="1.5" marker-end="url(#aqp)"/>
+
+        <rect x="728" y="140" width="82" height="44" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="769" y="158" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="700">Execute</text>
+        <text x="769" y="172" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">on cluster</text>
+
+        <!-- optimizations label at bottom -->
+        <text x="395" y="200" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">Catalyst rules: predicate pushdown, constant folding, column pruning, join reordering</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 10</strong> — Catalyst Optimizer pipeline (from board diagram in notes). Code → Unresolved Logical Plan → (Analysis) → Resolved Logical Plan → (Catalyst Rules) → Optimized Logical Plan → (Cost Models) → Physical Plan selection → Execution.</div>
+  </div>
+
+  <h3>What the Catalyst Optimizer Actually Does</h3>
+  <div class="g2">
+    <div class="card card-t"><div class="ct">Predicate Pushdown</div>Filter as early as possible — read less data from disk. <code>df.join(df2).filter(x &gt; 5)</code> becomes <code>df.filter(x &gt; 5).join(df2)</code>.</div>
+    <div class="card card-t"><div class="ct">Column Pruning</div>Only read columns actually needed. <code>SELECT id, name FROM ...</code> → only those 2 columns touched, not the entire row.</div>
+    <div class="card card-b"><div class="ct">Constant Folding</div>Evaluate constant expressions at compile time. <code>WHERE 2 + 2 = 4</code> → <code>WHERE TRUE</code>, no runtime cost.</div>
+    <div class="card card-b"><div class="ct">Join Reordering</div>Put smaller tables earlier in join chains. Reduce data volume for subsequent operations.</div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  10. DRIVER MEMORY MANAGEMENT
+═══════════════════════════════════════════ -->
+<section class="sec" id="s10">
+  <div class="sec-num">Section 10</div>
+  <h2>Driver Memory Management</h2>
+
+  <p>The Driver node has its own JVM with a specific memory layout. Your instructor gave exact numbers.</p>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 160" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- Driver container outer -->
+        <rect x="10" y="10" width="380" height="140" rx="8" fill="#0d1f45" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="200" y="32" text-anchor="middle" font-size="11" fill="#60a5fa" font-family="sans-serif" font-weight="700">Driver JVM Process</text>
+        <line x1="10" y1="38" x2="390" y2="38" stroke="#1e3a5f" stroke-width="0.8"/>
+
+        <!-- JVM Heap -->
+        <rect x="22" y="46" width="200" height="96" rx="6" fill="#0a1730" stroke="#1e3a5f" stroke-width="1"/>
+        <text x="122" y="66" text-anchor="middle" font-size="10" fill="#93c5fd" font-family="sans-serif" font-weight="600">JVM Heap Memory</text>
+        <rect x="30" y="74" width="184" height="24" rx="4" fill="#1e3a5f" stroke="#2a4a8a" stroke-width="0.5"/>
+        <text x="122" y="90" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif">SparkContext objects, DAG data</text>
+        <rect x="30" y="104" width="184" height="24" rx="4" fill="#1e3a5f" stroke="#2a4a8a" stroke-width="0.5"/>
+        <text x="122" y="120" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif">Job metadata, task scheduling</text>
+
+        <!-- Overhead memory -->
+        <rect x="234" y="46" width="144" height="96" rx="6" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="306" y="66" text-anchor="middle" font-size="10" fill="#fcd34d" font-family="sans-serif" font-weight="600">Overhead Memory</text>
+        <text x="306" y="85" text-anchor="middle" font-size="12" fill="#f59e0b" font-family="sans-serif" font-weight="700">10%</text>
+        <text x="306" y="102" text-anchor="middle" font-size="9" fill="#92400e" font-family="sans-serif">of spark.driver.memory</text>
+        <text x="306" y="118" text-anchor="middle" font-size="9" fill="#92400e" font-family="sans-serif">min 384 MB</text>
+        <text x="306" y="132" text-anchor="middle" font-size="8" fill="#78350f" font-family="sans-serif">VM overheads, GC, threads</text>
+
+        <!-- Example calculation -->
+        <rect x="420" y="10" width="390" height="140" rx="8" fill="#1a1d2a" stroke="#2e3450" stroke-width="1"/>
+        <text x="615" y="34" text-anchor="middle" font-size="11" fill="#94a3b8" font-family="sans-serif" font-weight="700">Concrete Example (from notes)</text>
+        <line x1="420" y1="42" x2="810" y2="42" stroke="#2e3450" stroke-width="0.8"/>
+        <text x="430" y="62" font-size="10" fill="#e2e8f4" font-family="sans-serif">spark.driver.memory = 1 GB</text>
+        <text x="430" y="80" font-size="10" fill="#fcd34d" font-family="sans-serif">Overhead = max(384 MB, 10% × 1 GB)</text>
+        <text x="430" y="97" font-size="10" fill="#fcd34d" font-family="sans-serif">         = max(384 MB, 100 MB)</text>
+        <text x="430" y="114" font-size="10" fill="#fcd34d" font-family="sans-serif">         = 384 MB</text>
+        <text x="430" y="135" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="700">Total Driver container = 1 GB + 384 MB = 1.384 GB</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 11</strong> — Driver memory. Your instructor's numbers: 1 GB heap + 10% overhead. Actual overhead uses max(384 MB, 10%) — so for 1 GB, overhead is 384 MB (not 100 MB), giving 1.384 GB total container. The "1.05 GB" in notes assumed ~50 MB overhead; the correct formula gives 1.384 GB at minimum.</div>
+  </div>
+
+  <div class="callout c-amber">
+    <div class="lbl">Instructor's numbers vs exact formula</div>
+    Your notes say "1 GB + 100 MB = 1.05 GB, overhead = 10%". The 10% of 1 GB = 100 MB is right, BUT the actual Spark formula is <strong>max(384 MB, 10% × memory)</strong>. For 1 GB driver, 10% = 100 MB, which is less than 384 MB, so overhead = 384 MB, total = 1.384 GB. Your instructor gave the 10% rule correctly; the 384 MB minimum is the full formula from Spark's source code.
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  11. WORKER / EXECUTOR MEMORY (JVM HEAP)
+═══════════════════════════════════════════ -->
+<section class="sec" id="s11">
+  <div class="sec-num">Section 11</div>
+  <h2>Worker / Executor Memory — JVM Heap Breakdown</h2>
+
+  <p>This is the most mathematically precise section. Every number your instructor gave has a formula behind it. Let's derive everything from first principles.</p>
+
+  <h3>Worker Memory — 4 Components (from notes)</h3>
+  <div class="g2">
+    <div class="card card-b"><div class="ct">① JVM Heap Memory</div>The main Spark memory (spark.executor.memory). Default: 1 GB. This is where all Spark operations happen.</div>
+    <div class="card card-o"><div class="ct">② Off-Heap Memory</div>Memory outside JVM, managed by OS directly. No garbage collection overhead. Default = 0 (disabled). Enable with <code>spark.memory.offHeap.enabled=true</code>.</div>
+    <div class="card card-a"><div class="ct">③ Overhead Memory</div>Same formula as driver: max(384 MB, 10% × executor memory). For JVM internal use, thread stacks, GC metadata.</div>
+    <div class="card card-p"><div class="ct">④ PySpark Main Memory</div>Memory for the Python process on the worker (when Python UDFs run). Default = 0. Separate from JVM heap.</div>
+  </div>
+
+  <h3>Inside the JVM Heap — 3 Regions</h3>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 320" xmlns="http://www.w3.org/2000/svg">
+
+        <!-- JVM heap outer box -->
+        <rect x="10" y="10" width="360" height="300" rx="8" fill="#0d1f45" stroke="#3b82f6" stroke-width="2"/>
+        <text x="190" y="34" text-anchor="middle" font-size="12" fill="#60a5fa" font-family="sans-serif" font-weight="700">JVM Heap (spark.executor.memory = E)</text>
+        <line x1="10" y1="42" x2="370" y2="42" stroke="#1e3a5f" stroke-width="1"/>
+
+        <!-- Region 1: Reserved -->
+        <rect x="22" y="50" width="336" height="50" rx="5" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="190" y="70" text-anchor="middle" font-size="12" fill="#fca5a5" font-family="sans-serif" font-weight="700">Reserved Memory</text>
+        <text x="190" y="88" text-anchor="middle" font-size="10" fill="#ef4444" font-family="sans-serif">= 300 MB (HARD-CODED constant — does NOT scale with E)</text>
+
+        <!-- Region 2: Spark Pool (60%) -->
+        <rect x="22" y="108" width="336" height="140" rx="5" fill="#052e2a" stroke="#14b8a6" stroke-width="1.5"/>
+        <text x="190" y="128" text-anchor="middle" font-size="12" fill="#2dd4bf" font-family="sans-serif" font-weight="700">Spark Memory Pool (Unified Memory)</text>
+        <text x="190" y="145" text-anchor="middle" font-size="10" fill="#0d9488" font-family="sans-serif">= spark.memory.fraction × (E − 300 MB) = 0.6 × (E − 300 MB)</text>
+
+        <!-- Storage sub-region -->
+        <rect x="32" y="155" width="145" height="80" rx="4" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="104" y="175" text-anchor="middle" font-size="10" fill="#86efac" font-family="sans-serif" font-weight="600">Storage Memory</text>
+        <text x="104" y="190" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">Caching DataFrames</text>
+        <text x="104" y="204" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">Persisting RDDs</text>
+        <text x="104" y="220" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">spark.memory.storageFraction</text>
+        <text x="104" y="234" text-anchor="middle" font-size="8" fill="#166534" font-family="sans-serif">= 0.5 of Spark Pool</text>
+
+        <!-- Executor (execution) sub-region -->
+        <rect x="185" y="155" width="161" height="80" rx="4" fill="#1e1245" stroke="#a78bfa" stroke-width="1"/>
+        <text x="266" y="175" text-anchor="middle" font-size="10" fill="#c4b5fd" font-family="sans-serif" font-weight="600">Execution Memory</text>
+        <text x="266" y="190" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">Shuffle, Sort, Join</text>
+        <text x="266" y="204" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">Aggregation ops</text>
+        <text x="266" y="220" text-anchor="middle" font-size="8" fill="#7c3aed" font-family="sans-serif">Can borrow from Storage</text>
+        <text x="266" y="234" text-anchor="middle" font-size="8" fill="#7c3aed" font-family="sans-serif">Storage cannot evict Exec</text>
+
+        <!-- Flexible boundary label -->
+        <line x1="183" y1="155" x2="183" y2="235" stroke="#f97316" stroke-width="1.5" stroke-dasharray="4,2"/>
+        <text x="183" y="250" text-anchor="middle" font-size="8" fill="#f97316" font-family="sans-serif">flexible boundary</text>
+
+        <!-- Region 3: User Memory (40%) -->
+        <rect x="22" y="256" width="336" height="46" rx="5" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="190" y="276" text-anchor="middle" font-size="12" fill="#fcd34d" font-family="sans-serif" font-weight="700">User Memory</text>
+        <text x="190" y="294" text-anchor="middle" font-size="10" fill="#f59e0b" font-family="sans-serif">= (1 − spark.memory.fraction) × (E − 300 MB) = 0.4 × (E − 300 MB)</text>
+
+        <!-- FORMULAS panel on right -->
+        <rect x="390" y="10" width="420" height="300" rx="8" fill="#09090f" stroke="#23283a" stroke-width="1"/>
+        <text x="600" y="34" text-anchor="middle" font-size="12" fill="#94a3b8" font-family="sans-serif" font-weight="700">Worked Example: E = 8 GB</text>
+        <line x1="390" y1="42" x2="810" y2="42" stroke="#23283a" stroke-width="0.8"/>
+
+        <text x="400" y="62" font-size="10" fill="#64748b" font-family="sans-serif">Executor memory (E) = 8,192 MB</text>
+        <text x="400" y="80" font-size="10" fill="#fca5a5" font-family="sans-serif">Reserved = 300 MB (constant)</text>
+        <text x="400" y="98" font-size="10" fill="#64748b" font-family="sans-serif">Remaining = 8,192 − 300 = 7,892 MB</text>
+
+        <rect x="400" y="108" width="395" height="56" rx="5" fill="#052e2a" stroke="#14b8a6" stroke-width="1"/>
+        <text x="597" y="128" text-anchor="middle" font-size="11" fill="#2dd4bf" font-family="sans-serif" font-weight="700">Spark Pool = 0.6 × 7,892 = 4,735 MB</text>
+        <text x="597" y="148" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">Storage = 0.5 × 4,735 = 2,367 MB  |  Execution = 2,367 MB (flexible)</text>
+
+        <rect x="400" y="172" width="395" height="36" rx="5" fill="#3d2a0a" stroke="#f59e0b" stroke-width="1"/>
+        <text x="597" y="196" text-anchor="middle" font-size="11" fill="#fcd34d" font-family="sans-serif" font-weight="700">User Memory = 0.4 × 7,892 = 3,157 MB</text>
+
+        <text x="400" y="230" font-size="10" fill="#64748b" font-family="sans-serif">Total check: 300 + 4,735 + 3,157 = 8,192 MB ✓</text>
+
+        <rect x="400" y="245" width="395" height="56" rx="5" fill="#1a1d2a" stroke="#3a4060" stroke-width="1"/>
+        <text x="597" y="264" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">Key parameter defaults</text>
+        <text x="400" y="283" font-size="9" fill="#64748b" font-family="sans-serif">spark.memory.fraction = 0.6 (Spark Pool %)</text>
+        <text x="400" y="297" font-size="9" fill="#64748b" font-family="sans-serif">spark.memory.storageFraction = 0.5 (Storage/Exec split inside pool)</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 12</strong> — JVM Heap breakdown (from lab notes + official Spark docs). Three regions with exact formulas. Note the <strong>flexible boundary</strong> between Storage and Execution — execution can borrow from storage (evicting cached data), but storage cannot evict active execution memory.</div>
+  </div>
+
+  <div class="math">
+    Let E = spark.executor.memory<br>
+    Reserved = 300 MB (hardcoded)<br>
+    Remaining = E − 300 MB<br>
+    Spark Pool = 0.6 × (E − 300 MB)<br>
+    User Memory = 0.4 × (E − 300 MB)<br>
+    <span style="color:var(--teal-l)">Check: 300 + Spark Pool + User Memory = E ✓</span><br><br>
+    Within Spark Pool:<br>
+    Storage Memory (initial) = 0.5 × Spark Pool <span style="color:var(--txt3)">(spark.memory.storageFraction)</span><br>
+    Execution Memory (initial) = 0.5 × Spark Pool <span style="color:var(--txt3)">(but can grow by borrowing from Storage)</span>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  12. WORKER MEMORY OUT-OF-ORDER
+═══════════════════════════════════════════ -->
+<section class="sec" id="s12">
+  <div class="sec-num">Section 12</div>
+  <h2>Worker Memory Out-of-Order: Spill &amp; Salting</h2>
+
+  <h3>Spill-over Effect</h3>
+  <p>When a Spark task's data exceeds available executor memory, Spark <strong>spills</strong> the excess to disk. This is not a crash — it's a graceful degradation. But it causes a massive performance hit because disk I/O is brought back into the picture (the thing Spark was designed to avoid).</p>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 150" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="asp" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Executor memory bar -->
+        <rect x="10" y="20" width="400" height="60" rx="6" fill="#0d1f45" stroke="#3b82f6" stroke-width="1"/>
+        <text x="210" y="42" text-anchor="middle" font-size="10" fill="#60a5fa" font-family="sans-serif">Executor Memory (full)</text>
+        <rect x="14" y="50" width="380" height="24" rx="3" fill="#1e3a5f" stroke="none"/>
+        <rect x="14" y="50" width="280" height="24" rx="3" fill="#22c55e" stroke="none"/>
+        <text x="160" y="66" text-anchor="middle" font-size="9" fill="#052e12" font-family="sans-serif">data in RAM ✓</text>
+        <rect x="296" y="50" width="98" height="24" rx="3" fill="#ef4444" stroke="none"/>
+        <text x="350" y="66" text-anchor="middle" font-size="9" fill="#fff" font-family="sans-serif">OVERFLOW</text>
+
+        <line x1="395" y1="70" x2="445" y2="100" stroke="#ef4444" stroke-width="1.5" marker-end="url(#asp)"/>
+        <text x="430" y="85" font-size="9" fill="#ef4444" font-family="sans-serif">spill</text>
+
+        <rect x="447" y="80" width="160" height="60" rx="6" fill="#2e0d0d" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="527" y="104" text-anchor="middle" font-size="11" fill="#fca5a5" font-family="sans-serif" font-weight="700">💾 Disk (spill files)</text>
+        <text x="527" y="122" text-anchor="middle" font-size="9" fill="#7f1d1d" font-family="sans-serif">serialized, written to local disk</text>
+        <text x="527" y="136" text-anchor="middle" font-size="8" fill="#7f1d1d" font-family="sans-serif">read back when needed → huge I/O cost</text>
+
+        <rect x="625" y="30" width="185" height="110" rx="6" fill="#1a1d2a" stroke="#3a4060" stroke-width="1"/>
+        <text x="712" y="50" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">Spill Causes</text>
+        <text x="635" y="68" font-size="9" fill="#64748b" font-family="sans-serif">• shuffle with too few partitions</text>
+        <text x="635" y="84" font-size="9" fill="#64748b" font-family="sans-serif">• groupBy on high-cardinality col</text>
+        <text x="635" y="100" font-size="9" fill="#64748b" font-family="sans-serif">• joins producing large outputs</text>
+        <text x="635" y="116" font-size="9" fill="#64748b" font-family="sans-serif">• data skew (one key >> others)</text>
+        <text x="635" y="132" font-size="9" fill="#f59e0b" font-family="sans-serif">→ Fix: repartition() or salting</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 13</strong> — Spill-over effect. When a task's data exceeds executor memory, overflow is written to local disk (spill files). The serialization + disk I/O + deserialization cycle kills performance. Spark logs: "SpillableIterator: Spilling data to disk".</div>
+  </div>
+
+  <h3>Salting — Fix for Data Skew</h3>
+
+  <p>Data skew = one key has <em>far</em> more rows than others. Example: 90% of your orders are from one city. One executor gets 90% of the data → memory explodes → spill → slow job.</p>
+
+  <div class="def">
+    <div class="def-term">Salting</div>
+    <div class="def-text">Artificially adding a random suffix to the join/group key to distribute the data more evenly across partitions. The key is split into N sub-keys, processed in parallel, then results are combined. Your instructor mentioned <strong>÷ 4</strong> — meaning you split into 4 salt buckets.</div>
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="asal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Before salting: skewed -->
+        <text x="190" y="15" text-anchor="middle" font-size="11" fill="#fca5a5" font-family="sans-serif" font-weight="700">Before Salting (Skewed)</text>
+        <rect x="10" y="24" width="90" height="160" rx="5" fill="#2e0d0d" stroke="#ef4444" stroke-width="2"/>
+        <text x="55" y="44" text-anchor="middle" font-size="9" fill="#fca5a5" font-family="sans-serif">Partition 1</text>
+        <text x="55" y="58" text-anchor="middle" font-size="8" fill="#ef4444" font-family="sans-serif">key="LHR"</text>
+        <text x="55" y="72" text-anchor="middle" font-size="9" fill="#ef4444" font-family="sans-serif">90,000 rows</text>
+        <text x="55" y="170" text-anchor="middle" font-size="7" fill="#7f1d1d" font-family="sans-serif">SPILL ↓</text>
+
+        <rect x="112" y="24" width="90" height="36" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="157" y="44" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Partition 2</text>
+        <text x="157" y="56" text-anchor="middle" font-size="8" fill="#4ade80" font-family="sans-serif">5,000 rows</text>
+
+        <rect x="214" y="24" width="90" height="28" rx="5" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="259" y="38" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Partition 3</text>
+        <text x="259" y="50" text-anchor="middle" font-size="8" fill="#4ade80" font-family="sans-serif">5,000 rows</text>
+
+        <!-- Divider -->
+        <line x1="330" y1="10" x2="330" y2="195" stroke="#23283a" stroke-width="1" stroke-dasharray="4,3"/>
+
+        <!-- After salting -->
+        <text x="575" y="15" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="700">After Salting ÷ 4</text>
+
+        <!-- Salt buckets -->
+        <text x="388" y="32" font-size="9" fill="#94a3b8" font-family="sans-serif">LHR_0</text>
+        <rect x="348" y="38" width="80" height="44" rx="5" fill="#052e2a" stroke="#14b8a6" stroke-width="1"/>
+        <text x="388" y="56" text-anchor="middle" font-size="9" fill="#2dd4bf" font-family="sans-serif">P1: LHR_0</text>
+        <text x="388" y="72" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">22,500 rows</text>
+
+        <rect x="348" y="90" width="80" height="44" rx="5" fill="#052e2a" stroke="#14b8a6" stroke-width="1"/>
+        <text x="388" y="108" text-anchor="middle" font-size="9" fill="#2dd4bf" font-family="sans-serif">P2: LHR_1</text>
+        <text x="388" y="124" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">22,500 rows</text>
+
+        <rect x="348" y="142" width="80" height="44" rx="5" fill="#052e2a" stroke="#14b8a6" stroke-width="1"/>
+        <text x="388" y="160" text-anchor="middle" font-size="9" fill="#2dd4bf" font-family="sans-serif">P3: LHR_2</text>
+        <text x="388" y="176" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">22,500 rows</text>
+
+        <text x="490" y="90" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">LHR_3 →</text>
+        <rect x="505" y="56" width="80" height="44" rx="5" fill="#052e2a" stroke="#14b8a6" stroke-width="1"/>
+        <text x="545" y="74" text-anchor="middle" font-size="9" fill="#2dd4bf" font-family="sans-serif">P4: LHR_3</text>
+        <text x="545" y="88" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">22,500 rows</text>
+
+        <!-- Aggregate arrow -->
+        <line x1="585" y1="78" x2="635" y2="110" stroke="#14b8a6" stroke-width="1.5" marker-end="url(#asal)"/>
+        <text x="610" y="90" font-size="9" fill="#14b8a6" font-family="sans-serif">aggregate</text>
+
+        <rect x="637" y="80" width="175" height="56" rx="6" fill="#052e2a" stroke="#14b8a6" stroke-width="1.5"/>
+        <text x="724" y="104" text-anchor="middle" font-size="11" fill="#2dd4bf" font-family="sans-serif" font-weight="700">Final LHR count</text>
+        <text x="724" y="122" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">sum all 4 sub-results = 90,000</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 14</strong> — Salting with divisor 4. The hot key "LHR" is split into LHR_0, LHR_1, LHR_2, LHR_3 using a random suffix (row_number % 4). Each gets ~22,500 rows instead of one partition getting all 90,000. After aggregation, sub-results are combined. No partition overflows.</div>
+  </div>
+
+  <div class="code">
+<span class="cmt"># Salting implementation in PySpark</span>
+<span class="kw">from</span> pyspark.sql.functions <span class="kw">import</span> rand, floor, concat, col, lit
+
+SALT_FACTOR = <span class="num">4</span>  <span class="cmt"># your instructor's ÷ 4</span>
+
+<span class="cmt"># Add salt column to the skewed DataFrame</span>
+df_salted = df.withColumn(<span class="str">"salted_key"</span>,
+    concat(col(<span class="str">"city"</span>), lit(<span class="str">"_"</span>), (floor(rand() * SALT_FACTOR)).cast(<span class="str">"string"</span>))
+)
+
+<span class="cmt"># GroupBy on salted key (distributes the work)</span>
+df_partial = df_salted.groupBy(<span class="str">"salted_key"</span>).agg(count(<span class="str">"*"</span>).alias(<span class="str">"partial_count"</span>))
+
+<span class="cmt"># Extract original key and sum partial results</span>
+df_result = df_partial \
+    .withColumn(<span class="str">"city"</span>, split(col(<span class="str">"salted_key"</span>), <span class="str">"_"</span>).getItem(<span class="num">0</span>)) \
+    .groupBy(<span class="str">"city"</span>).agg(sum(<span class="str">"partial_count"</span>).alias(<span class="str">"total_count"</span>))</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  13. PARTITION PRUNING
+═══════════════════════════════════════════ -->
+<section class="sec" id="s13">
+  <div class="sec-num">Section 13</div>
+  <h2>Partition Pruning</h2>
+
+  <p>Your instructor drew a directory tree with ISB.csv, LHR.csv, KCh.csv and showed that a filtered query only reads the relevant files. This is partition pruning.</p>
+
+  <div class="def">
+    <div class="def-term">Partition Pruning</div>
+    <div class="def-text">When data is physically organized into folders by a column value (partitioned storage), Spark's query planner reads <strong>only the directories that match the filter predicate</strong>, skipping all others. No I/O is wasted on irrelevant partitions.</div>
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 240" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="app" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/></marker><marker id="app-x" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#475569" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Directory structure -->
+        <rect x="10" y="10" width="200" height="180" rx="6" fill="#14161f" stroke="#3a4060" stroke-width="1"/>
+        <text x="110" y="32" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">📁 /data/flights/</text>
+        <text x="40" y="52" font-size="10" fill="#94a3b8" font-family="sans-serif">│</text>
+        <text x="40" y="72" font-size="10" fill="#86efac" font-family="sans-serif">├── city=ISB/</text>
+        <text x="60" y="90" font-size="9" fill="#86efac" font-family="sans-serif">│   └── ISB.csv   (10 MB)</text>
+        <text x="40" y="110" font-size="10" fill="#86efac" font-family="sans-serif">├── city=LHR/</text>
+        <text x="60" y="128" font-size="9" fill="#86efac" font-family="sans-serif">│   └── LHR.csv   (10 MB)</text>
+        <text x="40" y="148" font-size="10" fill="#475569" font-family="sans-serif">├── city=KCh/</text>
+        <text x="60" y="166" font-size="9" fill="#475569" font-family="sans-serif">│   └── KCh.csv   (10 MB)</text>
+        <text x="40" y="186" font-size="10" fill="#475569" font-family="sans-serif">└── city=QTA/ ...</text>
+
+        <!-- Query -->
+        <rect x="240" y="40" width="220" height="50" rx="6" fill="#1e1245" stroke="#a78bfa" stroke-width="1"/>
+        <text x="350" y="60" text-anchor="middle" font-size="10" fill="#c4b5fd" font-family="sans-serif" font-weight="600">Query Filter</text>
+        <text x="350" y="80" text-anchor="middle" font-size="11" fill="#a78bfa" font-family="monospace">WHERE city IN ('ISB', 'LHR')</text>
+
+        <!-- Arrows: read ISB and LHR -->
+        <line x1="210" y1="80" x2="238" y2="66" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#app)"/>
+        <line x1="210" y1="118" x2="238" y2="75" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#app)"/>
+
+        <!-- Cross out KCh and QTA -->
+        <line x1="148" y1="145" x2="208" y2="195" stroke="#ef4444" stroke-width="2"/>
+        <line x1="208" y1="145" x2="148" y2="195" stroke="#ef4444" stroke-width="2"/>
+        <text x="225" y="175" font-size="9" fill="#ef4444" font-family="sans-serif">SKIPPED</text>
+        <text x="225" y="189" font-size="8" fill="#7f1d1d" font-family="sans-serif">(pruned — no I/O)</text>
+
+        <!-- Result -->
+        <line x1="460" y1="65" x2="510" y2="65" stroke="#22c55e" stroke-width="1.5" marker-end="url(#app)"/>
+        <rect x="512" y="30" width="180" height="100" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="602" y="52" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="700">Only reads 20 MB</text>
+        <text x="602" y="68" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">ISB.csv (10 MB) ✓</text>
+        <text x="602" y="82" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">LHR.csv (10 MB) ✓</text>
+        <text x="602" y="100" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">KCh.csv — NOT READ</text>
+        <text x="602" y="116" text-anchor="middle" font-size="9" fill="#166534" font-family="sans-serif">QTA.csv — NOT READ</text>
+        <text x="602" y="130" text-anchor="middle" font-size="8" fill="#064e3b" font-family="sans-serif">Instead of reading ALL files</text>
+
+        <!-- Comparison bar -->
+        <text x="240" y="160" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">Without pruning:</text>
+        <rect x="240" y="170" width="300" height="20" rx="4" fill="#2e0d0d" stroke="#ef4444" stroke-width="1"/>
+        <text x="395" y="184" text-anchor="middle" font-size="9" fill="#fca5a5" font-family="sans-serif">Read ALL files: 40+ MB of I/O</text>
+
+        <text x="240" y="210" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">With pruning:</text>
+        <rect x="240" y="220" width="150" height="16" rx="4" fill="#052e12" stroke="#22c55e" stroke-width="1"/>
+        <text x="315" y="232" text-anchor="middle" font-size="9" fill="#86efac" font-family="sans-serif">Only 20 MB: 50% less I/O</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 15</strong> — Partition pruning from lab notes. Files are physically organized by city column. Query <code>WHERE city IN ('ISB','LHR')</code> → Spark's planner reads only city=ISB/ and city=LHR/ directories, skipping KCh/ and all others entirely.</div>
+  </div>
+
+  <div class="code">
+<span class="cmt"># Write data partitioned by city — enables partition pruning on reads</span>
+df.write.partitionBy(<span class="str">"city"</span>).parquet(<span class="str">"/data/flights/"</span>)
+<span class="cmt"># Creates: /data/flights/city=ISB/part-0.parquet</span>
+<span class="cmt">#          /data/flights/city=LHR/part-0.parquet</span>
+<span class="cmt">#          /data/flights/city=KCh/part-0.parquet</span>
+
+<span class="cmt"># Now this query reads ONLY city=ISB/ and city=LHR/ — KCh never touched</span>
+spark.read.parquet(<span class="str">"/data/flights/"</span>) \
+    .filter(col(<span class="str">"city"</span>).isin(<span class="str">"ISB"</span>, <span class="str">"LHR"</span>)) \
+    .show()</div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+  14. ADAPTIVE QUERY EXECUTION (AQE)
+═══════════════════════════════════════════ -->
+<section class="sec" id="s14">
+  <div class="sec-num">Section 14</div>
+  <h2>Adaptive Query Execution (AQE)</h2>
+
+  <p>AQE is Spark's runtime optimization system, introduced in Spark 3.0. Your instructor summarized it as "optimization techniques." Here is the precise mechanism:</p>
+
+  <div class="def">
+    <div class="def-term">Adaptive Query Execution (AQE)</div>
+    <div class="def-text">A runtime optimization framework that <strong>re-optimizes query plans mid-execution</strong> based on actual runtime statistics collected after each shuffle stage, rather than relying solely on pre-execution estimates.</div>
+  </div>
+
+  <div class="callout c-blue">
+    <div class="lbl">Why it exists</div>
+    The Catalyst Optimizer (Section 9) makes decisions <em>before</em> execution based on table statistics that may be stale or inaccurate. AQE waits until a shuffle stage completes, reads the actual partition sizes produced, and re-plans the rest of the query with ground-truth data. It's "plan as you go" rather than "plan everything upfront."
+  </div>
+
+  <h3>AQE's 3 Main Optimization Techniques</h3>
+
+  <div class="g3">
+    <div class="card card-t">
+      <div class="ct">① Coalesce Small Partitions</div>
+      After a shuffle, if 200 output partitions exist but most are tiny (e.g., 100 KB each), AQE merges them into fewer, larger partitions. Avoids the overhead of 200 task launches for tiny data.
+    </div>
+    <div class="card card-b">
+      <div class="ct">② Dynamic Join Strategy Switching</div>
+      If Catalyst planned a Shuffle Sort Merge Join but at runtime one side turns out to be small enough (&lt;10 MB), AQE switches to Broadcast Join — without re-running the whole query.
+    </div>
+    <div class="card card-o">
+      <div class="ct">③ Skew Join Optimization</div>
+      Detects skewed partitions at runtime (one partition much larger than others) and automatically splits the hot partition — similar to manual salting, but done automatically by the engine.
+    </div>
+  </div>
+
+  <div class="fig">
+    <div class="fig-body">
+      <svg width="100%" viewBox="0 0 820 200" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="aqe" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="#14b8a6" stroke-width="1.5" stroke-linecap="round"/></marker></defs>
+
+        <!-- Stage 1 -->
+        <rect x="10" y="30" width="140" height="60" rx="6" fill="#1e2535" stroke="#3a4060" stroke-width="1"/>
+        <text x="80" y="54" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">Stage 1 completes</text>
+        <text x="80" y="70" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">shuffle data written</text>
+        <text x="80" y="84" text-anchor="middle" font-size="9" fill="#64748b" font-family="sans-serif">to shuffle files</text>
+
+        <line x1="150" y1="60" x2="178" y2="60" stroke="#475569" stroke-width="1" marker-end="url(#aqe)"/>
+
+        <!-- AQE reads stats -->
+        <rect x="180" y="20" width="170" height="80" rx="6" fill="#052e2a" stroke="#14b8a6" stroke-width="1.5"/>
+        <text x="265" y="42" text-anchor="middle" font-size="11" fill="#2dd4bf" font-family="sans-serif" font-weight="700">AQE reads stats</text>
+        <text x="265" y="58" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">Partition 1: 500 MB</text>
+        <text x="265" y="72" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">Partition 2: 1 KB (tiny)</text>
+        <text x="265" y="86" text-anchor="middle" font-size="9" fill="#0d9488" font-family="sans-serif">Partition 3: 2 KB (tiny)</text>
+
+        <line x1="350" y1="60" x2="378" y2="60" stroke="#14b8a6" stroke-width="1.5" marker-end="url(#aqe)"/>
+
+        <!-- AQE re-plans -->
+        <rect x="380" y="20" width="180" height="80" rx="6" fill="#1e1245" stroke="#a78bfa" stroke-width="1.5"/>
+        <text x="470" y="42" text-anchor="middle" font-size="11" fill="#c4b5fd" font-family="sans-serif" font-weight="700">AQE re-plans</text>
+        <text x="470" y="58" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">Coalesce P2+P3 → 1 partition</text>
+        <text x="470" y="72" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">Switch SMJ → BroadcastJoin</text>
+        <text x="470" y="86" text-anchor="middle" font-size="9" fill="#a78bfa" font-family="sans-serif">Split hot partition P1</text>
+
+        <line x1="560" y1="60" x2="588" y2="60" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#aqe)"/>
+
+        <!-- Stage 2 with new plan -->
+        <rect x="590" y="20" width="220" height="80" rx="6" fill="#052e12" stroke="#22c55e" stroke-width="1.5"/>
+        <text x="700" y="42" text-anchor="middle" font-size="11" fill="#86efac" font-family="sans-serif" font-weight="700">Stage 2 runs optimally</text>
+        <text x="700" y="58" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">Fewer, balanced partitions</text>
+        <text x="700" y="72" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">Better join strategy applied</text>
+        <text x="700" y="86" text-anchor="middle" font-size="9" fill="#4ade80" font-family="sans-serif">No skew bottleneck</text>
+
+        <!-- AQE enable/disable -->
+        <rect x="10" y="130" width="800" height="58" rx="6" fill="#1a1d2a" stroke="#2e3450" stroke-width="1"/>
+        <text x="415" y="150" text-anchor="middle" font-size="10" fill="#94a3b8" font-family="sans-serif" font-weight="600">Configuration</text>
+        <text x="415" y="168" text-anchor="middle" font-size="10" fill="#64748b" font-family="monospace">spark.sql.adaptive.enabled = true  (default in Spark 3.2+)</text>
+        <text x="415" y="183" text-anchor="middle" font-size="9" fill="#475569" font-family="sans-serif">AQE is the reason Spark 3.x dramatically outperforms Spark 2.x on complex queries</text>
+      </svg>
+    </div>
+    <div class="fig-cap"><strong>Figure 16</strong> — AQE re-optimization cycle. After every shuffle stage completes, AQE reads actual partition statistics and re-plans the next stage. The original query plan becomes a living document that improves as execution proceeds.</div>
+  </div>
+
+  <div class="callout c-green">
+    <div class="lbl">AQE vs Manual Optimization</div>
+    Before AQE, developers manually tuned <code>spark.sql.shuffle.partitions</code>, manually broadcast tables, and manually implemented salting for skew. AQE automates all three of these. It's the most significant performance improvement in Spark 3.x. Enabled by default since Spark 3.2.
+  </div>
+</section>
+
+<footer style="margin-top:60px;padding-top:24px;border-top:1px solid var(--border);font-family:sans-serif;font-size:12px;color:var(--txt3);text-align:center">
+  Apache Spark Distributed Computing · Lab Notes 21/05/2026 · Sources: Official Spark docs, lab instructor notes, Cloudera community<br>
+  All formulas verified against spark.apache.org/docs and production Spark source code
+</footer>
+
+</div>
+</body>
+</html>
+

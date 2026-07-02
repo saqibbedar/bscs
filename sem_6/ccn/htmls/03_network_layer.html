@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Layer 3 — Network Layer · OSI Revision Booklet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,500&family=Source+Sans+3:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4efe6;
+    --paper-2:#ebe4d5;
+    --ink:#1b1916;
+    --muted:#5a544a;
+    --rule:#1b19161a;
+    --rule-2:#1b19162e;
+    --accent:#2b8fb3;         /* Dr. Khan's slide color for Network Layer — light blue */
+    --accent-deep:#0f5a75;
+    --accent-soft:#d3ecf5;
+    --accent-ink:#0b4053;
+    --danger:#8b2a1f;
+    --ok:#2e6b4f;
+    --warn:#a55a0b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Source Sans 3',ui-sans-serif,system-ui,sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    font-size:17px;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      radial-gradient(circle at 20% 0%, #ffffff22 0%, transparent 40%),
+      radial-gradient(circle at 85% 100%, #d3ecf533 0%, transparent 45%);
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:56px 32px 120px}
+
+  /* masthead */
+  .masthead{
+    border-top:6px solid var(--ink);
+    border-bottom:1px solid var(--rule);
+    padding:16px 0 20px;
+    margin-bottom:48px;
+    display:flex;justify-content:space-between;align-items:baseline;gap:20px;flex-wrap:wrap;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--muted);
+  }
+  .masthead .brand{color:var(--ink);font-weight:600}
+  .masthead .nav{display:flex;gap:18px}
+  .masthead .nav span{color:var(--muted)}
+  .masthead .nav .here{color:var(--ink);border-bottom:2px solid var(--accent);padding-bottom:2px}
+
+  /* Hero */
+  .hero{margin-bottom:48px}
+  .layer-badge{
+    display:inline-flex;align-items:center;gap:10px;
+    background:var(--accent);color:#fff;
+    padding:7px 16px;border-radius:999px;
+    font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px;
+    letter-spacing:.05em;
+  }
+  .layer-badge::before{
+    content:"L3";
+    background:rgba(255,255,255,.25);
+    padding:2px 8px;border-radius:999px;font-size:11px;
+  }
+  h1.title{
+    font-family:'Fraunces',serif;
+    font-weight:800;
+    font-size:clamp(48px,8vw,88px);
+    line-height:.92;
+    letter-spacing:-.025em;
+    margin:22px 0 12px;
+  }
+  .subtitle{
+    font-family:'Fraunces',serif;
+    font-style:italic;
+    font-weight:500;
+    font-size:clamp(20px,2.4vw,26px);
+    color:var(--muted);
+    margin:0 0 8px;
+    max-width:720px;
+  }
+  .analogy{
+    margin-top:32px;padding:22px 26px;
+    background:#fff;
+    border-left:4px solid var(--accent);
+    border-radius:2px;
+    box-shadow:0 1px 0 var(--rule), 0 12px 24px -20px #1b19162a;
+  }
+  .analogy .k{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--muted);text-transform:uppercase;font-weight:600;display:block;margin-bottom:6px}
+  .analogy p{margin:0;font-size:17px}
+  .analogy strong{color:var(--accent-deep)}
+
+  /* Section headings */
+  section{margin:64px 0 0;scroll-margin-top:40px}
+  h2{
+    font-family:'Fraunces',serif;
+    font-size:36px;font-weight:700;letter-spacing:-.015em;
+    margin:0 0 6px;
+    padding-bottom:8px;
+    border-bottom:1px solid var(--rule-2);
+    display:flex;align-items:baseline;gap:16px;
+  }
+  h2 .num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:13px;
+    color:var(--accent);
+    font-weight:600;
+    letter-spacing:.08em;
+  }
+  .lede{
+    font-family:'Fraunces',serif;font-style:italic;
+    color:var(--muted);margin:0 0 24px;font-size:18px;
+  }
+  h3{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:22px;margin:32px 0 10px;letter-spacing:-.01em;
+  }
+  h4{
+    font-family:'Source Sans 3',sans-serif;font-weight:700;
+    font-size:15px;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--accent-deep);margin:20px 0 8px;
+  }
+  p{margin:0 0 14px}
+
+  /* Core bullets */
+  ul.resp{list-style:none;padding:0;margin:0}
+  ul.resp li{
+    padding:18px 0;border-bottom:1px dashed var(--rule-2);
+    display:grid;grid-template-columns:28px 1fr;gap:14px;align-items:baseline;
+  }
+  ul.resp li::before{
+    content:"";
+    width:10px;height:10px;margin-top:8px;
+    background:var(--accent);border-radius:2px;transform:rotate(45deg);
+  }
+  ul.resp li strong{font-family:'Fraunces',serif;font-weight:600;font-size:18px;display:block;margin-bottom:4px}
+  ul.resp li span.tag{
+    display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;
+    background:var(--accent-soft);color:var(--accent-ink);
+    padding:2px 8px;border-radius:3px;margin-left:8px;vertical-align:middle;
+  }
+
+  /* Concept cards */
+  .concept{
+    background:#fff;border:1px solid var(--rule);
+    padding:22px 26px;margin:18px 0;border-radius:4px;
+    box-shadow:0 1px 0 var(--rule);
+  }
+  .concept h4{margin-top:0}
+  .concept .defn{
+    font-family:'Fraunces',serif;font-style:italic;
+    color:var(--accent-deep);font-size:18px;margin-bottom:10px;
+    border-left:3px solid var(--accent);padding-left:12px;
+  }
+
+  /* Monospace / ASCII */
+  pre.ascii{
+    font-family:'JetBrains Mono',monospace;
+    background:#1b1916;color:#e8e0cc;
+    padding:22px 24px;border-radius:4px;
+    font-size:13px;line-height:1.5;
+    overflow-x:auto;
+    box-shadow:inset 0 0 0 1px #ffffff10;
+  }
+  pre.ascii .hl{color:#ffd369}
+  pre.ascii .dim{color:#8a8578}
+  code, .mono{font-family:'JetBrains Mono',monospace;font-size:.92em;background:#1b19160d;padding:2px 6px;border-radius:3px}
+
+  /* Diagram caption and steps */
+  .fig{
+    margin:24px 0 32px;
+    background:#fff;border:1px solid var(--rule);
+    border-radius:4px;overflow:hidden;
+  }
+  .fig .cap{
+    padding:10px 18px;
+    background:var(--paper-2);
+    border-bottom:1px solid var(--rule);
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;
+  }
+  .fig .body{padding:0}
+  .fig pre.ascii{margin:0;border-radius:0;box-shadow:none}
+  .fig .steps{padding:18px 24px 6px;border-top:1px solid var(--rule)}
+  .fig .steps h5{
+    font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted);font-weight:600;margin:0 0 8px;
+  }
+  .fig .steps ol{margin:0 0 12px;padding-left:22px}
+  .fig .steps li{margin-bottom:6px}
+  .fig .examiner{
+    margin:12px 0 18px;padding:12px 16px;
+    background:var(--accent-soft);border-left:3px solid var(--accent);
+    border-radius:2px;font-size:15px;
+  }
+  .fig .examiner strong{color:var(--accent-deep);font-family:'Fraunces',serif;font-weight:600;font-style:italic}
+
+  /* Tables */
+  table{
+    width:100%;border-collapse:collapse;margin:16px 0 24px;
+    background:#fff;border:1px solid var(--rule);font-size:15px;
+  }
+  th,td{padding:11px 14px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+  th{
+    background:var(--paper-2);
+    font-family:'JetBrains Mono',monospace;font-size:11px;
+    letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;
+  }
+  tr:last-child td{border-bottom:0}
+  td.mono,th.mono{font-family:'JetBrains Mono',monospace;font-size:13px}
+
+  /* Callouts */
+  .callout{
+    margin:20px 0;padding:16px 20px;
+    border-radius:4px;border-left:4px solid;
+    background:#fff;box-shadow:0 1px 0 var(--rule);
+  }
+  .callout.warn{border-color:var(--warn);background:#fdf4e7}
+  .callout.warn::before{content:"⚠ TRAP ";font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--warn)}
+  .callout.key{border-color:var(--accent);background:var(--accent-soft)}
+  .callout.key::before{content:"★ KEY ";font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--accent-deep)}
+  .callout.mem{border-color:var(--ok);background:#e6f2ec}
+  .callout.mem::before{content:"◆ MNEMONIC ";font-family:'JetBrains Mono',monospace;font-weight:700;font-size:11px;letter-spacing:.08em;color:var(--ok)}
+
+  /* Stars */
+  .stars{font-family:'JetBrains Mono',monospace;font-size:22px;color:var(--accent);letter-spacing:2px}
+
+  /* Question blocks */
+  .qset{margin:22px 0}
+  .qset h3{margin-bottom:12px}
+  ol.q{padding-left:22px;margin:0}
+  ol.q li{margin-bottom:10px}
+  .qtype{
+    display:inline-block;margin-right:8px;
+    font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;
+    letter-spacing:.08em;color:#fff;background:var(--muted);
+    padding:2px 7px;border-radius:3px;vertical-align:middle;
+  }
+  .qtype.concept{background:var(--accent)}
+  .qtype.short{background:var(--ok)}
+  .qtype.diag{background:var(--warn)}
+  .qtype.scen{background:var(--danger)}
+
+  /* Slide source footer */
+  .src{
+    margin-top:18px;font-family:'JetBrains Mono',monospace;font-size:11px;
+    color:var(--muted);letter-spacing:.03em;
+  }
+  .src::before{content:"◷ ";color:var(--accent)}
+
+  /* Flag (supplement notice) */
+  .flag{
+    margin:14px 0;padding:10px 14px;
+    background:#fff7e0;border:1px dashed #c9a24d;border-radius:3px;
+    font-size:14px;color:#6b4a0b;
+  }
+  .flag strong{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+
+  /* Footer */
+  footer{
+    margin-top:80px;padding-top:24px;border-top:1px solid var(--rule);
+    font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;
+  }
+
+  @media print{
+    body{background:#fff}
+    .wrap{max-width:100%;padding:20px}
+    pre.ascii{background:#f5f5f5;color:#000}
+    .masthead{break-after:avoid}
+    section{break-inside:avoid-page}
+    .fig,.concept,.callout{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="masthead">
+  <div class="brand">OSI Revision Booklet · Dr. Muazzam A. Khan Lectures</div>
+  <div class="nav"><span>L1 Physical</span><span>L2 Data Link</span><span class="here">L3 Network</span><span>L4 Transport</span><span>L5 Session</span><span>L6 Presentation</span><span>L7 Application</span></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════════════════════════════ -->
+<header class="hero">
+  <span class="layer-badge">Network Layer</span>
+  <h1 class="title">The layer<br>that finds<br>the way.</h1>
+  <p class="subtitle">Source-to-destination delivery of packets across multiple networks — logical addressing, routing, and internetworking.</p>
+
+  <div class="analogy">
+    <span class="k">Real-world analogy</span>
+    <p>Think of the <strong>postal system at the inter-city level</strong>. Layer 2 (Data Link) is the local postman who carries mail between two nearby houses on one street. Layer 3 (Network) is the sorting hub that decides: "This letter from Islamabad is addressed to Lahore — route it via Rawalpindi, then Jhelum, then Gujranwala." The Network Layer doesn't carry the letter itself; it decides <em>which path</em> the letter takes across the entire postal network, hop by hop, until the destination city is reached.</p>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     1 · LAYER OVERVIEW
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="overview">
+  <h2><span class="num">§ 01</span> Layer Overview</h2>
+  <p class="lede">At-a-glance identity of Layer 3.</p>
+
+  <table>
+    <tr><th style="width:200px">Attribute</th><th>Value</th></tr>
+    <tr><td>Layer Number</td><td class="mono">3 (counted from the bottom)</td></tr>
+    <tr><td>Layer Name</td><td>Network Layer</td></tr>
+    <tr><td>One-line summary</td><td><em>Responsible for the delivery of individual packets from the source host to the destination host — across multiple networks if needed.</em></td></tr>
+    <tr><td>Delivery scope</td><td class="mono">Source-to-destination (host-to-host, end-to-end)</td></tr>
+    <tr><td>Data Unit (PDU)</td><td class="mono">Packet (also: datagram)</td></tr>
+    <tr><td>Addressing</td><td class="mono">Logical addresses — IP addresses (IPv4 / IPv6)</td></tr>
+    <tr><td>Key device</td><td>Router</td></tr>
+    <tr><td>Key protocols</td><td class="mono">IP, ICMP, IGMP, ARP, RARP</td></tr>
+    <tr><td>Operates <em>above</em></td><td>Data Link Layer (L2) — which handles node-to-node delivery</td></tr>
+    <tr><td>Operates <em>below</em></td><td>Transport Layer (L4) — which handles process-to-process delivery</td></tr>
+  </table>
+
+  <p class="src">Source: Lec 2 Slides 33–36 · Lec 5 Slides 2–9 · diagram on Slide 42 (TCP/IP and OSI model)</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     2 · CORE RESPONSIBILITIES
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="responsibilities">
+  <h2><span class="num">§ 02</span> Core Responsibilities</h2>
+  <p class="lede">The three duties Dr. Khan's Slide 34 pins to this layer, expanded.</p>
+
+  <ul class="resp">
+    <li>
+      <div>
+        <strong>Logical Addressing <span class="tag">IP</span></strong>
+        Data Link addressing (MAC) only works within a single physical network — it cannot identify a host that lives on the other side of a router. The Network Layer adds a <em>logical</em> address (the IP address) to every packet in the header. This logical address is hierarchical and globally meaningful, so a packet can be routed across any number of intermediate networks and still find its destination.
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Internetworking <span class="tag">L3 superpower</span></strong>
+        The Network Layer is what makes "the Internet" possible. It <em>connects together</em> networks that may use completely different Layer-1 / Layer-2 technologies (Ethernet LAN, Wi-Fi, fibre backbone, cellular) and presents them to the upper layers as a single, uniform logical network. The packet stays the same; only the Layer-2 frame changes at every hop.
+      </div>
+    </li>
+    <li>
+      <div>
+        <strong>Routing <span class="tag">path selection</span></strong>
+        When multiple paths exist between source and destination, routers at the Network Layer choose which path a packet takes. Routing is done using <em>routing tables</em>, which are built either manually (static routes) or automatically by routing protocols (RIP, EIGRP, OSPF, BGP). At each router, the packet is forwarded one hop closer to its final destination — this process is called <em>next-hop forwarding</em>.
+      </div>
+    </li>
+  </ul>
+
+  <div class="callout key">
+    <p style="margin:6px 0 0"><strong>Quick compare.</strong> Data Link says "deliver this frame to the next node on this wire." Network says "deliver this packet to that host, wherever it is in the world." Transport says "deliver this data to that specific process on that host." All three say "delivery" — but across different scopes.</p>
+  </div>
+  <p class="src">Source: Lec 2 Slide 34 (Duties of Network Layer) · Lec 5 Slide 2 (Objectives)</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     3 · DETAILED CONCEPTS
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="concepts">
+  <h2><span class="num">§ 03</span> Detailed Concepts</h2>
+  <p class="lede">Every idea Lec 5 touches on, expanded with the depth a slide-deck bullet cannot give you.</p>
+
+  <h3>3.1 · Role of the Network Layer</h3>
+  <div class="concept">
+    <p class="defn">The Network Layer describes communication from one end device to another end device, regardless of the number of intermediate networks between them.</p>
+    <p>End devices (hosts) are where data originates and terminates. Between any two end devices sit zero, one, or many <strong>intermediary devices (routers)</strong>. The Network Layer's contract with the Transport Layer above is simple: "Hand me a segment, give me a destination IP, and I will deliver it — I do not promise <em>how</em> or guarantee that it will arrive, but I will try my best to route it there."</p>
+    <p>This is why IP is described as a <strong>best-effort, connectionless, unreliable, media-independent</strong> protocol. Each of those four words is loaded — Dr. Khan dedicates a separate slide to each (Lec 5 Slides 4–7), and they are explained individually below.</p>
+  </div>
+
+  <h3>3.2 · IPv4 — the basic characteristics</h3>
+  <div class="concept">
+    <h4>Connectionless</h4>
+    <p class="defn">No connection is established before sending a packet; no handshake; no state kept about the destination.</p>
+    <p>Each IP packet is treated as an independent entity. The source does not call the destination first to say "I'm about to send 1,000 bytes, get ready." It simply drops the packet onto the network and hopes it arrives. This is the opposite of TCP, which is connection-oriented and does a 3-way handshake first.</p>
+    <p><em>Implication for the student:</em> two consecutive packets from the same source to the same destination may take <strong>completely different routes</strong>, arrive <strong>out of order</strong>, or one may arrive while the other is lost. IP does not care. If order and reliability matter, that's TCP's job — not IP's.</p>
+
+    <h4>Best-effort (unreliable)</h4>
+    <p class="defn">IP does not guarantee that a packet will be delivered. It does not retransmit lost packets, it does not acknowledge received packets, and it does not detect duplicates.</p>
+    <p>"Best effort" does <em>not</em> mean "careless" — it means the Network Layer will do its reasonable best to forward the packet, but it offers no delivery guarantee. If a router's queue is full, the packet is dropped silently. If a link goes down mid-transit, the packet is discarded. Reliability, if needed, must be added by a higher layer (TCP).</p>
+    <div class="callout warn"><p style="margin:6px 0 0">Common exam confusion: "unreliable" is a <em>technical term</em>, not a value judgement. It means "no delivery guarantees." IP is unreliable <em>by design</em> — to keep it fast, simple, and scalable to billions of hosts. Reliability costs overhead; IP pushes that cost up to whoever needs it.</p></div>
+
+    <h4>Media-independent</h4>
+    <p class="defn">The Network Layer does not care what physical medium the packet traverses. Ethernet cable, fibre optic, Wi-Fi, satellite, cellular — all look identical to IP.</p>
+    <p>This is the single most important engineering decision in the design of the Internet. Because IP is media-independent, a packet from your laptop (Wi-Fi) can cross an undersea fibre cable, a satellite link, a corporate Ethernet LAN, and a 5G radio tower on its way to a server — and the packet itself is identical at every step. Only the Layer-2 encapsulation changes (the frame is rebuilt at every hop), never the Layer-3 packet.</p>
+    <p>There is one Layer-3-level concession to media diversity: the <strong>MTU</strong> (Maximum Transmission Unit) of different media varies (Ethernet = 1500 bytes, classic PPP = 1500, older serial = 576). When a packet is too large for the next hop's MTU, the Network Layer can perform <em>fragmentation</em> — splitting a large packet into smaller ones that fit, and letting the destination reassemble them.</p>
+  </div>
+
+  <h3>3.3 · Encapsulation: segment → packet</h3>
+  <div class="concept">
+    <p>Above the Network Layer, the Transport Layer produces <strong>segments</strong> (TCP) or <strong>datagrams</strong> (UDP). The Network Layer takes the segment, prepends its own header (source IP, destination IP, TTL, protocol number, etc.), and the result is called a <strong>packet</strong>. That packet is then handed down to Layer 2, which prepends its own header and trailer and hands the result (a <em>frame</em>) to Layer 1.</p>
+    <p>At the destination host, the process runs in reverse: Layer 2 strips off its frame header/trailer and hands a packet up to Layer 3; Layer 3 strips off the IP header and hands a segment up to Layer 4; and so on. This is called <strong>decapsulation</strong>.</p>
+    <p>At every router along the way, the Layer-2 frame is discarded and rebuilt for the next hop, but the Layer-3 packet is preserved unchanged (except TTL is decremented, and checksum is recomputed).</p>
+  </div>
+
+  <h3>3.4 · IPv4 header — the fields that matter</h3>
+  <div class="concept">
+    <p>Lec 5 Slide 10 titles itself "Major Header Fields" — the slide is just a diagram header, so here are the fields the Cisco curriculum expects you to know:</p>
+    <table>
+      <tr><th>Field</th><th>Size</th><th>Purpose</th></tr>
+      <tr><td>Version</td><td class="mono">4 bits</td><td>IP version in use (4 for IPv4, 6 for IPv6)</td></tr>
+      <tr><td>IHL (Header Length)</td><td class="mono">4 bits</td><td>Length of the IP header in 32-bit words (min 5 = 20 bytes)</td></tr>
+      <tr><td>Type of Service / DSCP</td><td class="mono">8 bits</td><td>QoS priority marking for routers</td></tr>
+      <tr><td>Total Length</td><td class="mono">16 bits</td><td>Total packet size in bytes (header + data), max 65,535</td></tr>
+      <tr><td>Identification</td><td class="mono">16 bits</td><td>Unique ID for a packet — used for reassembling fragments</td></tr>
+      <tr><td>Flags</td><td class="mono">3 bits</td><td>Fragmentation control (DF = Don't Fragment, MF = More Fragments)</td></tr>
+      <tr><td>Fragment Offset</td><td class="mono">13 bits</td><td>Where this fragment belongs in the original packet</td></tr>
+      <tr><td><strong>TTL (Time to Live)</strong></td><td class="mono">8 bits</td><td><strong>Decremented by 1 at every router. If it reaches 0, the packet is dropped.</strong> Prevents infinite loops.</td></tr>
+      <tr><td>Protocol</td><td class="mono">8 bits</td><td>Which upper-layer protocol owns the payload (TCP=6, UDP=17, ICMP=1)</td></tr>
+      <tr><td>Header Checksum</td><td class="mono">16 bits</td><td>Error-check for the header only (not the data)</td></tr>
+      <tr><td><strong>Source IP Address</strong></td><td class="mono">32 bits</td><td>Logical address of the sending host</td></tr>
+      <tr><td><strong>Destination IP Address</strong></td><td class="mono">32 bits</td><td>Logical address of the receiving host</td></tr>
+      <tr><td>Options + Padding</td><td class="mono">variable</td><td>Rarely used; record-route, timestamp, security</td></tr>
+    </table>
+    <div class="callout mem"><p style="margin:6px 0 0">The three you <em>must</em> remember cold for exam: <strong>Source IP, Destination IP, TTL.</strong> Every routing-loop / traceroute / ping question hinges on at least one of these.</p></div>
+  </div>
+
+  <h3>3.5 · Grouping devices into networks — and <em>why</em></h3>
+  <div class="concept">
+    <p>Lec 5 Slides 11–16 spend six slides on the same underlying question: why don't we just put every device in the world on one flat network? The answers, organised:</p>
+
+    <h4>(a) Performance</h4>
+    <p>A single flat network is a shared medium (or behaves like one). Every broadcast from any host reaches every other host. With thousands of devices, the bandwidth consumed by broadcasts alone would saturate the network. Dividing into smaller networks contains broadcast traffic — each subnet is its own <strong>broadcast domain</strong>, and routers do not forward Layer-2 broadcasts between them.</p>
+
+    <h4>(b) Security</h4>
+    <p>On a flat network, every host can see every other host's traffic. Dividing devices into subnets lets administrators place firewall / ACL rules at the boundary routers, blocking traffic between subnets unless explicitly allowed. A compromised device in the guest-Wi-Fi subnet cannot automatically reach hosts in the server subnet.</p>
+
+    <h4>(c) Addressing scale</h4>
+    <p>A flat addressing scheme (think: every phone in the world with a random 10-digit number) makes routing tables unmanageably huge. Hierarchical addressing — country code, city code, subscriber number — makes routing tractable. IP addressing does the same: the network portion (prefix) tells routers which <em>network</em> a host is on; the host portion identifies the specific device <em>within</em> that network. Routers only need to know the paths to networks, not to individual hosts.</p>
+
+    <h4>(d) Containment of failures</h4>
+    <p>A routing loop, broadcast storm, or misconfigured host in a subnet stays within that subnet. Without hierarchical division, a single fault can take down an entire organisation.</p>
+  </div>
+
+  <h3>3.6 · Hierarchical addressing</h3>
+  <div class="concept">
+    <p class="defn">An address that encodes <em>where</em> the host is, not just <em>who</em> it is.</p>
+    <p>An IPv4 address is 32 bits, conventionally written as four dotted decimal octets, e.g. <code>192.168.10.25</code>. The address is split into two parts by a <strong>subnet mask</strong>:</p>
+    <ul>
+      <li><strong>Network portion</strong> — identifies the network. All hosts in the same network share the same network portion.</li>
+      <li><strong>Host portion</strong> — identifies the specific device within that network.</li>
+    </ul>
+    <p>This is exactly analogous to a postal address: "25, Street 10, Sector F-7, Islamabad." A router far away doesn't care about Street 10 or house 25 — it only cares about getting the letter to Islamabad. Once in Islamabad, a local router cares about Sector F-7. Once in F-7, the local postman cares about Street 10, house 25. Each layer of the hierarchy is handled by the router at the appropriate scope. <em>Hierarchical addressing is what makes routing tables small enough to be usable.</em></p>
+  </div>
+
+  <h3>3.7 · Routes, next-hop, and packet forwarding</h3>
+  <div class="concept">
+    <p>Lec 5 Slides 17–25 are entirely about this — it is the largest single concept block in the lecture.</p>
+
+    <h4>What is a route?</h4>
+    <p>A <strong>route</strong> is an entry in a router's routing table. Dr. Khan's slide 20 says a route has <em>three key parts</em>:</p>
+    <ol>
+      <li><strong>Destination network</strong> — the network we are trying to reach (expressed as a prefix, e.g. <code>10.1.2.0/24</code>).</li>
+      <li><strong>Next-hop address</strong> — the IP address of the <em>adjacent</em> router to which this router should forward the packet in order to get it closer to the destination. The router does not know the entire path; it only knows "the next guy."</li>
+      <li><strong>Outgoing interface</strong> — the local interface (e.g. <code>GigabitEthernet0/1</code>) through which the packet must leave this router to reach the next hop.</li>
+    </ol>
+
+    <h4>What is a gateway?</h4>
+    <p>A <strong>gateway</strong> is the intermediary device (a router) that allows devices to communicate across sub-divided networks. When your laptop wants to reach a server on a different subnet, it sends the packet to its "default gateway" — a router whose job is to look at the destination IP, consult its routing table, and forward the packet onward. The gateway is the bridge between networks.</p>
+
+    <h4>Packet forwarding — the core decision loop</h4>
+    <p>When a packet arrives at a router, the router:</p>
+    <ol>
+      <li>Strips the Layer-2 frame (discards source/dest MAC — they were for the previous hop only).</li>
+      <li>Decrements the TTL by 1. If TTL is now 0, drops the packet and sends an ICMP "Time Exceeded" message back to the source (this is how <code>traceroute</code> works).</li>
+      <li>Looks up the destination IP address in the routing table using <strong>longest prefix match</strong>.</li>
+      <li>Finds the next-hop IP and outgoing interface.</li>
+      <li>Recomputes the IP header checksum (because TTL changed).</li>
+      <li>Builds a new Layer-2 frame for the outgoing interface, with source MAC = router's own MAC, destination MAC = next-hop router's MAC (found via ARP).</li>
+      <li>Transmits the frame out the chosen interface.</li>
+    </ol>
+    <p>The crucial insight: <strong>the IP packet is unchanged from source to destination (except TTL and checksum). The Layer-2 frame is rebuilt at every hop.</strong></p>
+  </div>
+
+  <h3>3.8 · Static vs. dynamic routes</h3>
+  <div class="concept">
+    <table>
+      <tr><th>Aspect</th><th>Static</th><th>Dynamic</th></tr>
+      <tr><td>How is the route added?</td><td>Manually, by admin</td><td>Automatically, by a routing protocol</td></tr>
+      <tr><td>Adapts to topology changes?</td><td>No — stays until admin edits</td><td>Yes — recomputes on link failure</td></tr>
+      <tr><td>CPU / bandwidth cost</td><td>Zero</td><td>Periodic or triggered updates</td></tr>
+      <tr><td>Best used for</td><td>Small, stable networks; stub connections; security/default routes</td><td>Large, changing networks</td></tr>
+      <tr><td>Examples</td><td><code>ip route 10.1.1.0 255.255.255.0 192.168.1.2</code></td><td>RIP, EIGRP, OSPF, BGP</td></tr>
+    </table>
+    <p>Dr. Khan's Slide 23 explicitly notes that both static and dynamic routes are needed: a pure-static network doesn't scale, but a pure-dynamic network has no manual overrides for special cases (default route to ISP, blackhole routes for security, etc.).</p>
+  </div>
+
+  <h3>3.9 · Routing protocols — preview</h3>
+  <div class="concept">
+    <p>Lec 5 only mentions routing protocols in passing; Lec 6 is where they are explored. For Layer-3 completeness, the essentials:</p>
+    <ul>
+      <li><strong>Distance Vector</strong> (RIP, IGRP, EIGRP) — each router knows only the <em>distance</em> (hop count or metric) and the <em>vector</em> (direction) to each destination. Periodic updates to neighbours. Simple, but slow to converge.</li>
+      <li><strong>Link State</strong> (OSPF, IS-IS) — each router floods the entire network with information about its own links; every router independently builds a complete map and runs Dijkstra's shortest-path algorithm. Faster convergence, more CPU/memory.</li>
+      <li><strong>Path Vector</strong> (BGP) — used between autonomous systems (Internet backbone). Carries full AS-path to prevent loops.</li>
+    </ul>
+  </div>
+
+  <p class="src">Source: Lec 5 Slides 2–25 · Lec 2 Slides 33–36 · Slide 42 for protocol mapping</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     4 · SUBNETTING — first-class section, by request
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="subnetting">
+  <h2><span class="num">§ 04</span> Subnetting — the full treatment</h2>
+  <p class="lede">Not explicitly in the slides — but essential to the Network Layer and frequently examined. Theory → mask arithmetic → worked examples → VLSM.</p>
+
+  <div class="flag"><strong>Note</strong> · Lec 5's slide 16 says "describe the purpose of further subdividing networks into smaller networks" but the slide itself has no content. Below is the standard Cisco CCNA treatment of subnetting to fill the gap, since you explicitly asked for it.</div>
+
+  <h3>4.1 · Why subnetting exists</h3>
+  <div class="concept">
+    <p>Classful IP addressing (A, B, C) was the original scheme:</p>
+    <table>
+      <tr><th>Class</th><th>First octet</th><th>Default mask</th><th>Networks</th><th>Hosts / net</th></tr>
+      <tr><td>A</td><td class="mono">1 – 126</td><td class="mono">/8 (255.0.0.0)</td><td class="mono">126</td><td class="mono">16,777,214</td></tr>
+      <tr><td>B</td><td class="mono">128 – 191</td><td class="mono">/16 (255.255.0.0)</td><td class="mono">16,384</td><td class="mono">65,534</td></tr>
+      <tr><td>C</td><td class="mono">192 – 223</td><td class="mono">/24 (255.255.255.0)</td><td class="mono">2,097,152</td><td class="mono">254</td></tr>
+      <tr><td>D</td><td class="mono">224 – 239</td><td colspan="3">Multicast (no mask)</td></tr>
+      <tr><td>E</td><td class="mono">240 – 255</td><td colspan="3">Experimental / reserved</td></tr>
+    </table>
+    <p>The problem: a company with 500 hosts cannot fit in a Class C (254 hosts) but wastes 65,034 addresses if given a Class B. Solution: <strong>subnetting</strong> — borrow bits from the host portion to create more (smaller) networks from a single classful block. This is the origin of <strong>CIDR</strong> (Classless Inter-Domain Routing), where the mask is written as a prefix length (e.g. <code>/23</code>) and is <em>not</em> tied to class boundaries.</p>
+  </div>
+
+  <h3>4.2 · The subnet mask</h3>
+  <div class="concept">
+    <p>A 32-bit mask where <strong>1-bits mark the network portion</strong> and <strong>0-bits mark the host portion</strong>. ANDing the IP with the mask yields the network address.</p>
+    <pre class="ascii"><span class="dim">             Network prefix                Host</span>
+IP      : 11000000.10101000.00001010.<span class="hl">00011001</span>   = 192.168.10.25
+Mask    : 11111111.11111111.11111111.<span class="hl">00000000</span>   = 255.255.255.0 (/24)
+AND     : 11000000.10101000.00001010.00000000   = 192.168.10.0   <span class="dim">← network address</span></pre>
+    <p>The <strong>/N notation</strong> (CIDR) simply counts the number of 1-bits in the mask. <code>/24</code> means 24 ones followed by 8 zeros, i.e. <code>255.255.255.0</code>.</p>
+  </div>
+
+  <h3>4.3 · Three reserved addresses per subnet</h3>
+  <div class="concept">
+    <table>
+      <tr><th>Address</th><th>How formed</th><th>Usage</th></tr>
+      <tr><td>Network address</td><td>All host bits = 0</td><td>Identifies the subnet itself. Never assigned to a host.</td></tr>
+      <tr><td>Broadcast address</td><td>All host bits = 1</td><td>Sends to every host in this subnet. Never assigned.</td></tr>
+      <tr><td>Usable host range</td><td>Everything between</td><td>These are the addresses you can actually assign.</td></tr>
+    </table>
+    <p>Therefore, the number of <em>usable</em> hosts in a subnet is <code>2^h − 2</code>, where <code>h</code> is the number of host bits.</p>
+  </div>
+
+  <h3>4.4 · The two key formulas</h3>
+  <div class="concept">
+    <pre class="ascii"><span class="hl">Number of subnets</span>       = 2^n        where n = bits borrowed from host portion
+<span class="hl">Usable hosts per subnet</span> = 2^h − 2    where h = remaining host bits
+<span class="hl">Block size</span>              = 256 − mask octet value  (in the "interesting" octet)</pre>
+    <p>The "block size" trick is how you subnet quickly without a calculator. If the mask octet is <code>192</code>, block size = <code>256 − 192 = 64</code>, so subnets increment by 64 in that octet: <code>.0, .64, .128, .192</code>.</p>
+  </div>
+
+  <h3>4.5 · Worked example — subnetting a /24 into /27s</h3>
+  <div class="fig">
+    <div class="cap">Figure 4.5 · 192.168.10.0/24 subnetted into /27 networks</div>
+    <div class="body">
+      <pre class="ascii">Given : 192.168.10.0/24   →   want subnets of /27
+
+Bits borrowed n  = 27 − 24 = 3
+Number of subnets = 2^3 = 8
+Host bits h     = 32 − 27 = 5
+Usable hosts    = 2^5 − 2 = 30
+Mask            = 255.255.255.224   (last octet: 11100000)
+Block size      = 256 − 224 = 32
+
+┌──────────────────────────────────────────────────────────────┐
+│  #   Network         First host      Last host      Broadcast │
+├──────────────────────────────────────────────────────────────┤
+│  0   192.168.10.0    .1              .30             .31      │
+│  1   192.168.10.32   .33             .62             .63      │
+│  2   192.168.10.64   .65             .94             .95      │
+│  3   192.168.10.96   .97             .126            .127     │
+│  4   192.168.10.128  .129            .158            .159     │
+│  5   192.168.10.160  .161            .190            .191     │
+│  6   192.168.10.192  .193            .222            .223     │
+│  7   192.168.10.224  .225            .254            .255     │
+└──────────────────────────────────────────────────────────────┘</pre>
+    </div>
+    <div class="steps">
+      <h5>Step-by-step</h5>
+      <ol>
+        <li>Determine bits borrowed: new prefix (27) minus original prefix (24) = 3 bits.</li>
+        <li>Compute number of subnets: 2<sup>3</sup> = 8.</li>
+        <li>Compute host bits remaining: 32 − 27 = 5.</li>
+        <li>Compute usable hosts: 2<sup>5</sup> − 2 = 30.</li>
+        <li>Compute block size: 256 − 224 = 32. So subnets increment by 32 in the last octet.</li>
+        <li>List subnet 0 starting at 0, subnet 1 at 32, subnet 2 at 64, … subnet 7 at 224.</li>
+        <li>In each subnet: first address = network, first+1 = first usable host, last−1 = last usable host, last = broadcast.</li>
+      </ol>
+      <div class="examiner"><strong>Examiner expects:</strong> given any network prefix and a target new prefix (or required number of hosts), you can produce this table cleanly in under 3 minutes. The block-size trick is the shortcut.</div>
+    </div>
+  </div>
+
+  <h3>4.6 · VLSM — Variable Length Subnet Masking</h3>
+  <div class="concept">
+    <p>Classical subnetting splits a network into <em>equally sized</em> subnets. But real networks aren't equal — you might need one subnet with 100 hosts, another with 50, two with 10, and a couple of point-to-point links with 2 hosts each. Using equal subnets wastes huge amounts of address space.</p>
+    <p><strong>VLSM</strong> is the technique of subnetting a subnet — applying different masks to different portions of the same address block so each subnet is exactly the size it needs.</p>
+    <p><em>Rule of thumb:</em> always allocate from <strong>largest requirement to smallest</strong>. Take the biggest subnet first, then the next biggest, and so on. This prevents address fragmentation.</p>
+
+    <h4>Worked VLSM example</h4>
+    <pre class="ascii">Given block: 192.168.1.0/24
+Requirements: A = 100 hosts, B = 50 hosts, C = 20 hosts, D = 2 hosts (P2P)
+
+Step 1: size each subnet (round UP to next power of 2, then add 2 for net+bcast)
+  A = 100 → need 7 host bits (2^7−2 = 126 ≥ 100) → /25 → block size 128
+  B =  50 → need 6 host bits (2^6−2 =  62 ≥  50) → /26 → block size  64
+  C =  20 → need 5 host bits (2^5−2 =  30 ≥  20) → /27 → block size  32
+  D =   2 → need 2 host bits (2^2−2 =   2 ≥   2) → /30 → block size   4
+
+Step 2: allocate largest first
+  A : 192.168.1.0/25       hosts .1   – .126     bcast .127
+  B : 192.168.1.128/26     hosts .129 – .190     bcast .191
+  C : 192.168.1.192/27     hosts .193 – .222     bcast .223
+  D : 192.168.1.224/30     hosts .225 – .226     bcast .227
+  ( 192.168.1.228 – .255 remains free for future use )</pre>
+    <div class="callout mem"><p style="margin:6px 0 0">Memory aid — <strong>"Largest first, block by block."</strong> If you allocate smallest first, you end up with a large subnet that no longer fits into a contiguous block and you have to re-do the whole plan.</p></div>
+  </div>
+
+  <h3>4.7 · Special IPv4 ranges you must recognise</h3>
+  <div class="concept">
+    <table>
+      <tr><th>Range</th><th>Purpose</th></tr>
+      <tr><td class="mono">10.0.0.0/8</td><td>Private (RFC 1918) — Class A private</td></tr>
+      <tr><td class="mono">172.16.0.0/12</td><td>Private (RFC 1918) — Class B private</td></tr>
+      <tr><td class="mono">192.168.0.0/16</td><td>Private (RFC 1918) — Class C private</td></tr>
+      <tr><td class="mono">127.0.0.0/8</td><td>Loopback (127.0.0.1 = "this host")</td></tr>
+      <tr><td class="mono">169.254.0.0/16</td><td>APIPA — link-local, auto-assigned when DHCP fails</td></tr>
+      <tr><td class="mono">224.0.0.0/4</td><td>Multicast (Class D)</td></tr>
+      <tr><td class="mono">255.255.255.255</td><td>Limited broadcast — entire local subnet</td></tr>
+      <tr><td class="mono">0.0.0.0/0</td><td>Default route — "the whole Internet"</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     5 · DIAGRAMS (from slides)
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="diagrams">
+  <h2><span class="num">§ 05</span> Diagrams — recreated from slides</h2>
+  <p class="lede">Every Layer-3 diagram Dr. Khan shows, redrawn as ASCII with step-by-step walkthrough and the examiner's expectation.</p>
+
+  <!-- DIAGRAM 1 : Source to destination delivery -->
+  <div class="fig">
+    <div class="cap">Figure 5.1 · Source-to-destination delivery (Lec 2 · Slide 35)</div>
+    <div class="body">
+      <pre class="ascii">         ┌──────┐         ┌──────┐         ┌──────┐         ┌──────┐
+Host A ──┤  R1  ├─────────┤  R2  ├─────────┤  R3  ├─────────┤  R4  ├── Host B
+         └──────┘         └──────┘         └──────┘         └──────┘
+   └─hop 1──────┘   └─hop 2──────┘   └─hop 3──────┘   └─hop 4──────┘
+
+ ◄══════════════════════════════════════════════════════════════════►
+               Source-to-destination delivery   (Layer 3)
+
+        Each router strips the Layer-2 frame, inspects the IP
+        packet, consults its routing table, decrements TTL,
+        and forwards toward the destination.
+
+ At Layer 2:   each hop builds a *new* frame with new source/dest MAC.
+ At Layer 3:   the packet stays the same — only TTL &amp; checksum update.
+ At Layer 4:   segment is untouched until it reaches Host B.</pre>
+    </div>
+    <div class="steps">
+      <h5>Walk-through</h5>
+      <ol>
+        <li>Host A builds a segment at L4, adds IP header at L3 (source = A, destination = B, TTL = e.g. 64), frames it at L2 (source MAC = A, destination MAC = R1).</li>
+        <li>R1 receives the frame, discards L2 header, reads IP destination, looks up routing table, finds next hop = R2. Decrements TTL (63), recomputes checksum. Reframes at L2 with source MAC = R1, dest MAC = R2. Forwards.</li>
+        <li>R2, R3 repeat the same logic — each reframing L2, each touching only TTL at L3.</li>
+        <li>R4 is the destination's default gateway. It reframes one last time, source MAC = R4, dest MAC = Host B's MAC (from ARP).</li>
+        <li>Host B receives the frame, strips L2, hands packet up; strips IP header, hands segment up to L4; and the data reaches the correct process.</li>
+      </ol>
+      <div class="examiner"><strong>Examiner expects:</strong> you articulate clearly that <em>Layer 2 scope = one hop; Layer 3 scope = end-to-end</em>. Emphasise that the IP packet survives all four routers intact (modulo TTL and checksum), while four different Layer-2 frames came into existence and died during the same journey.</div>
+    </div>
+  </div>
+
+  <!-- DIAGRAM 2 : Routing table in action -->
+  <div class="fig">
+    <div class="cap">Figure 5.2 · Routing table &amp; next-hop decision (Lec 5 · Slides 19–22)</div>
+    <div class="body">
+      <pre class="ascii">          Router R2's routing table
+          ┌───────────────────┬─────────────────┬───────────┐
+          │ Destination net   │  Next hop       │ Interface │
+          ├───────────────────┼─────────────────┼───────────┤
+          │ 10.1.1.0/24       │  directly conn. │ Gi0/0     │
+          │ 10.1.2.0/24       │  10.1.1.2       │ Gi0/0     │
+          │ 10.1.3.0/24       │  directly conn. │ Gi0/1     │
+          │ 10.1.4.0/24       │  10.1.3.2  (R3) │ Gi0/1     │
+          │ 0.0.0.0/0         │  10.1.1.2  (R1) │ Gi0/0     │  ← default
+          └───────────────────┴─────────────────┴───────────┘
+
+Incoming packet: dest = 10.1.4.57
+   Lookup: longest prefix match → 10.1.4.0/24
+   Next hop = 10.1.3.2 (R3) via Gi0/1
+   → ARP for R3's MAC → build new frame → forward out Gi0/1</pre>
+    </div>
+    <div class="steps">
+      <h5>Walk-through</h5>
+      <ol>
+        <li>Packet arrives at R2 destined for <code>10.1.4.57</code>.</li>
+        <li>R2 checks every route in its table for a prefix match with the destination.</li>
+        <li>Two entries could theoretically match (the specific <code>10.1.4.0/24</code> and the default <code>0.0.0.0/0</code>).</li>
+        <li><strong>Longest Prefix Match</strong> wins — <code>/24</code> is more specific than <code>/0</code>.</li>
+        <li>Next-hop = <code>10.1.3.2</code> (R3), out interface Gi0/1.</li>
+        <li>R2 ARPs for R3's MAC on Gi0/1, builds the frame, forwards.</li>
+      </ol>
+      <div class="examiner"><strong>Examiner expects:</strong> the "longest prefix match" rule by name. Also the three parts of a route: destination network, next-hop, interface. Also that a <strong>default route</strong> (<code>0.0.0.0/0</code>) acts as a fallback and has the shortest possible prefix length.</div>
+    </div>
+  </div>
+
+  <!-- DIAGRAM 3 : Gateway connecting sub-networks -->
+  <div class="fig">
+    <div class="cap">Figure 5.3 · Gateway between sub-networks (Lec 5 · Slides 17, 19)</div>
+    <div class="body">
+      <pre class="ascii">        Subnet 192.168.1.0/24                Subnet 192.168.2.0/24
+ ┌──────────────────────────────┐        ┌──────────────────────────────┐
+ │                              │        │                              │
+ │   HostA        HostB         │        │       HostC        HostD     │
+ │ .1.10         .1.11          │        │     .2.10         .2.11      │
+ │   │             │            │        │       │             │        │
+ │   └──────┬──────┘            │        │       └──────┬──────┘        │
+ │          │                   │        │              │               │
+ │       ┌──┴──┐                │        │           ┌──┴──┐            │
+ │       │Switch├── .1.1 ───────┼────────┼── .2.1 ──┤Switch│            │
+ │       └─────┘    (GATEWAY — router)   └─────┘                        │
+ └──────────────────────────────┘        └──────────────────────────────┘
+                       A single router with two interfaces.
+                       Each interface sits in a different subnet.
+                       That router IS the gateway for both sides.</pre>
+    </div>
+    <div class="steps">
+      <h5>Walk-through</h5>
+      <ol>
+        <li>Host A (<code>192.168.1.10</code>) wants to reach Host C (<code>192.168.2.10</code>).</li>
+        <li>Host A compares destination IP to its own mask → the destination is <em>not</em> in the local subnet.</li>
+        <li>Host A therefore sends the packet to its <em>default gateway</em>: <code>192.168.1.1</code> (the router's near-side interface).</li>
+        <li>The router receives it on interface Gi0/0 (subnet 1), consults its table, finds <code>192.168.2.0/24</code> is directly connected via Gi0/1.</li>
+        <li>Router ARPs for Host C's MAC on Gi0/1, builds the frame, forwards to Host C.</li>
+      </ol>
+      <div class="examiner"><strong>Examiner expects:</strong> the distinction between "same subnet" (frame goes direct, Layer-2 only) vs "different subnet" (frame goes to gateway first; gateway performs L3 forwarding). This is the single most common exam scenario.</div>
+    </div>
+  </div>
+
+  <!-- DIAGRAM 4 : Encapsulation segment → packet -->
+  <div class="fig">
+    <div class="cap">Figure 5.4 · Encapsulation at Layer 3 (Lec 2 · Slide 24 + Lec 5 · Slide 8)</div>
+    <div class="body">
+      <pre class="ascii">Application data                                                 [ data ]
+                                                                    │
+Transport Layer adds TCP/UDP header                    [ H4 │ data ]   ← segment
+                                                                    │
+Network Layer adds IP header                    [ <span class="hl">H3</span> │ H4 │ data ]   ← <span class="hl">packet</span>
+                                                                    │
+Data Link adds L2 header + trailer      [ H2 │ H3 │ H4 │ data │ T2 ]   ← frame
+                                                                    │
+Physical transmits bits                  0101010110101010110100…</pre>
+    </div>
+    <div class="steps">
+      <h5>Walk-through</h5>
+      <ol>
+        <li>The Transport Layer produces a segment (TCP) or datagram (UDP) — header + application data.</li>
+        <li>Layer 3 takes the segment as payload and prepends the IP header (H3), which contains source IP, destination IP, TTL, protocol field, checksum, etc.</li>
+        <li>The result — H3 + segment — is called a <strong>packet</strong> (or <em>IP datagram</em>).</li>
+        <li>The packet is handed down to Layer 2, which adds its own header (H2, with MAC addresses) and trailer (T2, with FCS/CRC) to produce a <strong>frame</strong>.</li>
+        <li>At the destination, the process reverses — each layer strips its own header before handing up.</li>
+      </ol>
+      <div class="examiner"><strong>Examiner expects:</strong> you use the exact terminology. L3 PDU = <em>packet</em>. L4 PDU = <em>segment</em> (TCP) or <em>datagram</em> (UDP). L2 PDU = <em>frame</em>. L1 PDU = <em>bits</em>. Mixing these up loses marks instantly.</div>
+    </div>
+  </div>
+
+  <!-- DIAGRAM 5 : Media independence -->
+  <div class="fig">
+    <div class="cap">Figure 5.5 · Media independence of IP (Lec 5 · Slide 7)</div>
+    <div class="body">
+      <pre class="ascii">Host A ─── Ethernet ───► R1 ─── Fibre ───► R2 ─── Wi-Fi ───► R3 ─── 4G ───► Host B
+
+L2 frames (rebuilt at every hop):
+        [Ethernet]     [SONET/PPP]      [802.11]       [LTE]
+
+L3 packet (unchanged end-to-end):
+        [ IP header │ payload ]  ───────────────────────────────►
+
+                 "Only TTL and header checksum change."</pre>
+    </div>
+    <div class="steps">
+      <h5>Walk-through</h5>
+      <ol>
+        <li>Host A's IP packet is encapsulated in an Ethernet frame to reach R1.</li>
+        <li>R1 strips Ethernet, re-encapsulates the <em>same</em> IP packet inside a SONET/PPP frame for the fibre link to R2.</li>
+        <li>R2 strips PPP, re-encapsulates in 802.11 (Wi-Fi) to R3.</li>
+        <li>R3 strips 802.11, re-encapsulates in LTE to Host B.</li>
+        <li>Host B strips LTE — and the IP packet inside is identical to the one Host A sent, minus four TTL decrements.</li>
+      </ol>
+      <div class="examiner"><strong>Examiner expects:</strong> "media independence" means the <em>same IP packet</em> traverses different physical technologies without changing. This is what allows the Internet to be a patchwork of Ethernet LANs, fibre backbones, radio links, etc., while behaving as a single logical network.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     6 · PROTOCOLS & EXAMPLES
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="protocols">
+  <h2><span class="num">§ 06</span> Protocols and Examples</h2>
+  <p class="lede">Every Layer-3 protocol Dr. Khan maps in the TCP/IP vs OSI slide (Lec 2 · Slide 42) and Lec 5.</p>
+
+  <div class="concept">
+    <h4>IP (Internet Protocol) — IPv4 / IPv6</h4>
+    <p class="defn">The Network Layer's flagship protocol. Provides logical addressing and best-effort, connectionless, media-independent packet delivery.</p>
+    <p><em>Real-world usage:</em> every packet on the Internet has an IP header. Your laptop, phone, Wi-Fi router, the server hosting this file — all speak IP. IPv4 = 32-bit addresses; IPv6 = 128-bit addresses, designed to replace IPv4 as address space exhausted.</p>
+  </div>
+
+  <div class="concept">
+    <h4>ICMP (Internet Control Message Protocol)</h4>
+    <p class="defn">The "error and diagnostic" protocol that rides on top of IP. Reports unreachable hosts, time-exceeded packets, echo requests/replies.</p>
+    <p><em>Real-world usage:</em> <code>ping</code> uses ICMP Echo Request / Echo Reply. <code>traceroute</code> / <code>tracert</code> uses ICMP Time Exceeded messages (sent by each router as TTL expires) to map the path to a destination. When a router drops a packet because the destination is unreachable, it sends back an ICMP Destination Unreachable.</p>
+  </div>
+
+  <div class="concept">
+    <h4>IGMP (Internet Group Management Protocol)</h4>
+    <p class="defn">Used by hosts to subscribe to / leave IP multicast groups on the local network.</p>
+    <p><em>Real-world usage:</em> IPTV streams to a multicast group; your set-top box sends an IGMP Join to tell its router "send me this stream." When you change channel, it sends IGMP Leave and a Join for the new channel.</p>
+  </div>
+
+  <div class="concept">
+    <h4>ARP (Address Resolution Protocol)</h4>
+    <p class="defn">Resolves a known IPv4 address to the corresponding MAC address on the local segment.</p>
+    <p><em>Real-world usage:</em> when your laptop wants to send a packet to <code>192.168.1.1</code> (the gateway), it broadcasts "Who has 192.168.1.1?" The router replies with its MAC. Your laptop caches the mapping and uses it to build the L2 frame.</p>
+    <div class="callout warn"><p style="margin:6px 0 0">Some textbooks place ARP at Layer 2; Dr. Khan's slide 42 and most Cisco material place it at Layer 3 (or "between" L2 and L3). For exam: <em>ARP spans the L2/L3 boundary — it resolves an L3 address into an L2 address.</em></p></div>
+  </div>
+
+  <div class="concept">
+    <h4>RARP (Reverse Address Resolution Protocol)</h4>
+    <p class="defn">The opposite of ARP — a host that knows its own MAC but not its IP asks the network "who am I?"</p>
+    <p><em>Real-world usage:</em> historical, largely replaced by BOOTP and then DHCP. Once used by diskless workstations at boot time.</p>
+  </div>
+
+  <div class="concept">
+    <h4>Routing protocols — RIP, EIGRP, OSPF, BGP</h4>
+    <p class="defn">Protocols that run <em>between</em> routers so they can exchange information and build consistent routing tables.</p>
+    <p>These are covered in depth in Lec 6. At Layer 3, the key point is that routing protocols are <em>not</em> IP itself — they are separate protocols that help IP do its job of forwarding. RIP uses UDP/520, OSPF runs directly over IP (protocol 89), BGP uses TCP/179, EIGRP runs over IP (protocol 88).</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     7 · DATA HANDLING
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="data">
+  <h2><span class="num">§ 07</span> Data Handling</h2>
+  <p class="lede">How the PDU flows and where Layer 3 sits in the encapsulation chain.</p>
+
+  <table>
+    <tr><th>Layer</th><th>PDU name</th><th>Header added</th></tr>
+    <tr><td>7 · Application</td><td class="mono">data</td><td>—</td></tr>
+    <tr><td>6 · Presentation</td><td class="mono">data</td><td>—</td></tr>
+    <tr><td>5 · Session</td><td class="mono">data</td><td>—</td></tr>
+    <tr><td>4 · Transport</td><td class="mono"><strong>segment</strong> (TCP) / datagram (UDP)</td><td>TCP or UDP header (ports, seq, ack, …)</td></tr>
+    <tr><td><strong>3 · Network</strong></td><td class="mono"><strong>packet</strong> (a.k.a. IP datagram)</td><td>IP header (src IP, dst IP, TTL, proto, …)</td></tr>
+    <tr><td>2 · Data Link</td><td class="mono">frame</td><td>L2 header + trailer (MACs, FCS)</td></tr>
+    <tr><td>1 · Physical</td><td class="mono">bits</td><td>—</td></tr>
+  </table>
+
+  <h3>Encapsulation &amp; decapsulation role of Layer 3</h3>
+  <p>At the <strong>source</strong>, Layer 3 receives a segment from Layer 4, wraps it in an IP header (adding source IP, destination IP, TTL, protocol ID), and hands the resulting <em>packet</em> down to Layer 2.</p>
+  <p>At every <strong>intermediate router</strong>, Layer 3 is the <em>top</em> of the stack that gets processed. The router does not go up to Layer 4 — it only needs to inspect the IP header to make the forwarding decision. This is what keeps routers fast.</p>
+  <p>At the <strong>destination</strong>, Layer 3 strips the IP header and hands the segment up to Layer 4.</p>
+
+  <div class="callout key">
+    <p style="margin:6px 0 0"><strong>The golden rule:</strong> routers never look above Layer 3. If your exam scenario says "the router inspected the port number," it's wrong — ports live in the Layer-4 header and are invisible to a pure Layer-3 router. (Stateful firewalls and NAT devices <em>do</em> look at Layer 4, but they're not pure routers.)</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     8 · MUST-REMEMBER POINTS
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="must">
+  <h2><span class="num">§ 08</span> Must-Remember Points</h2>
+  <p class="lede">High-priority facts, exam traps, and memory hooks.</p>
+
+  <div class="callout key">
+    <p style="margin:6px 0 0"><strong>The one-line identity.</strong> "The Network Layer is responsible for the delivery of individual packets from the source host to the destination host." — memorise verbatim. It appears in the Review Questions section of Lec 2 and is the classical short answer.</p>
+  </div>
+
+  <div class="callout key">
+    <p style="margin:6px 0 0"><strong>Three duties.</strong> Logical addressing, Internetworking, Routing. (Dr. Khan's Slide 34, exact order.)</p>
+  </div>
+
+  <div class="callout key">
+    <p style="margin:6px 0 0"><strong>Four IPv4 adjectives.</strong> Connectionless, Best-effort (unreliable), Media-independent, Hierarchical. Know one sentence on each.</p>
+  </div>
+
+  <div class="callout mem">
+    <p style="margin:6px 0 0"><strong>Delivery scope mnemonic —</strong> "<em>Node, Host, Process</em>." Data Link = <em>node</em>-to-node. Network = <em>host</em>-to-host. Transport = <em>process</em>-to-process. Three words, three layers, in order.</p>
+  </div>
+
+  <div class="callout mem">
+    <p style="margin:6px 0 0"><strong>Encapsulation mnemonic —</strong> "<em>Data, Segment, Packet, Frame, Bits</em>" — the five PDU names, top-down. Some students prefer "<em>Do Sergeants Pay For Beer?</em>"</p>
+  </div>
+
+  <div class="callout warn">
+    <p style="margin:6px 0 0"><strong>Trap: IP addresses vs MAC addresses.</strong> Source and destination <em>IP</em> addresses are set by the sender and never change during transit. Source and destination <em>MAC</em> addresses change at every hop. If an exam question asks "what is the source MAC at router 3?" the answer is "router 3's own MAC" — <em>not</em> Host A's MAC.</p>
+  </div>
+
+  <div class="callout warn">
+    <p style="margin:6px 0 0"><strong>Trap: TTL.</strong> TTL is decremented by <em>every router</em>, not by every device. Switches (L2) do not touch TTL. Hosts receive with TTL &gt; 0; they don't decrement either. Only routers decrement.</p>
+  </div>
+
+  <div class="callout warn">
+    <p style="margin:6px 0 0"><strong>Trap: usable hosts.</strong> Always subtract 2 (network address and broadcast). A /30 has 2<sup>2</sup>−2 = <strong>2</strong> usable hosts (perfect for point-to-point links), not 4.</p>
+  </div>
+
+  <div class="callout mem">
+    <p style="margin:6px 0 0"><strong>Subnetting shortcut —</strong> "256 minus the interesting octet." If mask last octet = 192, block size = 64. If = 240, block size = 16. If = 248, block size = 8. Memorise these rather than re-deriving every time.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     9 · IMPORTANCE RATING
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="importance">
+  <h2><span class="num">§ 09</span> Importance Rating</h2>
+
+  <p><span class="stars">★★★★★</span> &nbsp; <strong>Maximum</strong> — this is the single most exam-heavy layer in the OSI model, by a wide margin.</p>
+
+  <h4>Why</h4>
+  <ul>
+    <li><strong>Weight in Lec 5.</strong> The entire Lec 5 deck (27 slides) is devoted to just this layer — more than any other. Routing Protocols (Lec 6) is also a direct extension of it.</li>
+    <li><strong>Real-world relevance.</strong> "How does the Internet work?" is essentially "How does Layer 3 work?" Every CCNA, every networking job interview, every systems design interview touches Layer 3.</li>
+    <li><strong>Breadth of questions.</strong> Routing, subnetting, VLSM, IP addressing, ICMP behaviour, TTL, fragmentation — a single paper can have 3–5 separate questions all at Layer 3.</li>
+    <li><strong>Calculation component.</strong> Subnetting is one of the few layers where numerical problems are standard — high-mark, low-ambiguity questions that reward preparation.</li>
+    <li><strong>Gateway to Lec 6.</strong> You cannot understand distance-vector routing, split horizon, or holddown timers without Layer-3 fluency first.</li>
+  </ul>
+
+  <p>Allocate at least <strong>30–35% of your total Computer Networks revision time</strong> to Layer 3 + subnetting + routing protocols combined.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     10 · CRITICAL QUESTIONS
+     ═══════════════════════════════════════════════════════════════ -->
+<section id="questions">
+  <h2><span class="num">§ 10</span> Critical Questions</h2>
+  <p class="lede">Mixed question bank — conceptual, short-answer, diagram-based, scenario-based. Matches the pattern of Dr. Khan's Review Questions (Lec 2 · Slides 47–49).</p>
+
+  <div class="qset">
+    <h3>Conceptual</h3>
+    <ol class="q">
+      <li><span class="qtype concept">C</span>Define the Network Layer in one line. Then list and explain its three core duties.</li>
+      <li><span class="qtype concept">C</span>Why is IP described as a <em>connectionless, best-effort, media-independent</em> protocol? Explain each of the three adjectives.</li>
+      <li><span class="qtype concept">C</span>What is the difference between a physical address, a logical address, and a port address? At which layer does each live?</li>
+      <li><span class="qtype concept">C</span>Explain the difference between Network Layer delivery and Transport Layer delivery. (Directly from Lec 2 · Slide 49.)</li>
+      <li><span class="qtype concept">C</span>What problem does hierarchical addressing solve that flat addressing cannot? Give a real-world analogy.</li>
+      <li><span class="qtype concept">C</span>Define <em>best-effort delivery</em>. Why did the IP designers choose best-effort over guaranteed delivery?</li>
+    </ol>
+  </div>
+
+  <div class="qset">
+    <h3>Short-answer</h3>
+    <ol class="q">
+      <li><span class="qtype short">S</span>State the three key parts of a route (Lec 5 · Slide 20).</li>
+      <li><span class="qtype short">S</span>What is the purpose of the TTL field? What happens when TTL reaches 0?</li>
+      <li><span class="qtype short">S</span>Distinguish between static and dynamic routes with two use-cases for each.</li>
+      <li><span class="qtype short">S</span>List four protocols that operate at or alongside Layer 3 and give one line on each.</li>
+      <li><span class="qtype short">S</span>What is the longest-prefix-match rule? Why is it necessary?</li>
+      <li><span class="qtype short">S</span>State the formula for (a) number of subnets, (b) usable hosts per subnet, (c) block size.</li>
+    </ol>
+  </div>
+
+  <div class="qset">
+    <h3>Diagram-based</h3>
+    <ol class="q">
+      <li><span class="qtype diag">D</span>Draw a source-to-destination delivery across four routers. Show how the IP packet stays the same while the Layer-2 frame is rebuilt at every hop. Label TTL at each stage.</li>
+      <li><span class="qtype diag">D</span>Recreate the encapsulation diagram (data → segment → packet → frame → bits). Identify which header each layer adds.</li>
+      <li><span class="qtype diag">D</span>Given two subnets connected by one router, draw the topology and identify (a) the default gateway for each host, (b) the subnet mask, (c) how many usable hosts each subnet supports for a /27 mask.</li>
+      <li><span class="qtype diag">D</span>Draw a routing table with four entries including one default route. Trace the lookup process for a packet destined to 10.1.4.57.</li>
+    </ol>
+  </div>
+
+  <div class="qset">
+    <h3>Scenario-based</h3>
+    <ol class="q">
+      <li><span class="qtype scen">Sc</span>A company is given <code>200.10.30.0/24</code>. It needs 4 departments with 50 hosts each. Design the subnetting plan. List the network address, first usable host, last usable host, and broadcast for each subnet.</li>
+      <li><span class="qtype scen">Sc</span>VLSM scenario: <code>172.16.0.0/22</code>. Requirements: Sales = 500 hosts, Engineering = 200 hosts, HR = 60 hosts, 3 × point-to-point WAN links (2 hosts each). Allocate addresses.</li>
+      <li><span class="qtype scen">Sc</span>A packet is sent from Host A (Ethernet LAN) to Host B (Wi-Fi, three hops away). Describe exactly what changes in the packet header and what changes in the frame at each hop. Include TTL values, assuming starting TTL = 64.</li>
+      <li><span class="qtype scen">Sc</span>You ping <code>8.8.8.8</code> and get a reply with <code>TTL = 55</code>. The typical default TTL is 64. What does this tell you about the number of routers between you and the destination? (Answer: at least 64 − 55 = 9 hops.)</li>
+      <li><span class="qtype scen">Sc</span>A network administrator receives complaints that a newly added router is not forwarding packets between two subnets, even though both interfaces show "up." Which Layer-3 settings should they verify first?</li>
+      <li><span class="qtype scen">Sc</span>Your ISP gives you a default route <code>0.0.0.0/0</code>. You also run OSPF internally and learn specific prefixes for <code>10.0.0.0/8</code>. A packet arrives destined for <code>10.1.2.3</code>. Which route wins and why?</li>
+    </ol>
+  </div>
+</section>
+
+<footer>
+  <span>OSI Revision Booklet · Layer 3 Network</span>
+  <span>Slide-sourced · Dr. Muazzam A. Khan · Lec 2 &amp; Lec 5</span>
+</footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physical Layer, ACL & IoT — Exam Guide</title>
+<style>
+  :root {
+    --bg: #0a0f0a;
+    --surface: #111811;
+    --card: #161e16;
+    --border: #2a352a;
+    --green: #4ade80;
+    --green2: #22c55e;
+    --blue: #60a5fa;
+    --orange: #fb923c;
+    --red: #f87171;
+    --purple: #c084fc;
+    --yellow: #facc15;
+    --text: #e8f0e8;
+    --muted: #6b7c6b;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.7; }
+
+  /* HERO */
+  .hero {
+    background: linear-gradient(135deg, #0a0f0a 0%, #0f1e0f 50%, #0a0f0a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 250px; height: 250px;
+    background: radial-gradient(circle, rgba(74,222,128,0.1) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero-tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: var(--green); text-transform: uppercase; margin-bottom: 12px; }
+  .hero h1 { font-size: 2.2rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+  .hero h1 span { color: var(--green); }
+  .hero p { color: var(--muted); font-size: 0.95rem; max-width: 640px; }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .badge { border-radius: 20px; padding: 4px 12px; font-size: 12px; font-weight: 600; border: 1px solid; }
+  .badge.g { background: rgba(74,222,128,0.1); color: var(--green); border-color: rgba(74,222,128,0.3); }
+  .badge.b { background: rgba(96,165,250,0.1); color: var(--blue); border-color: rgba(96,165,250,0.3); }
+  .badge.o { background: rgba(251,146,60,0.1); color: var(--orange); border-color: rgba(251,146,60,0.3); }
+
+  /* TOPIC TABS */
+  .topic-bar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0; display: flex; }
+  .topic-btn { flex: 1; padding: 16px 8px; text-align: center; font-size: 13px; font-weight: 600; cursor: pointer; color: var(--muted); border-bottom: 3px solid transparent; transition: all 0.2s; text-decoration: none; display: block; }
+  .topic-btn.a { border-bottom-color: var(--green); color: var(--green); }
+  .topic-btn:hover { color: var(--text); }
+
+  /* NAV */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; gap: 0; overflow-x: auto; }
+  .nav a { color: var(--muted); text-decoration: none; padding: 11px 14px; font-size: 12px; font-weight: 500; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.2s; }
+  .nav a:hover { color: var(--green); border-bottom-color: var(--green); }
+
+  .container { max-width: 980px; margin: 0 auto; padding: 32px 24px; }
+
+  .topic-section { margin-bottom: 60px; padding-top: 12px; }
+  .topic-title { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; padding: 16px 20px; border-radius: 10px; }
+  .topic-title.green { background: rgba(74,222,128,0.08); border: 1px solid rgba(74,222,128,0.2); }
+  .topic-title.blue { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); }
+  .topic-title.orange { background: rgba(251,146,60,0.08); border: 1px solid rgba(251,146,60,0.2); }
+  .topic-icon { font-size: 2rem; }
+  .topic-title h2 { font-size: 1.5rem; font-weight: 800; }
+  .topic-title h2.green { color: var(--green); }
+  .topic-title h2.blue { color: var(--blue); }
+  .topic-title h2.orange { color: var(--orange); }
+  .topic-title p { font-size: 0.85rem; color: var(--muted); margin-top: 2px; }
+
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; margin-top: 28px; }
+  .sh-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .sh-dot.green { background: var(--green); }
+  .sh-dot.blue { background: var(--blue); }
+  .sh-dot.orange { background: var(--orange); }
+  .section-header h3 { font-size: 1.05rem; font-weight: 700; }
+
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 22px; margin-bottom: 14px; }
+  .card h4 { font-size: 0.95rem; font-weight: 700; margin-bottom: 9px; }
+  .card h4.green { color: var(--green); }
+  .card h4.blue { color: var(--blue); }
+  .card h4.orange { color: var(--orange); }
+  .card h4.purple { color: var(--purple); }
+  .card h4.red { color: var(--red); }
+  .card p, .card li { font-size: 0.875rem; color: #c8d8c8; line-height: 1.65; }
+  .card ul { padding-left: 18px; }
+  .card ul li { margin-bottom: 5px; }
+
+  .comp-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 8px; }
+  .comp-table th { padding: 9px 13px; text-align: left; font-weight: 700; border: 1px solid var(--border); }
+  .comp-table th.green { background: rgba(74,222,128,0.1); color: var(--green); }
+  .comp-table th.blue { background: rgba(96,165,250,0.1); color: var(--blue); }
+  .comp-table th.orange { background: rgba(251,146,60,0.1); color: var(--orange); }
+  .comp-table td { padding: 8px 13px; border: 1px solid var(--border); color: #c0d0c0; vertical-align: top; }
+  .comp-table tr:nth-child(even) td { background: rgba(255,255,255,0.02); }
+
+  .highlight { border-radius: 8px; padding: 14px 18px; margin-bottom: 14px; }
+  .highlight.green { background: rgba(74,222,128,0.07); border-left: 3px solid var(--green); }
+  .highlight.blue { background: rgba(96,165,250,0.07); border-left: 3px solid var(--blue); }
+  .highlight.orange { background: rgba(251,146,60,0.07); border-left: 3px solid var(--orange); }
+  .highlight.red { background: rgba(248,113,113,0.07); border-left: 3px solid var(--red); }
+  .highlight strong { display: block; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+  .highlight.green strong { color: var(--green); }
+  .highlight.blue strong { color: var(--blue); }
+  .highlight.orange strong { color: var(--orange); }
+  .highlight.red strong { color: var(--red); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:640px) { .grid2 { grid-template-columns: 1fr; } }
+
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 4px; margin: 10px 0; }
+  .fstep { border-radius: 6px; padding: 6px 12px; font-size: 0.78rem; font-weight: 600; white-space: nowrap; }
+  .fstep.green { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+  .fstep.blue { background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.3); color: var(--blue); }
+  .fstep.orange { background: rgba(251,146,60,0.12); border: 1px solid rgba(251,146,60,0.3); color: var(--orange); }
+  .farrow { color: var(--muted); padding: 0 4px; }
+
+  /* ACL Rule Visual */
+  .acl-rule { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin: 8px 0; font-family: 'Courier New', monospace; font-size: 0.82rem; color: #a8c8a8; }
+  .acl-rule .cmd { color: var(--green); }
+  .acl-rule .num { color: var(--yellow); }
+  .acl-rule .action { color: var(--orange); }
+  .acl-rule .addr { color: var(--blue); }
+
+  code { background: rgba(74,222,128,0.1); color: var(--green); padding: 1px 6px; border-radius: 4px; font-family: 'Courier New', monospace; font-size: 0.85em; }
+
+  /* IOT LAYER VISUAL */
+  .iot-layers { display: flex; flex-direction: column; gap: 6px; margin: 12px 0; }
+  .iot-layer { border-radius: 6px; padding: 10px 16px; font-size: 0.85rem; font-weight: 600; text-align: center; }
+  .iot-layer.l1 { background: rgba(251,146,60,0.15); border: 1px solid rgba(251,146,60,0.3); color: var(--orange); }
+  .iot-layer.l2 { background: rgba(96,165,250,0.12); border: 1px solid rgba(96,165,250,0.3); color: var(--blue); }
+  .iot-layer.l3 { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: var(--green); }
+  .iot-layer.l4 { background: rgba(192,132,252,0.1); border: 1px solid rgba(192,132,252,0.3); color: var(--purple); }
+
+  footer { border-top: 1px solid var(--border); padding: 24px 32px; text-align: center; color: var(--muted); font-size: 12px; margin-top: 40px; }
+
+  .divider { border: none; border-top: 2px solid var(--border); margin: 40px 0; }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-tag">CCN Exam Prep · Study Guide 3 of 3</div>
+  <h1>Physical Layer,<br>ACL & <span>Internet of Things</span></h1>
+  <p>Three topics in one guide — OSI Physical Layer (media, encoding, fiber), Access Control Lists (standard/extended/named ACL), and IoT introduction.</p>
+  <div class="badges">
+    <span class="badge g">Lec 13-14 — Physical Layer</span>
+    <span class="badge b">Lec 15 — Access Control List</span>
+    <span class="badge o">Lec 16 — IoT Introduction</span>
+  </div>
+</div>
+
+<div class="topic-bar">
+  <a href="#physical" class="topic-btn a">🔌 Physical Layer</a>
+  <a href="#acl" class="topic-btn">🛡️ ACL</a>
+  <a href="#iot" class="topic-btn">📡 IoT</a>
+</div>
+
+<div class="container">
+
+  <!-- =================== TOPIC 1: PHYSICAL LAYER =================== -->
+  <div class="topic-section" id="physical">
+    <div class="topic-title green">
+      <div class="topic-icon">🔌</div>
+      <div>
+        <h2 class="green">OSI Physical Layer</h2>
+        <p>Lectures 13–14 · Media, encoding, signaling, and transmission standards</p>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot green"></div>
+      <h3>Role of the Physical Layer</h3>
+    </div>
+
+    <div class="highlight green">
+      <strong>Purpose</strong>
+      The Physical Layer creates the electrical, optical, or microwave signal that represents bits in each frame and puts them onto the transmission medium. It defines how raw bits become signals on a wire, fiber, or air.
+    </div>
+
+    <div class="card">
+      <h4 class="green">What the Physical Layer Does</h4>
+      <ul>
+        <li>Receives frames from the Data Link Layer</li>
+        <li>Converts frames → bits → signals appropriate for the physical medium</li>
+        <li>At receiver, reverses: signals → bits → frames passed up to Data Link Layer</li>
+        <li>Defines: physical/electrical properties of media, mechanical properties of connectors, bit representation by signals (encoding), control information signals</li>
+        <li>Standards set by: IEEE, ANSI, EIA, ITU-T (electrical and communications engineering bodies)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h4 class="green">Two Fundamental Principles</h4>
+      <div class="grid2">
+        <div>
+          <p style="color:var(--green);font-weight:700;margin-bottom:6px">Encoding</p>
+          <p>Converting streams of data into bit patterns. Allows detection of errors and faster speeds. Uses code groups — consecutive sequences of code bits mapped to data bit patterns. Requires start/stop frame bits.</p>
+        </div>
+        <div>
+          <p style="color:var(--blue);font-weight:700;margin-bottom:6px">Signaling</p>
+          <p>Generating the physical signals (electricity, light, radio waves) that represent "1" and "0" on the actual medium. Different media use different signal types.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot green"></div>
+      <h3>Basic Encoding Techniques</h3>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 class="green">NRZ — Non Return to Zero</h4>
+        <ul>
+          <li>Low voltage = 0, High voltage = 1</li>
+          <li>Simple, good for slow-speed data links</li>
+          <li>Very susceptible to interference</li>
+          <li>No self-synchronization</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="blue">Manchester Encoding</h4>
+        <ul>
+          <li>Voltage transitions carry the data: low→high = 1, high→low = 0</li>
+          <li>Used in <b>10BaseT Ethernet</b></li>
+          <li>Self-clocking — receiver synchronizes from transitions</li>
+          <li>More robust against DC drift</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot green"></div>
+      <h3>Capacity Terminology</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="green">Bandwidth, Throughput, Goodput</h4>
+      <table class="comp-table">
+        <tr>
+          <th class="green">Term</th>
+          <th class="green">Definition</th>
+          <th class="green">Key Note</th>
+        </tr>
+        <tr>
+          <td><b>Bandwidth</b></td>
+          <td>Maximum amount of information that can flow in a given time — theoretical capacity</td>
+          <td>What the link can carry at best</td>
+        </tr>
+        <tr>
+          <td><b>Throughput</b></td>
+          <td>Actual measure of bits transferred across media over a given time</td>
+          <td>Always ≤ bandwidth; affected by congestion, errors</td>
+        </tr>
+        <tr>
+          <td><b>Goodput</b></td>
+          <td>Usable data transferred — throughput minus protocol overhead (session setup, ACKs, encapsulation headers)</td>
+          <td>What the application actually gets</td>
+        </tr>
+      </table>
+      <p style="margin-top:10px;font-size:0.82rem;color:var(--muted)">Formula: Goodput = Throughput − Overhead (ACKs, session establishment, encapsulation)</p>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot green"></div>
+      <h3>Transmission Media</h3>
+    </div>
+
+    <div class="highlight green">
+      <strong>Two Classes of Media</strong>
+      Conducted/Guided Media: use a conductor (wire, fiber) to carry signal. Wireless/Un-guided Media: use radio waves; no physical conductor needed.
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 class="green">Copper — Most Common</h4>
+        <ul>
+          <li>Signal: electrical pulses</li>
+          <li>Main problem: <b>crosstalk</b> — magnetic field from one wire pair interferes with adjacent pairs</li>
+          <li>Solution: twisting wire pairs → cancels crosstalk effect</li>
+          <li>Also affected by EMI, RFI, lightning</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="blue">Fiber Optic — Most Expensive</h4>
+        <ul>
+          <li>Signal: patterns of light</li>
+          <li>Main advantage: <b>NO EMI or RFI</b> — immune to electromagnetic noise</li>
+          <li>Use primarily for backbone cabling</li>
+          <li>Thin strands of pure glass; light in weight; unaffected by atmosphere</li>
+          <li>Testing: use OTDR (Optical Time Domain Reflectometer)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="green">Copper Cable Types</h4>
+      <table class="comp-table">
+        <tr><th class="green">Type</th><th class="green">Use Case</th><th class="green">Key Property</th></tr>
+        <tr>
+          <td><b>UTP — Unshielded Twisted Pair</b></td>
+          <td>Most common; connects PCs to switches</td>
+          <td>Cancellation from twists; 3 variants: straight-through, crossover, rollover</td>
+        </tr>
+        <tr>
+          <td><b>STP — Shielded Twisted Pair</b></td>
+          <td>Token-ring networks; high-noise environments</td>
+          <td>Metallic braid/foil shields all wire pairs; better noise protection; expensive</td>
+        </tr>
+        <tr>
+          <td><b>Coaxial</b></td>
+          <td>Cable TV (now hybrid fiber/coax — HFC)</td>
+          <td>Inner copper conductor, flexible insulation, woven copper braid as shield</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h4 class="green">Copper Cabling Types — Which Cable Where</h4>
+      <table class="comp-table">
+        <tr><th class="green">Cable</th><th class="green">Connect</th></tr>
+        <tr><td><b>Straight-Through</b></td><td>PC/printer → switch or hub (different devices)</td></tr>
+        <tr><td><b>Crossover</b></td><td>PC → PC, or switch → switch (like devices)</td></tr>
+        <tr><td><b>Rollover</b></td><td>Workstation serial port → router/switch console port</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h4 class="blue">Fiber Optic Types</h4>
+      <table class="comp-table">
+        <tr><th class="blue">Type</th><th class="blue">How It Works</th><th class="blue">Use</th></tr>
+        <tr>
+          <td><b>Multimode Step-Index</b></td>
+          <td>Reflective walls bounce light pulses to receiver</td>
+          <td>Short distances; cheaper</td>
+        </tr>
+        <tr>
+          <td><b>Multimode Graded-Index</b></td>
+          <td>Refracts light toward center of fiber through varying density</td>
+          <td>Better performance than step-index</td>
+        </tr>
+        <tr>
+          <td><b>Single Mode</b></td>
+          <td>Light guided down extremely narrow core — one signal only, one frequency</td>
+          <td>Long distances; highest bandwidth; expensive</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h4 class="blue">Fiber Connector Types</h4>
+      <ul>
+        <li><b>ST (Straight-Tip):</b> very common; used widely with multimode fiber</li>
+        <li><b>SC (Subscriber Connector):</b> push-pull mechanism; positive insertion; widely used with single-mode fiber</li>
+        <li><b>LC (Lucent Connector):</b> small form factor; becoming popular for single-mode; also supports multimode</li>
+      </ul>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot green"></div>
+      <h3>Wireless Media at Physical Layer</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="green">Wireless Standards (Physical Layer Perspective)</h4>
+      <table class="comp-table">
+        <tr><th class="green">Standard</th><th class="green">Common Name</th><th class="green">Technology</th></tr>
+        <tr><td>IEEE 802.11</td><td>Wi-Fi (WLAN)</td><td>CSMA/CA; contention-based access</td></tr>
+        <tr><td>IEEE 802.15</td><td>Bluetooth (WPAN)</td><td>Device pairing; 1–100m; WPAN (Wireless Personal Area Network)</td></tr>
+        <tr><td>IEEE 802.16</td><td>WiMAX</td><td>Point-to-multipoint; wireless broadband access</td></tr>
+        <tr><td>GSM</td><td>Cellular (2G)</td><td>Enables GPRS data over mobile networks</td></tr>
+      </table>
+      <p style="margin-top:10px;font-size:0.82rem;color:var(--muted)">Wireless = mobility, not bandwidth. Interference from cordless phones, microwaves, fluorescent lights. Security is a major concern.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- =================== TOPIC 2: ACL =================== -->
+  <div class="topic-section" id="acl">
+    <div class="topic-title blue">
+      <div class="topic-icon">🛡️</div>
+      <div>
+        <h2 class="blue">Access Control Lists (ACL)</h2>
+        <p>Lecture 15 · Standard, Extended, Named ACLs, Wildcard Masks, Placement</p>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot blue"></div>
+      <h3>What is an ACL?</h3>
+    </div>
+
+    <div class="highlight blue">
+      <strong>Definition</strong>
+      An ACL (Access Control List) is a table that tells a router which access rights each user/traffic has to network objects. In Cisco terms: lists of conditions that test network traffic at a router interface and tell the router which packets to accept or deny.
+    </div>
+
+    <div class="card">
+      <h4 class="blue">ACL Benefits</h4>
+      <ul>
+        <li>Limit network traffic and increase network performance</li>
+        <li>Provide traffic flow control</li>
+        <li>Provide a basic level of security for network access</li>
+        <li>Permit or deny hosts from accessing a network segment</li>
+        <li>Make forwarding/blocking decisions at router interfaces</li>
+        <li>Work at Layer 3 — can filter based on IP addresses (and Layer 4 ports for extended)</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h4 class="blue">How ACL Executes</h4>
+      <ul>
+        <li>ACL statements operate in <b>sequential, logical order</b> — first match wins</li>
+        <li>Packet tested against each statement in order</li>
+        <li>On match: packet is either accepted or rejected based on the statement</li>
+        <li>If no match found → implicit deny all at the end (all unmatched traffic is dropped)</li>
+      </ul>
+
+      <div class="flow" style="margin-top:12px">
+        <div class="fstep blue">Packet arrives at interface</div>
+        <div class="farrow">→</div>
+        <div class="fstep blue">ACL present?</div>
+        <div class="farrow">→</div>
+        <div class="fstep green">Match ACL rule</div>
+        <div class="farrow">→</div>
+        <div class="fstep orange">Permit or Deny</div>
+        <div class="farrow">→</div>
+        <div class="fstep blue">Forward or Drop</div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--muted);margin-top:8px">If no ACL exists: packet is encapsulated in new Layer 2 protocol and forwarded normally.</p>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot blue"></div>
+      <h3>ACL Types and Ranges</h3>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 class="green">Standard ACL (1–99)</h4>
+        <ul>
+          <li>Filters based on <b>source address only</b></li>
+          <li>Checks source IP of packets being routed</li>
+          <li>Permits or denies entire protocol suite based on source</li>
+          <li><b>Placement: close to the destination</b> (because it only looks at source — placing near source would block too broadly)</li>
+        </ul>
+        <div class="acl-rule"><span class="cmd">access-list</span> <span class="num">1</span> <span class="action">permit</span> <span class="addr">171.69.2.88</span></div>
+        <div class="acl-rule"><span class="cmd">access-list</span> <span class="num">6</span> <span class="action">deny</span> <span class="addr">172.13.0.0</span> 0.0.255.255<br><span class="cmd">access-list</span> <span class="num">6</span> <span class="action">permit</span> <span class="addr">172.0.0.0</span> 0.255.255.255</div>
+      </div>
+      <div class="card">
+        <h4 class="orange">Extended ACL (100–199)</h4>
+        <ul>
+          <li>Filters based on <b>source AND destination address</b>, plus protocol type and port</li>
+          <li>More precise control: where packet originates, destination, TCP/UDP/ICMP, port numbers</li>
+          <li>Can permit/deny specific applications (HTTP, FTP, DNS, etc.)</li>
+          <li><b>Placement: close to the source</b> (because it can filter precisely — no need to let traffic travel to destination before blocking)</li>
+        </ul>
+        <p style="font-size:0.82rem;color:var(--muted);margin-top:8px">Number ranges: 100–199 and 2000–2699</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="blue">Standard ACL Commands</h4>
+      <p style="margin-bottom:10px;font-size:0.85rem">Two-step configuration: (1) create the ACL, (2) apply it to an interface.</p>
+      <div class="acl-rule">
+        <span style="color:var(--muted)">Step 1 — Create ACL:</span><br>
+        <span class="cmd">Router(config)#</span> access-list <span class="num">[number]</span> <span class="action">{permit|deny}</span> <span class="addr">[source]</span> [wildcard]<br><br>
+        <span style="color:var(--muted)">Step 2 — Apply to interface:</span><br>
+        <span class="cmd">Router(config-if)#</span> ip access-group <span class="num">[number]</span> <span class="action">{in|out}</span>
+      </div>
+      <div class="acl-rule" style="margin-top:8px">
+        <span style="color:var(--muted)">Delete ACL:</span><br>
+        <span class="cmd">Router(config)#</span> no access-list <span class="num">[number]</span><br>
+        <span style="color:var(--muted);font-size:0.8rem">(Numbered ACLs cannot be partially altered — must delete and recreate)</span>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot blue"></div>
+      <h3>Wildcard Masks</h3>
+    </div>
+
+    <div class="highlight blue">
+      <strong>Key Rule — Wildcard Mask Logic</strong>
+      Wildcard mask bit = 0: CHECK the corresponding IP address bit (must match). Wildcard mask bit = 1: IGNORE (don't check) the corresponding bit.
+      This is the OPPOSITE of subnet masks (subnet: 1=check, 0=ignore).
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 class="blue">Common Wildcard Shortcuts</h4>
+        <table class="comp-table">
+          <tr><th class="blue">Keyword</th><th class="blue">Equivalent</th><th class="blue">Meaning</th></tr>
+          <tr><td><code>host</code></td><td>0.0.0.0 mask</td><td>Match this exact IP address only</td></tr>
+          <tr><td><code>any</code></td><td>0.0.0.0 255.255.255.255</td><td>Match any IP address</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <h4 class="blue">Wildcard Examples</h4>
+        <ul>
+          <li><code>172.30.16.0 0.0.0.255</code> — match any host in 172.30.16.x subnet</li>
+          <li><code>172.30.0.0 0.0.255.255</code> — match any host in 172.30.x.x (entire Class B)</li>
+          <li><code>0.0.0.0 255.255.255.255</code> = <code>any</code> — match everything</li>
+          <li><code>172.30.16.5 0.0.0.0</code> = <code>host 172.30.16.5</code> — match single host</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot blue"></div>
+      <h3>Named ACLs</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="purple">Named ACL Advantages</h4>
+      <ul>
+        <li>Use <b>alphanumeric names</b> to identify ACLs instead of numbers</li>
+        <li>No IOS limit on number of named ACLs</li>
+        <li>Can <b>modify (delete individual entries)</b> without deleting the entire ACL</li>
+        <li>Support additional features: IP options filtering, non-contiguous ports, TCP flag filtering</li>
+        <li>Any additions are made to the end of the ACL</li>
+      </ul>
+      <div class="acl-rule" style="margin-top:10px">
+        <span class="cmd">ip access-list</span> <span class="action">standard</span> <span class="num">MY_ACL</span><br>
+        &nbsp;<span class="action">permit</span> <span class="addr">192.168.1.0</span> 0.0.0.255<br>
+        &nbsp;<span class="action">deny</span> any<br><br>
+        <span style="color:var(--muted)">Delete single entry:</span><br>
+        &nbsp;<span class="cmd">no</span> <span class="action">permit</span> <span class="addr">192.168.1.0</span> 0.0.0.255
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot blue"></div>
+      <h3>ACL Verification Commands</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="blue">Verification Commands</h4>
+      <table class="comp-table">
+        <tr><th class="blue">Command</th><th class="blue">What It Shows</th></tr>
+        <tr><td><code>show access-lists</code></td><td>Displays all ACL configurations and match counts</td></tr>
+        <tr><td><code>show ip interface</code></td><td>Shows interface ACL assignments (which ACL applied in/out)</td></tr>
+        <tr><td><code>show running-config</code></td><td>Full configuration including ACLs and interface assignments</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h4 class="orange">ACL Placement Rules — Critical for Exam</h4>
+      <div class="grid2">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--green);font-weight:700;margin-bottom:6px">Standard ACL → Near Destination</p>
+          <p style="font-size:0.85rem">Standard ACL only filters by source. If placed near source, it could block traffic that was meant for a different destination entirely. Place it close to destination to minimize impact.</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--orange);font-weight:700;margin-bottom:6px">Extended ACL → Near Source</p>
+          <p style="font-size:0.85rem">Extended ACL filters by both source and destination. Placing near source prevents unwanted traffic from crossing the network unnecessarily — blocks it immediately at origin.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="red">ACL and Firewalls</h4>
+      <ul>
+        <li>A <b>Firewall</b> is an architectural structure protecting the internal network from external intruders</li>
+        <li>ACLs should be used in <b>firewall routers</b> positioned between internal and external networks (e.g., the Internet)</li>
+        <li>Firewall router provides point of isolation — rest of internal network is protected from direct attack</li>
+      </ul>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- =================== TOPIC 3: IOT =================== -->
+  <div class="topic-section" id="iot">
+    <div class="topic-title orange">
+      <div class="topic-icon">📡</div>
+      <div>
+        <h2 class="orange">Internet of Things (IoT)</h2>
+        <p>Lecture 16 · IoT definition, architecture, technologies, applications, challenges</p>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot orange"></div>
+      <h3>What is IoT?</h3>
+    </div>
+
+    <div class="highlight orange">
+      <strong>Definition</strong>
+      IoT (Internet of Things) comprises physical "things" that have unique identities and are connected to the Internet. The focus is on configuring, controlling, and networking devices traditionally not associated with the Internet — pumps, utility meters, car engines. IoT is a new revolution in endpoint (device) capabilities.
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 class="orange">Core IoT Concept</h4>
+        <ul>
+          <li>Moving from <b>Internet of People</b> → <b>Internet of Things</b></li>
+          <li>Not just connecting things to the Internet</li>
+          <li>Things <b>communicate and exchange data</b> with each other (M2M — Machine to Machine)</li>
+          <li>Processing this data creates applications for users and machines</li>
+          <li>Scope: devices, appliances, machines, infrastructure</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="orange">IoT vs M2M</h4>
+        <ul>
+          <li><b>M2M (Machine-to-Machine):</b> direct communication between two devices — narrow scope, usually point-to-point</li>
+          <li><b>IoT:</b> broader ecosystem — devices communicate through cloud platforms, data is processed, analyzed, and used to drive decisions across many systems</li>
+          <li>IoT includes M2M but goes further: analytics, cloud integration, application layer</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot orange"></div>
+      <h3>IoT Architecture</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="orange">IoT Layered Architecture</h4>
+      <div class="iot-layers">
+        <div class="iot-layer l1">Application Layer — Smart Grid, Smart Transport, Green Building, Env. Monitor, Smart Decision</div>
+        <div class="iot-layer l2">Information Processing Layer — Data Center, Search Engine, Info Security, Data Mining, Cloud</div>
+        <div class="iot-layer l3">Network Construction Layer — WWAN, WPAN, WMAN, WLAN, Internet, GPS</div>
+        <div class="iot-layer l4">Sensing & Identification Layer — Smart Devices, RFID, Sensors, Actuators</div>
+      </div>
+      <p style="font-size:0.8rem;color:var(--muted);margin-top:8px">Bottom layer = physical world sensing. Top layer = intelligent applications driven by that data.</p>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot orange"></div>
+      <h3>IoT Technologies</h3>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <h4 class="orange">Hardware (Devices)</h4>
+        <ul>
+          <li><b>Arduino Uno</b> — microcontroller board; very popular for prototyping</li>
+          <li><b>Raspberry Pi</b> — single-board computer; runs full OS</li>
+          <li><b>BeagleBone Black</b> — Linux-based embedded board</li>
+          <li><b>Intel Galileo</b> — Intel x86-based Arduino-compatible board</li>
+          <li>Sensors (temperature, motion, ECG, proximity) and Actuators (motors, relays, LEDs)</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4 class="orange">IoT Protocols</h4>
+        <ul>
+          <li><b>CoAP</b> (Constrained Application Protocol) — lightweight HTTP for resource-constrained devices</li>
+          <li><b>MQTT</b> (Message Queue Telemetry Transport) — publish-subscribe messaging; used with brokers; very lightweight</li>
+          <li><b>XMPP</b> (Extensible Messaging and Presence Protocol) — real-time message/data exchange</li>
+          <li><b>6LoWPAN</b> — IPv6 over Low-power Wireless Personal Area Networks; IPv6 adapted for constrained devices</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4 class="orange">Communication Technologies Used in IoT</h4>
+      <table class="comp-table">
+        <tr><th class="orange">Category</th><th class="orange">Examples</th></tr>
+        <tr><td>Short-range wireless</td><td>Bluetooth, Zigbee, NFC, Z-Wave, Wi-Fi (802.11)</td></tr>
+        <tr><td>Long-range wireless</td><td>LoRaWAN, Sigfox, NB-IoT, LTE-M</td></tr>
+        <tr><td>Cellular</td><td>4G LTE, 5G (for high-bandwidth IoT)</td></tr>
+        <tr><td>Wired</td><td>Ethernet, PLC (Power Line Communication)</td></tr>
+        <tr><td>GPS</td><td>Location tracking for vehicles, assets</td></tr>
+        <tr><td>RFID</td><td>Radio Frequency ID — tags for object identification</td></tr>
+      </table>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot orange"></div>
+      <h3>IoT Applications</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="orange">Application Domains</h4>
+      <table class="comp-table">
+        <tr><th class="orange">Domain</th><th class="orange">Examples</th></tr>
+        <tr><td>Smart Home</td><td>Motion sensors, security cameras, smart locks, energy management</td></tr>
+        <tr><td>Healthcare</td><td>ECG sensors, remote patient monitoring, wearables</td></tr>
+        <tr><td>Transportation</td><td>Vehicle tracking (BMTC), traffic management, smart signals</td></tr>
+        <tr><td>Supply Chain</td><td>Logistics, warehouse management, product design, manufacturing</td></tr>
+        <tr><td>Smart Grid</td><td>Utility meters, demand response, energy optimization</td></tr>
+        <tr><td>Environment</td><td>Air quality, water monitoring, agricultural sensors</td></tr>
+        <tr><td>Industry (IIoT)</td><td>Factory automation, predictive maintenance</td></tr>
+      </table>
+    </div>
+
+    <div class="section-header">
+      <div class="sh-dot orange"></div>
+      <h3>IoT Challenges</h3>
+    </div>
+
+    <div class="card">
+      <h4 class="orange">Four Key Challenges</h4>
+      <div class="grid2">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--blue);font-weight:700;margin-bottom:5px">Connectivity</p>
+          <p style="font-size:0.85rem">Heterogeneous (different types, mixed) networks; devices use different protocols, frequencies, and standards. Interoperability is difficult.</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--yellow);font-weight:700;margin-bottom:5px">Power Management</p>
+          <p style="font-size:0.85rem">Many IoT devices are battery-powered; must operate for months or years without replacement. Energy-efficient protocols and sleep modes critical.</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--red);font-weight:700;margin-bottom:5px">Security</p>
+          <p style="font-size:0.85rem">Billions of connected devices = massive attack surface. Many IoT devices have no security built in. Authentication, encryption, and update mechanisms needed.</p>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <p style="color:var(--purple);font-weight:700;margin-bottom:5px">Rapid Evolution</p>
+          <p style="font-size:0.85rem">Technologies, standards, and platforms evolve quickly. Legacy devices may become incompatible. Standards fragmentation (multiple competing protocols).</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="highlight orange">
+      <strong>Cloud in IoT — Sensing as a Service</strong>
+      IoT data is often sent to cloud platforms (AWS IoT, Azure IoT, Google Cloud IoT) for storage, processing, and analytics. This model is called "Sensing-as-a-Service" — the physical sensing hardware is abstracted into a cloud service layer that applications can subscribe to and consume.
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  CCN Exam Prep · Guide 3: Physical Layer, ACL & IoT · Lectures 13–14, 15, 16 · Dr. Muazzam A. Khan
+</footer>
+</body>
+</html>

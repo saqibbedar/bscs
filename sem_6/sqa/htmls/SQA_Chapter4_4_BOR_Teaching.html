@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SQA — Chapter 4.4: Predicate Testing & BOR-CSET</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #13161e;
+    --surface2: #1a1e28;
+    --surface3: #212635;
+    --border: #2a2f3f;
+    --accent: #5b8dee;
+    --accent2: #e06c75;
+    --accent3: #98c379;
+    --accent4: #e5c07b;
+    --accent5: #c678dd;
+    --text: #abb2bf;
+    --text-bright: #e6edf3;
+    --text-muted: #5c6370;
+    --true-color: #98c379;
+    --false-color: #e06c75;
+    --t-color: #5b8dee;
+    --f-color: #e06c75;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  .page-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem 2rem;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-inner { max-width: 900px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .header-tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent); background: rgba(91,141,238,.12); border: 1px solid rgba(91,141,238,.25); padding: 3px 10px; border-radius: 20px; letter-spacing: .05em; margin-bottom: .5rem; display: inline-block; }
+  .header-title { font-size: 1.5rem; font-weight: 600; color: var(--text-bright); line-height: 1.2; }
+  .header-sub { font-size: 13px; color: var(--text-muted); margin-top: .3rem; }
+  .nav-pills { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+  .nav-pill { font-size: 12px; color: var(--text-muted); background: var(--surface2); border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; cursor: pointer; text-decoration: none; transition: all .2s; white-space: nowrap; }
+  .nav-pill:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── LAYOUT ── */
+  .main { max-width: 900px; margin: 0 auto; padding: 2.5rem 1.5rem 5rem; }
+
+  /* ── SECTION BLOCKS ── */
+  .section { margin-bottom: 3rem; }
+  .section-header {
+    display: flex; align-items: center; gap: .75rem;
+    margin-bottom: 1.5rem; padding-bottom: .75rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--accent);
+    background: rgba(91,141,238,.12);
+    border: 1px solid rgba(91,141,238,.2);
+    padding: 2px 8px; border-radius: 4px;
+    white-space: nowrap;
+  }
+  .section-title { font-size: 1.15rem; font-weight: 600; color: var(--text-bright); }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+  }
+  .card-title {
+    font-size: 13px; font-weight: 600; color: var(--accent);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase; letter-spacing: .08em;
+    margin-bottom: .85rem;
+  }
+  .card p { margin-bottom: .6rem; }
+  .card p:last-child { margin-bottom: 0; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-radius: 8px; padding: 1rem 1.25rem;
+    margin: 1rem 0; display: flex; gap: .75rem; align-items: flex-start;
+  }
+  .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 2px; }
+  .callout-body { flex: 1; }
+  .callout-title { font-weight: 600; font-size: 13px; margin-bottom: .3rem; }
+  .callout.info { background: rgba(91,141,238,.08); border-left: 3px solid var(--accent); }
+  .callout.info .callout-title { color: var(--accent); }
+  .callout.warn { background: rgba(229,192,123,.08); border-left: 3px solid var(--accent4); }
+  .callout.warn .callout-title { color: var(--accent4); }
+  .callout.success { background: rgba(152,195,121,.08); border-left: 3px solid var(--accent3); }
+  .callout.success .callout-title { color: var(--accent3); }
+  .callout.danger { background: rgba(224,108,117,.08); border-left: 3px solid var(--accent2); }
+  .callout.danger .callout-title { color: var(--accent2); }
+
+  /* ── FAULT TABLE ── */
+  .fault-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px,1fr)); gap: 1rem; margin: 1rem 0; }
+  .fault-card { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1.1rem; }
+  .fault-card-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--accent5); font-weight: 700; margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .05em; }
+  .fault-card p { font-size: 13.5px; margin-bottom: .4rem; }
+  .fault-card code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--surface3); padding: 1px 5px; border-radius: 3px; }
+
+  /* ── CODE / MATH BLOCKS ── */
+  .math-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    color: var(--text-bright);
+    margin: .75rem 0;
+    overflow-x: auto;
+    white-space: pre;
+    line-height: 1.6;
+  }
+  code { font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--surface2); padding: 1px 5px; border-radius: 3px; color: var(--accent4); }
+  .t-sym { color: var(--t-color); font-weight: 700; }
+  .f-sym { color: var(--f-color); font-weight: 700; }
+  .op-sym { color: var(--accent5); font-weight: 700; }
+  .var-sym { color: var(--accent4); }
+  .result-true { color: var(--true-color); font-weight: 600; }
+  .result-false { color: var(--false-color); font-weight: 600; }
+
+  /* ── AST DIAGRAM ── */
+  .ast-wrap { display: flex; justify-content: center; margin: 1rem 0; overflow-x: auto; }
+  .ast-svg { max-width: 100%; }
+
+  /* ── PROCEDURE BOX ── */
+  .procedure {
+    background: var(--surface2);
+    border: 1px solid rgba(91,141,238,.3);
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin: 1rem 0;
+  }
+  .procedure-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px; color: var(--accent);
+    font-weight: 700; margin-bottom: 1rem;
+    padding-bottom: .6rem;
+    border-bottom: 1px solid rgba(91,141,238,.2);
+  }
+  .procedure-step { display: flex; gap: .75rem; margin-bottom: .85rem; align-items: flex-start; }
+  .step-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; font-weight: 700;
+    background: var(--accent); color: #fff;
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .step-body { flex: 1; font-size: 14px; }
+  .step-sub { margin-top: .4rem; padding-left: .5rem; border-left: 2px solid var(--border); }
+
+  /* ── TABLE ── */
+  .tbl-wrap { overflow-x: auto; margin: .75rem 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { background: var(--surface3); color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; padding: .55rem .85rem; text-align: left; border: 1px solid var(--border); }
+  td { padding: .5rem .85rem; border: 1px solid var(--border); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+  .td-t { color: var(--true-color); font-weight: 700; }
+  .td-f { color: var(--false-color); font-weight: 700; }
+  .td-hi { background: rgba(152,195,121,.1) !important; }
+  .td-lo { background: rgba(224,108,117,.08) !important; }
+
+  /* ── EXAMPLE BLOCK ── */
+  .example-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent4);
+    border-radius: 0 0 10px 10px;
+    margin: 1.5rem 0;
+  }
+  .example-header {
+    background: rgba(229,192,123,.06);
+    padding: .75rem 1.25rem;
+    display: flex; align-items: center; gap: .75rem;
+    cursor: pointer; border-radius: 0 0 0 0;
+    transition: background .2s;
+  }
+  .example-header:hover { background: rgba(229,192,123,.1); }
+  .example-badge {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--accent4);
+    background: rgba(229,192,123,.12);
+    border: 1px solid rgba(229,192,123,.25);
+    padding: 2px 8px; border-radius: 3px; white-space: nowrap;
+  }
+  .example-title { font-weight: 600; font-size: 14px; color: var(--text-bright); flex: 1; }
+  .toggle-arrow { color: var(--text-muted); transition: transform .25s; font-size: 14px; }
+  .example-body { padding: 1.25rem; border-top: 1px solid var(--border); }
+  .example-body.collapsed { display: none; }
+
+  /* ── COMPARISON TABLE ── */
+  .compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0; }
+  .compare-cell { background: var(--surface2); border-radius: 8px; padding: 1rem; border: 1px solid var(--border); }
+  .compare-label { font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; margin-bottom: .5rem; text-transform: uppercase; letter-spacing: .05em; }
+  .compare-label.correct { color: var(--accent3); }
+  .compare-label.faulty { color: var(--accent2); }
+
+  /* ── RULE BOX ── */
+  .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: .75rem; margin: 1rem 0; }
+  .rule-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; }
+  .rule-box-title { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700; color: var(--accent5); margin-bottom: .5rem; }
+  .rule-box .math-block { margin: .3rem 0; padding: .5rem .75rem; font-size: 12.5px; }
+
+  /* ── KEY POINT BADGE ── */
+  .key-point {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(91,141,238,.08);
+    border: 1px solid rgba(91,141,238,.2);
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 12.5px; color: var(--accent);
+    margin: .2rem .1rem;
+  }
+
+  /* ── BR SET TABLE ── */
+  .br-table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; margin: .75rem 0; }
+  .br-table th { background: var(--surface3); padding: .4rem .7rem; border: 1px solid var(--border); color: var(--accent); font-size: 11px; }
+  .br-table td { padding: .4rem .7rem; border: 1px solid var(--border); }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    .page-header { padding: 1.25rem 1rem 1rem; }
+    .main { padding: 1.5rem 1rem 4rem; }
+    .compare-row { grid-template-columns: 1fr; }
+    .header-inner { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER
+═══════════════════════════════════════════════ -->
+<header class="page-header">
+  <div class="header-inner">
+    <div>
+      <div class="header-tag">SQA · Mathur Ch. 4.4</div>
+      <div class="header-title">Predicate Testing &amp; BOR-CSET</div>
+      <div class="header-sub">Tests Using Predicate Syntax — BOR, BRO, BRE Criteria · Fault Propagation</div>
+    </div>
+    <nav class="nav-pills">
+      <a class="nav-pill" href="#s1">Fault Model</a>
+      <a class="nav-pill" href="#s2">Constraints</a>
+      <a class="nav-pill" href="#s3">Criteria</a>
+      <a class="nav-pill" href="#s4">BOR-CSET</a>
+      <a class="nav-pill" href="#s5">Examples</a>
+      <a class="nav-pill" href="#s6">BRO/BRE</a>
+      <a class="nav-pill" href="#s7">Propagation</a>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+
+<!-- ══════════════════════════════════════════════
+     INTRO
+═══════════════════════════════════════════════ -->
+<section class="section">
+  <div class="callout info">
+    <div class="callout-icon">📌</div>
+    <div class="callout-body">
+      <div class="callout-title">What is Section 4.4 about?</div>
+      <p>Programmers write <strong>conditions</strong> (predicates) in code — like <code>if (a &lt; b &amp;&amp; c &gt; d)</code>. They might accidentally use the wrong operator, wrong comparison sign, or make an arithmetic mistake. Predicate testing gives us a <strong>systematic, minimal</strong> way to generate test cases that are <em>guaranteed</em> to catch those mistakes.</p>
+      <p>Your notes cover the three worked examples for <strong>BOR-CSET</strong> (the core algorithm) plus the BRO constraint extension and fault propagation. That's exactly what this file teaches.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 1 — FAULT MODEL
+═══════════════════════════════════════════════ -->
+<section class="section" id="s1">
+  <div class="section-header">
+    <span class="section-num">4.4.1</span>
+    <span class="section-title">The Fault Model — What bugs are we targeting?</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">Before generating tests, we need to know <em>what kind of bug</em> we're hunting. The fault model defines three categories:</p>
+
+  <div class="fault-grid">
+    <div class="fault-card">
+      <div class="fault-card-label">① Boolean Operator Fault</div>
+      <p>Wrong logical operator (<code>∧</code> vs <code>∨</code>), misplaced negation (<code>¬</code>), wrong parentheses, or wrong Boolean variable.</p>
+      <p><strong>Example:</strong></p>
+      <code>Correct:  a &lt; b ∨ c &gt; d<br>Faulty:   a &lt; b ∧ c &gt; d</code>
+    </div>
+    <div class="fault-card">
+      <div class="fault-card-label">② Relational Operator Fault</div>
+      <p>Wrong comparison sign: <code>&lt;</code> written as <code>≤</code>, <code>==</code> instead of <code>&lt;</code>, etc.</p>
+      <p><strong>Example:</strong></p>
+      <code>Correct:  a &lt; b<br>Faulty:   a == b</code>
+    </div>
+    <div class="fault-card">
+      <div class="fault-card-label">③ Arithmetic Expression Fault</div>
+      <p>An "off-by-ε" error in the arithmetic part of a relational expression. Three sub-types:</p>
+      <p><code>off-by-ε</code> — exactly off by ε</p>
+      <p><code>off-by-ε*</code> — off by ≥ ε</p>
+      <p><code>off-by-ε+</code> — off by &gt; ε</p>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">⚠️</div>
+    <div class="callout-body">
+      <div class="callout-title">What the BOR-CSET procedure does NOT catch</div>
+      <p><strong>Missing Boolean variable fault</strong> (e.g. coding <code>a</code> instead of <code>a ∨ b</code>) and <strong>extra Boolean variable fault</strong> (e.g. coding <code>a ∨ b ∨ c</code> instead of <code>a ∨ b</code>) are <em>not</em> detected by the procedures in this section.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 2 — BR SYMBOLS & CONSTRAINTS
+═══════════════════════════════════════════════ -->
+<section class="section" id="s2">
+  <div class="section-header">
+    <span class="section-num">4.4.3</span>
+    <span class="section-title">BR Symbols &amp; Predicate Constraints</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">The BR Symbol Set</div>
+    <p>BR = <strong>Boolean and Relational</strong>. The set of all allowed symbols is:</p>
+    <div class="math-block">BR = { <span class="t-sym">t</span>, <span class="f-sym">f</span>, <span class="op-sym">&lt;</span>, <span class="op-sym">=</span>, <span class="op-sym">&gt;</span>, <span class="op-sym">+ε</span>, <span class="op-sym">−ε</span> }</div>
+    <p>Each BR symbol <strong>constrains</strong> one simple condition in a predicate:</p>
+    <div class="tbl-wrap">
+      <table class="br-table">
+        <thead><tr><th>Symbol</th><th>Applied to</th><th>Meaning (what the test must ensure)</th></tr></thead>
+        <tbody>
+          <tr><td class="td-t">t</td><td>Boolean variable or expression</td><td>The expression must evaluate to <span class="result-true">TRUE</span></td></tr>
+          <tr><td class="td-f">f</td><td>Boolean variable or expression</td><td>The expression must evaluate to <span class="result-false">FALSE</span></td></tr>
+          <tr><td>&lt;</td><td>Relational expression e₁ relop e₂</td><td>Test must make e₁ − e₂ &lt; 0</td></tr>
+          <tr><td>=</td><td>Relational expression e₁ relop e₂</td><td>Test must make e₁ − e₂ = 0</td></tr>
+          <tr><td>&gt;</td><td>Relational expression e₁ relop e₂</td><td>Test must make e₁ − e₂ &gt; 0</td></tr>
+          <tr><td>+ε</td><td>Relational expression</td><td>0 &lt; e₁ − e₂ ≤ ε  (just above equal)</td></tr>
+          <tr><td>−ε</td><td>Relational expression</td><td>−ε ≤ e₁ − e₂ &lt; 0  (just below equal)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Predicate Constraint — Definition</div>
+    <p>A predicate with <strong>n</strong> simple conditions (Boolean variables or relational expressions) has a <strong>predicate constraint</strong> that is a <em>sequence of n BR symbols</em> — one for each simple condition.</p>
+    <div class="callout info" style="margin-top:.75rem;">
+      <div class="callout-icon">💡</div>
+      <div class="callout-body">
+        <div class="callout-title">Example</div>
+        <p>Predicate: <code>pr : b ∧ r&lt;s ∨ u≥v</code> has 3 simple conditions: <code>b</code>, <code>r&lt;s</code>, <code>u≥v</code></p>
+        <p>A valid constraint: <code>C = (t, =, &gt;)</code></p>
+        <p>→ <code>b</code> must be true, <code>r−s = 0</code>, <code>u−v &gt; 0</code></p>
+        <p>→ Test: <code>&lt;b=true, r=1, s=1, u=1, v=0&gt;</code> satisfies this constraint.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">True Constraints vs False Constraints</div>
+    <p>A constraint C for predicate pr is a <strong>true constraint</strong> if evaluating pr on any test that satisfies C gives <span class="result-true">TRUE</span>.</p>
+    <p>It is a <strong>false constraint</strong> if it gives <span class="result-false">FALSE</span>.</p>
+    <p>We split a constraint set S into: <code>Sᵗ</code> (true constraints) and <code>Sᶠ</code> (false constraints), so <code>S = Sᵗ ∪ Sᶠ</code>.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Set Products — Two Kinds You Must Know</div>
+    <p>Two set operations are used throughout the BOR-CSET algorithm:</p>
+    <div class="compare-row">
+      <div class="compare-cell">
+        <div class="compare-label correct">× — Regular Cartesian Product</div>
+        <p style="font-size:13.5px;">All possible pairs (a,b) where a∈A, b∈B.</p>
+        <div class="math-block">A = {t, =, &gt;}
+B = {f, &lt;}
+A × B = {(t,f),(t,&lt;),(=,f),
+         (=,&lt;),(&gt;,f),(&gt;,&lt;)}</div>
+        <p style="font-size:13px;">→ 6 pairs. Always unique.</p>
+      </div>
+      <div class="compare-cell">
+        <div class="compare-label faulty">⊗ — Onto (Minimal) Product</div>
+        <p style="font-size:13.5px;">A <em>minimal</em> set of pairs such that every element of A and every element of B appears at least once.</p>
+        <div class="math-block">A = {t, =, &gt;}
+B = {f, &lt;}
+A ⊗ B = {(t,f),(=,&lt;),(&gt;,&lt;)}
+     or {(t,&lt;),(=,f),(&gt;,&lt;)}
+     or ... (6 possibilities)</div>
+        <p style="font-size:13px;">→ NOT unique! Pick any one.</p>
+      </div>
+    </div>
+    <div class="callout warn">
+      <div class="callout-icon">🔑</div>
+      <div class="callout-body">
+        <div class="callout-title">Why ⊗ matters</div>
+        <p>BOR-CSET uses <strong>⊗ (onto product)</strong> to keep the constraint set <em>minimal</em>. Using regular × would give too many test cases. The BOR, BRO, BRE procedures all use ⊗ when propagating through AND/OR nodes in the AST.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 3 — CRITERIA
+═══════════════════════════════════════════════ -->
+<section class="section" id="s3">
+  <div class="section-header">
+    <span class="section-num">4.4.4</span>
+    <span class="section-title">BOR, BRO, BRE — The Three Testing Criteria</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">These three criteria define <em>what quality</em> your test set must achieve. Think of them as progressively stronger guarantees:</p>
+
+  <div class="fault-grid">
+    <div class="fault-card" style="border-top: 2px solid var(--accent3);">
+      <div class="fault-card-label" style="color:var(--accent3);">BOR — Boolean Operator</div>
+      <p>A <strong>BOR-adequate</strong> test set <em>guarantees</em> detection of all single and multiple <strong>Boolean operator faults</strong>.</p>
+      <p>Leaf constraints: <code>{t, f}</code></p>
+    </div>
+    <div class="fault-card" style="border-top: 2px solid var(--accent);">
+      <div class="fault-card-label" style="color:var(--accent);">BRO — Boolean + Relational Operator</div>
+      <p>A <strong>BRO-adequate</strong> test set is <em>likely</em> to detect Boolean operator AND relational operator faults.</p>
+      <p>Leaf constraints (relational): <code>{&lt;, =, &gt;}</code></p>
+    </div>
+    <div class="fault-card" style="border-top: 2px solid var(--accent5);">
+      <div class="fault-card-label" style="color:var(--accent5);">BRE — Boolean + Relational + Expression</div>
+      <p>A <strong>BRE-adequate</strong> test set is <em>likely</em> to detect all three fault types including arithmetic off-by-ε.</p>
+      <p>Leaf constraints (relational): <code>{+ε, =, −ε}</code></p>
+    </div>
+  </div>
+
+  <div class="callout success">
+    <div class="callout-icon">📏</div>
+    <div class="callout-body">
+      <div class="callout-title">Size of adequate test sets</div>
+      <p>If a predicate pr has <strong>n</strong> AND/OR operators:</p>
+      <p>→ Max size of BOR-adequate test set = <strong>n + 2</strong></p>
+      <p>→ Max size of BRO or BRE-adequate test set = <strong>2n + 3</strong></p>
+      <p>This is much smaller than the brute-force 2ⁿ approach!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 4 — BOR-CSET PROCEDURE
+═══════════════════════════════════════════════ -->
+<section class="section" id="s4">
+  <div class="section-header">
+    <span class="section-num">4.4.5</span>
+    <span class="section-title">Procedure BOR-CSET — The Algorithm</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">This is the core algorithm your notes work through in all three examples. It generates a minimal BOR constraint set by walking the Abstract Syntax Tree (AST) of a predicate <em>bottom-up</em>.</p>
+
+  <div class="callout info">
+    <div class="callout-icon">🌳</div>
+    <div class="callout-body">
+      <div class="callout-title">What is an AST (Abstract Syntax Tree)?</div>
+      <p>It's a tree representation of a predicate. <strong>Leaf nodes</strong> = simple conditions (Boolean variables or relational expressions). <strong>Internal nodes</strong> = logical operators (AND, OR, NOT).</p>
+      <p>For <code>a&lt;b ∧ c&gt;d</code>: root = AND node, left leaf = <code>a&lt;b</code>, right leaf = <code>c&gt;d</code>.</p>
+    </div>
+  </div>
+
+  <div class="procedure">
+    <div class="procedure-title">Procedure BOR-CSET (Bottom-Up AST Traversal)</div>
+
+    <div class="procedure-step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <strong>Label every LEAF node</strong> with its default BOR constraint set:
+        <div class="math-block">For every leaf:  Sₙ = { <span class="t-sym">t</span>, <span class="f-sym">f</span> }
+→ Sₙᵗ = { t },   Sₙᶠ = { f }</div>
+      </div>
+    </div>
+
+    <div class="procedure-step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <strong>Traverse bottom-up</strong>, computing Sₙ for each internal node using these rules:
+        <div class="step-sub" style="margin-top:.75rem;">
+
+          <div class="rule-grid">
+            <div class="rule-box" style="border-top:2px solid var(--accent2);">
+              <div class="rule-box-title">NOT Node</div>
+              <div class="math-block">Sₙᵗ = Sₙ₁ᶠ
+Sₙᶠ = Sₙ₁ᵗ</div>
+              <p style="font-size:13px;">Just swap: true set becomes false set and vice versa.</p>
+            </div>
+
+            <div class="rule-box" style="border-top:2px solid var(--accent3);">
+              <div class="rule-box-title">AND Node (N₁ AND N₂)</div>
+              <div class="math-block">Sₙᵗ = Sₙ₁ᵗ ⊗ Sₙ₂ᵗ
+Sₙᶠ = (Sₙ₁ᶠ × {t₂}) ∪ ({t₁} × Sₙ₂ᶠ)
+  where t₁ ∈ Sₙ₁ᵗ, t₂ ∈ Sₙ₂ᵗ</div>
+              <p style="font-size:13px;"><strong>True</strong>: both sides must be true → onto product.<br><strong>False</strong>: one side false while other true.</p>
+            </div>
+
+            <div class="rule-box" style="border-top:2px solid var(--accent);">
+              <div class="rule-box-title">OR Node (N₁ OR N₂)</div>
+              <div class="math-block">Sₙᶠ = Sₙ₁ᶠ ⊗ Sₙ₂ᶠ
+Sₙᵗ = (Sₙ₁ᵗ × {f₂}) ∪ ({f₁} × Sₙ₂ᵗ)
+  where f₁ ∈ Sₙ₁ᶠ, f₂ ∈ Sₙ₂ᶠ</div>
+              <p style="font-size:13px;"><strong>False</strong>: both sides must be false → onto product.<br><strong>True</strong>: one side true while other false.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="procedure-step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        The constraint set at the <strong>root node</strong> is your final BOR constraint set. Generate test cases that satisfy each constraint.
+      </div>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <div class="callout-icon">🧠</div>
+    <div class="callout-body">
+      <div class="callout-title">Memory trick for AND vs OR rules</div>
+      <p><strong>AND</strong>: To be TRUE, BOTH sides must be true (use ⊗). To be FALSE, ONE side is false while the other is true (use ×).</p>
+      <p><strong>OR</strong>: To be FALSE, BOTH sides must be false (use ⊗). To be TRUE, ONE side is true while the other is false (use ×).</p>
+      <p>The ⊗ always goes on the "both must agree" side!</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 5 — WORKED EXAMPLES (from your notes)
+═══════════════════════════════════════════════ -->
+<section class="section" id="s5">
+  <div class="section-header">
+    <span class="section-num">4.4.5</span>
+    <span class="section-title">Worked Examples (from your notes)</span>
+  </div>
+
+  <!-- ── EXAMPLE 1 ── -->
+  <div class="example-block">
+    <div class="example-header" onclick="toggleExample(this)">
+      <span class="example-badge">Example 1</span>
+      <span class="example-title">BOR-CSET for p₁ : a&lt;b ∧ c&gt;d</span>
+      <span class="toggle-arrow">▼</span>
+    </div>
+    <div class="example-body">
+      <p style="margin-bottom:1rem;">This is the simplest case: a two-leaf AND predicate. Exactly what your notes start with in Image 2 and Image 3.</p>
+
+      <p><strong>Step 1 — Draw the AST:</strong></p>
+      <div class="ast-wrap">
+        <svg class="ast-svg" viewBox="0 0 380 200" width="380" height="200">
+          <!-- AND node N3 -->
+          <rect x="150" y="20" width="80" height="36" rx="6" fill="#1a1e28" stroke="#5b8dee" stroke-width="1.5"/>
+          <text x="190" y="43" text-anchor="middle" font-family="JetBrains Mono" font-size="13" fill="#5b8dee" font-weight="700">∧ (N₃)</text>
+          <!-- Connectors -->
+          <line x1="160" y1="56" x2="100" y2="120" stroke="#2a2f3f" stroke-width="1.5"/>
+          <line x1="220" y1="56" x2="280" y2="120" stroke="#2a2f3f" stroke-width="1.5"/>
+          <!-- N1 leaf -->
+          <rect x="40" y="120" width="120" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="100" y="143" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#e5c07b">a&lt;b  (N₁)</text>
+          <!-- N2 leaf -->
+          <rect x="220" y="120" width="120" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="280" y="143" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#e5c07b">c&gt;d  (N₂)</text>
+          <!-- Constraint labels -->
+          <text x="100" y="175" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#5c6370">{t, f}</text>
+          <text x="280" y="175" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#5c6370">{t, f}</text>
+        </svg>
+      </div>
+
+      <p><strong>Step 2 — Apply leaf labels:</strong></p>
+      <div class="math-block">N₁ (a&lt;b): S<sub>N₁</sub>ᵗ = {t},  S<sub>N₁</sub>ᶠ = {f}
+N₂ (c&gt;d): S<sub>N₂</sub>ᵗ = {t},  S<sub>N₂</sub>ᶠ = {f}</div>
+
+      <p><strong>Step 3 — Compute N₃ (AND node):</strong></p>
+      <div class="math-block"><span style="color:#98c379;">// TRUE set (use ⊗):</span>
+S<sub>N₃</sub>ᵗ = S<sub>N₁</sub>ᵗ ⊗ S<sub>N₂</sub>ᵗ
+       = {t} ⊗ {t}
+       = <span class="t-sym">{(t, t)}</span>
+
+<span style="color:#e06c75;">// FALSE set (use × with one true element from each):</span>
+S<sub>N₃</sub>ᶠ = (S<sub>N₁</sub>ᶠ × {t₂}) ∪ ({t₁} × S<sub>N₂</sub>ᶠ)
+       = ({f} × {t}) ∪ ({t} × {f})
+       = {(f, t)} ∪ {(t, f)}
+       = <span class="f-sym">{(f, t), (t, f)}</span></div>
+
+      <div class="callout success">
+        <div class="callout-icon">✅</div>
+        <div class="callout-body">
+          <div class="callout-title">Final BOR Constraint Set</div>
+          <div class="math-block">S<sub>N₃</sub> = <span class="t-sym">{(t,t)}</span>, <span class="f-sym">{(f,t), (t,f)}</span>
+→ S = {(t,t), (f,t), (t,f)}</div>
+        </div>
+      </div>
+
+      <p><strong>Step 4 — Generate Test Cases:</strong></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Test</th><th>Constraint</th><th>a</th><th>b</th><th>c</th><th>d</th><th>a&lt;b</th><th>c&gt;d</th><th>pr result</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>t₁</td><td>(t,t)</td><td>1</td><td>2</td><td>6</td><td>5</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-t td-hi">TRUE</td></tr>
+            <tr><td>t₂</td><td>(t,f)</td><td>2</td><td>1 (actually: a=2,b=1)</td><td>6</td><td>5 (wait — just t,f)</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-f td-lo">FALSE</td></tr>
+            <tr><td>t₃</td><td>(f,t)</td><td>2</td><td>1</td><td>6</td><td>5</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-f td-lo">FALSE</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:.4rem;">From your notes Image 3: t₁ uses a=1,b=2,c=6,d=5 (1&lt;2 ∧ 6&gt;5 → T∧T ✓)</p>
+
+      <p style="margin-top:1rem;"><strong>Fault Propagation Check (from Image 3 &amp; 5):</strong></p>
+      <p>Correct: <code>pₒ: a&lt;b ∧ c&gt;d</code> &nbsp; Faulty: <code>pᵢ: a&lt;b ∨ c&gt;d</code></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Test</th><th>a&lt;b</th><th>c&gt;d</th><th>pₒ (∧)</th><th>pᵢ (∨)</th><th>Fault detected?</th></tr></thead>
+          <tbody>
+            <tr><td>t₁ (t,t)</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-t">T</td><td>No (same result)</td></tr>
+            <tr><td>t₂ (t,f)</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-hi">✅ YES — detected!</td></tr>
+            <tr><td>t₃ (f,t)</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-hi">✅ YES — detected!</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout success" style="margin-top:.75rem;">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body">Every faulty predicate produces a different result from pₒ for at least one test. The BOR set is adequate — all Boolean operator faults are caught!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EXAMPLE 2 ── -->
+  <div class="example-block">
+    <div class="example-header" onclick="toggleExample(this)">
+      <span class="example-badge">Example 2</span>
+      <span class="example-title">BOR-CSET for p₂ : (a+b&lt;c) ∧ ¬p ∨ (r&gt;s)</span>
+      <span class="toggle-arrow">▼</span>
+    </div>
+    <div class="example-body">
+      <p style="margin-bottom:.75rem;">This is the three-leaf compound predicate from your notes (Images 1, 4, 5). Note the operator priority: <code>∧</code> binds tighter than <code>∨</code>, so this is <code>((a+b&lt;c) ∧ ¬p) ∨ (r&gt;s)</code>.</p>
+
+      <p><strong>AST Structure:</strong></p>
+      <div class="ast-wrap">
+        <svg class="ast-svg" viewBox="0 0 500 280" width="500" height="280">
+          <!-- N6 OR root -->
+          <rect x="200" y="10" width="100" height="36" rx="6" fill="#1a1e28" stroke="#5b8dee" stroke-width="1.5"/>
+          <text x="250" y="33" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#5b8dee" font-weight="700">∨ N₆ (OR)</text>
+          <!-- Lines from N6 -->
+          <line x1="220" y1="46" x2="170" y2="100" stroke="#2a2f3f" stroke-width="1.5"/>
+          <line x1="280" y1="46" x2="380" y2="100" stroke="#2a2f3f" stroke-width="1.5"/>
+          <!-- N4 AND -->
+          <rect x="100" y="100" width="140" height="36" rx="6" fill="#1a1e28" stroke="#c678dd" stroke-width="1.5"/>
+          <text x="170" y="123" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#c678dd" font-weight="700">∧ N₄ (AND)</text>
+          <!-- N5 leaf r>s -->
+          <rect x="340" y="100" width="110" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="395" y="123" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#e5c07b">r&gt;s (N₅)</text>
+          <text x="395" y="155" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5c6370">{t,f}</text>
+          <!-- Lines from N4 -->
+          <line x1="130" y1="136" x2="90" y2="180" stroke="#2a2f3f" stroke-width="1.5"/>
+          <line x1="210" y1="136" x2="250" y2="180" stroke="#2a2f3f" stroke-width="1.5"/>
+          <!-- N1 leaf a+b<c -->
+          <rect x="20" y="180" width="130" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="85" y="203" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#e5c07b">a+b&lt;c (N₁)</text>
+          <text x="85" y="232" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5c6370">{t,f}</text>
+          <!-- N3 NOT -->
+          <rect x="200" y="180" width="100" height="36" rx="6" fill="#1a1e28" stroke="#e06c75" stroke-width="1.5"/>
+          <text x="250" y="203" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#e06c75" font-weight="700">¬ N₃ (NOT)</text>
+          <!-- Line from N3 to N2 -->
+          <line x1="250" y1="216" x2="250" y2="250" stroke="#2a2f3f" stroke-width="1.5"/>
+          <!-- N2 leaf p -->
+          <rect x="205" y="250" width="90" height="30" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="250" y="270" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#e5c07b">p (N₂)</text>
+        </svg>
+      </div>
+
+      <p style="margin-top:.75rem;"><strong>Step-by-step computation (bottom-up):</strong></p>
+
+      <p style="margin:.5rem 0;font-weight:600;color:var(--accent);">① Leaf nodes (default BOR labels):</p>
+      <div class="math-block">N₁ (a+b&lt;c): Sᵗ={t}, Sᶠ={f}
+N₂ (p):     Sᵗ={t}, Sᶠ={f}
+N₅ (r&gt;s):  Sᵗ={t}, Sᶠ={f}</div>
+
+      <p style="margin:.5rem 0;font-weight:600;color:var(--accent2);">② N₃ — NOT node (just swap t and f):</p>
+      <div class="math-block">S<sub>N₃</sub>ᵗ = S<sub>N₂</sub>ᶠ = {f}
+S<sub>N₃</sub>ᶠ = S<sub>N₂</sub>ᵗ = {t}
+→ S<sub>N₃</sub> = {f, t}</div>
+
+      <p style="margin:.5rem 0;font-weight:600;color:var(--accent3);">③ N₄ — AND node (N₁ AND N₃):</p>
+      <div class="math-block"><span style="color:#98c379;">// TRUE (⊗):</span>
+S<sub>N₄</sub>ᵗ = S<sub>N₁</sub>ᵗ ⊗ S<sub>N₃</sub>ᵗ = {t} ⊗ {f} = <span class="t-sym">{(t, f)}</span>
+
+<span style="color:#e06c75;">// FALSE (×, one side false, other true):</span>
+S<sub>N₄</sub>ᶠ = (S<sub>N₁</sub>ᶠ × {t<sub>N₃</sub>}) ∪ ({t<sub>N₁</sub>} × S<sub>N₃</sub>ᶠ)
+       = ({f} × {f}) ∪ ({t} × {t})
+       = {(f,f)} ∪ {(t,t)}
+       = <span class="f-sym">{(f,f), (t,t)}</span>
+
+→ S<sub>N₄</sub> = {(t,f), (f,f), (t,t)}</div>
+
+      <p style="margin:.5rem 0;font-weight:600;color:var(--accent);">④ N₆ — OR node (N₄ OR N₅):</p>
+      <div class="math-block"><span style="color:#e06c75;">// FALSE (⊗ — both must be false):</span>
+S<sub>N₆</sub>ᶠ = S<sub>N₄</sub>ᶠ ⊗ S<sub>N₅</sub>ᶠ
+       = {(f,f),(t,t)} ⊗ {f}
+       = <span class="f-sym">{(f,f,f), (t,t,f)}</span>   ← pick one from each
+
+<span style="color:#98c379;">// TRUE (× — one side true, other false):</span>
+S<sub>N₆</sub>ᵗ = (S<sub>N₄</sub>ᵗ × {f<sub>N₅</sub>}) ∪ ({f<sub>N₄</sub>} × S<sub>N₅</sub>ᵗ)
+       = ({(t,f)} × {f}) ∪ ({(f,f)} × {t})
+       = {(t,f,f)} ∪ {(f,f,t)}
+       = <span class="t-sym">{(t,f,f), (f,f,t)}</span></div>
+
+      <div class="callout success">
+        <div class="callout-icon">✅</div>
+        <div class="callout-body">
+          <div class="callout-title">Final BOR Constraint Set for p₂</div>
+          <div class="math-block">S<sub>N₆</sub> = { <span class="f-sym">(f,f,f)</span>, <span class="f-sym">(t,t,f)</span>, <span class="t-sym">(t,f,f)</span>, <span class="t-sym">(f,f,t)</span> }
+           [matches your Image 1 bottom: SN₆ = {(f,f,f),(t,t,f),(t,f,f),(f,f,t)}]</div>
+        </div>
+      </div>
+
+      <p style="margin-top:1rem;"><strong>Test Cases (from your notes Images 1 &amp; 5):</strong></p>
+      <p style="font-size:13px;margin-bottom:.5rem;">The 3 columns are: <code>(a+b&lt;c,  p,  r&gt;s)</code></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Test</th><th>Constraint</th><th>a</th><th>b</th><th>c</th><th>p</th><th>r</th><th>s</th><th>a+b&lt;c</th><th>¬p</th><th>r&gt;s</th><th>pr</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>t₁</td><td>(t,f,f)</td><td>1</td><td>1</td><td>3</td><td>F</td><td>1</td><td>2</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-t td-hi">T</td></tr>
+            <tr><td>t₂</td><td>(f,f,t)</td><td>1</td><td>1</td><td>1</td><td>F</td><td>1</td><td>0</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-t td-hi">T</td></tr>
+            <tr><td>t₃</td><td>(t,t,f)</td><td>1</td><td>1</td><td>3</td><td>T</td><td>1</td><td>2</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-f">F</td><td class="td-f td-lo">F</td></tr>
+            <tr><td>t₄</td><td>(f,f,f)</td><td>1</td><td>1</td><td>1</td><td>F</td><td>2</td><td>1 (wait r=1,s=2?)</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-f td-lo">F</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info" style="margin-top:.75rem;">
+        <div class="callout-icon">📝</div>
+        <div class="callout-body">
+          <div class="callout-title">Fault Propagation (from Image 5)</div>
+          <p>Correct: <code>pₒ = (a+b&lt;c) ∧ ¬p ∨ (r&gt;s)</code></p>
+          <p>Faulty: <code>pᵢ = (a+b&lt;c) ∨ ¬p ∨ (r&gt;s)</code> — AND replaced by OR (Boolean operator fault)</p>
+          <div class="tbl-wrap" style="margin-top:.5rem;">
+            <table>
+              <thead><tr><th>Test</th><th>a+b&lt;c</th><th>¬p</th><th>r&gt;s</th><th>pₒ (∧¬p)</th><th>pᵢ (∨¬p)</th><th>Same?</th></tr></thead>
+              <tbody>
+                <tr><td>t₁</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-t">T</td><td>Same — not revealed</td></tr>
+                <tr><td>t₂</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-t">T</td><td class="td-t">T</td><td>Same — not revealed</td></tr>
+                <tr><td>t₃</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-f">F</td><td class="td-f">F</td><td class="td-f">F</td><td>Same — not revealed</td></tr>
+                <tr><td>t₄</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-f">F</td><td class="td-f">F</td><td class="td-t">T</td><td class="td-hi">✅ REVEALED!</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:.5rem;font-size:13px;">t₄ catches the fault: pₒ = FALSE but pᵢ = TRUE → the bug is detected!</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EXAMPLE 3 ── -->
+  <div class="example-block">
+    <div class="example-header" onclick="toggleExample(this)">
+      <span class="example-badge">Example 3</span>
+      <span class="example-title">BRO-CSET for (a+b&lt;c) ∧ d&gt;e ∨ f≥g ∧ h&lt;i</span>
+      <span class="toggle-arrow">▼</span>
+    </div>
+    <div class="example-body">
+      <p style="margin-bottom:.75rem;">This is the most complex example from your notes (Images 6 &amp; 7). It uses <strong>BRO constraints</strong> (not BOR) — so leaf nodes get <code>{&lt;, =, &gt;}</code> instead of <code>{t, f}</code>.</p>
+
+      <div class="callout warn">
+        <div class="callout-icon">⚠️</div>
+        <div class="callout-body">
+          <div class="callout-title">BRO vs BOR — what changes?</div>
+          <p>Only Step 1 changes! Instead of <code>{t, f}</code> on leaves, BRO assigns <code>{&lt;, =, &gt;}</code> to relational expressions. Boolean variables still get <code>{t, f}</code>. All propagation rules (Steps 2.1, 2.2, 2.3) are identical.</p>
+        </div>
+      </div>
+
+      <p style="margin-top:.75rem;"><strong>BRO leaf constraint sets by relational operator:</strong></p>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>relop</th><th>Full set</th><th>Sᵗ (makes expression TRUE)</th><th>Sᶠ (makes expression FALSE)</th></tr></thead>
+          <tbody>
+            <tr><td>&gt;</td><td>{&gt;, =, &lt;}</td><td class="td-t">{&gt;}</td><td class="td-f">{=, &lt;}</td></tr>
+            <tr><td>≥</td><td>{&gt;, =, &lt;}</td><td class="td-t">{&gt;, =}</td><td class="td-f">{&lt;}</td></tr>
+            <tr><td>=</td><td>{&gt;, =, &lt;}</td><td class="td-t">{=}</td><td class="td-f">{&gt;, &lt;}</td></tr>
+            <tr><td>&lt;</td><td>{&gt;, =, &lt;}</td><td class="td-t">{&lt;}</td><td class="td-f">{=, &gt;}</td></tr>
+            <tr><td>≤</td><td>{&gt;, =, &lt;}</td><td class="td-t">{&lt;, =}</td><td class="td-f">{&gt;}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:1rem;"><strong>Predicate structure</strong> (with operator priority ∧ before ∨):</p>
+      <div class="math-block">p: (a+b&lt;c) ∧ d&gt;e ∨ f≥g ∧ h&lt;i
+   = ((a+b&lt;c) ∧ (d&gt;e)) ∨ ((f≥g) ∧ (h&lt;i))</div>
+
+      <div class="ast-wrap">
+        <svg class="ast-svg" viewBox="0 0 560 310" width="560" height="310">
+          <!-- N5 OR root -->
+          <rect x="225" y="10" width="110" height="36" rx="6" fill="#1a1e28" stroke="#5b8dee" stroke-width="1.5"/>
+          <text x="280" y="33" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#5b8dee" font-weight="700">∨ N₅ (OR)</text>
+          <!-- Lines from N5 -->
+          <line x1="245" y1="46" x2="145" y2="110" stroke="#2a2f3f" stroke-width="1.5"/>
+          <line x1="315" y1="46" x2="415" y2="110" stroke="#2a2f3f" stroke-width="1.5"/>
+          <!-- N3 AND left -->
+          <rect x="65" y="110" width="160" height="36" rx="6" fill="#1a1e28" stroke="#c678dd" stroke-width="1.5"/>
+          <text x="145" y="133" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#c678dd" font-weight="700">∧ N₃ (AND)</text>
+          <!-- N6 AND right -->
+          <rect x="335" y="110" width="160" height="36" rx="6" fill="#1a1e28" stroke="#c678dd" stroke-width="1.5"/>
+          <text x="415" y="133" text-anchor="middle" font-family="JetBrains Mono" font-size="12" fill="#c678dd" font-weight="700">∧ N₆ (AND)</text>
+          <!-- N3 children -->
+          <line x1="100" y1="146" x2="70" y2="200" stroke="#2a2f3f" stroke-width="1.5"/>
+          <line x1="190" y1="146" x2="220" y2="200" stroke="#2a2f3f" stroke-width="1.5"/>
+          <rect x="10" y="200" width="120" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="70" y="223" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#e5c07b">a+b&lt;c (N₁)</text>
+          <text x="70" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5c6370">{&lt;,=,&gt;}</text>
+          <rect x="170" y="200" width="100" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="220" y="223" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#e5c07b">d&gt;e (N₂)</text>
+          <text x="220" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5c6370">{&lt;,=,&gt;}</text>
+          <!-- N6 children -->
+          <line x1="375" y1="146" x2="345" y2="200" stroke="#2a2f3f" stroke-width="1.5"/>
+          <line x1="455" y1="146" x2="485" y2="200" stroke="#2a2f3f" stroke-width="1.5"/>
+          <rect x="295" y="200" width="100" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="345" y="223" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#e5c07b">f≥g (N₄)</text>
+          <text x="345" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5c6370">{&lt;,=,&gt;}</text>
+          <rect x="435" y="200" width="100" height="36" rx="6" fill="#1a1e28" stroke="#e5c07b" stroke-width="1"/>
+          <text x="485" y="223" text-anchor="middle" font-family="JetBrains Mono" font-size="11" fill="#e5c07b">h&lt;i (N₆)</text>
+          <text x="485" y="252" text-anchor="middle" font-family="JetBrains Mono" font-size="10" fill="#5c6370">{&lt;,=,&gt;}</text>
+        </svg>
+      </div>
+
+      <p style="margin-top:.75rem;"><strong>BRO leaf constraints (using relop rules above):</strong></p>
+      <div class="math-block">N₁ (a+b&lt;c):  Sᵗ = {&lt;}      Sᶠ = {=, &gt;}
+N₂ (d&gt;e):    Sᵗ = {&gt;}      Sᶠ = {=, &lt;}
+N₄ (f≥g):    Sᵗ = {&gt;, =}   Sᶠ = {&lt;}
+N₆ (h&lt;i):   Sᵗ = {&lt;}      Sᶠ = {=, &gt;}</div>
+
+      <p style="margin:.75rem 0 .4rem;font-weight:600;color:var(--accent3);">N₃ — AND node (N₁ AND N₂):</p>
+      <div class="math-block"><span style="color:#98c379;">// TRUE (⊗):</span>
+S<sub>N₃</sub>ᵗ = S<sub>N₁</sub>ᵗ ⊗ S<sub>N₂</sub>ᵗ = {&lt;} ⊗ {&gt;} = <span class="t-sym">{(&lt;,&gt;)}</span>
+
+<span style="color:#e06c75;">// FALSE (× — one side false, other true):</span>
+S<sub>N₃</sub>ᶠ = (S<sub>N₁</sub>ᶠ × {t₂}) ∪ ({t₁} × S<sub>N₂</sub>ᶠ)
+       = ({=,&gt;} × {&gt;}) ∪ ({&lt;} × {=,&lt;})
+       = {(=,&gt;),(>&gt;,&gt;)} ∪ {(&lt;,=),(&lt;,&lt;)}
+       = <span class="f-sym">{(=,&gt;),(&gt;,&gt;),(&lt;,=),(&lt;,&lt;)}</span>
+
+→ S<sub>N₃</sub>ᶠ using ⊗ from your notes: {(f,t),(t,f)} equivalent pairs</div>
+
+      <p style="margin:.75rem 0 .4rem;font-weight:600;color:var(--accent3);">N₆ — AND node (N₄ AND h&lt;i):</p>
+      <div class="math-block"><span style="color:#98c379;">// TRUE (⊗):</span>
+S<sub>N₆</sub>ᵗ = S<sub>N₄</sub>ᵗ ⊗ S<sub>h&lt;i</sub>ᵗ = {&gt;,=} ⊗ {&lt;} = <span class="t-sym">{(&gt;,&lt;),(=,&lt;)}</span>
+
+<span style="color:#e06c75;">// FALSE (⊗ on false side from notes):</span>
+S<sub>N₆</sub>ᶠ = S<sub>N₄</sub>ᶠ ⊗ S<sub>h&lt;i</sub>ᶠ = {&lt;} ⊗ {=,&gt;} = <span class="f-sym">{(&lt;,=)} or {(&lt;,&gt;)}</span></div>
+
+      <p style="margin:.75rem 0 .4rem;font-weight:600;color:var(--accent);">N₅ — OR node (N₃ OR N₆) — final root:</p>
+      <div class="math-block"><span style="color:#e06c75;">// FALSE (⊗ — both must be false):</span>
+S<sub>N₅</sub>ᶠ = S<sub>N₃</sub>ᶠ ⊗ S<sub>N₆</sub>ᶠ  [from Image 7 in your notes]
+
+<span style="color:#98c379;">// TRUE (× — one side true while other false):</span>
+S<sub>N₅</sub>ᵗ = (S<sub>N₃</sub>ᵗ × {f<sub>N₆</sub>}) ∪ ({f<sub>N₃</sub>} × S<sub>N₆</sub>ᵗ)</div>
+
+      <div class="callout info">
+        <div class="callout-icon">📝</div>
+        <div class="callout-body">
+          <div class="callout-title">Your notes (Image 7) show the final SN₆ result with 5-tuples</div>
+          <p>The final constraint set uses 5-tuple constraints: <code>(a+b&lt;c, d&gt;e, f≥g, h&lt;i, ...)</code>. Each tuple specifies the required relationship (using &lt;, =, &gt;) for each of the 4 variables. The exact values from your notes:</p>
+          <div class="math-block">SN₅ = {(=,f,=), (&lt;,f,&lt;), (&gt;,t,=), (=,t,&gt;), (&gt;,f,&gt;), (&lt;,f,=), (&gt;,t,=)}
+[5-tuples: (a+b&lt;c relop, d&gt;e relop, f≥g relop, h&lt;i relop)]</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 6 — BRO AND BRE
+═══════════════════════════════════════════════ -->
+<section class="section" id="s6">
+  <div class="section-header">
+    <span class="section-num">4.4.5</span>
+    <span class="section-title">BRO-CSET and BRE-CSET — Quick Reference</span>
+  </div>
+
+  <p style="margin-bottom:1rem;">Same procedure as BOR-CSET — only the <strong>leaf node labeling (Step 1)</strong> changes:</p>
+
+  <div class="rule-grid">
+    <div class="rule-box" style="border-top: 2px solid var(--accent3);">
+      <div class="rule-box-title">BOR-CSET Leaves</div>
+      <div class="math-block">All leaves:
+  Sₙ = { t, f }</div>
+      <p style="font-size:13px;">Simple — just true/false. Targets Boolean operator faults only.</p>
+    </div>
+    <div class="rule-box" style="border-top: 2px solid var(--accent);">
+      <div class="rule-box-title">BRO-CSET Leaves</div>
+      <div class="math-block">Boolean var: Sₙ = {t, f}
+Relational:  Sₙ = {&lt;, =, &gt;}</div>
+      <p style="font-size:13px;">Relational expressions get 3-way split. Targets Boolean + relational faults.</p>
+    </div>
+    <div class="rule-box" style="border-top: 2px solid var(--accent5);">
+      <div class="rule-box-title">BRE-CSET Leaves</div>
+      <div class="math-block">Boolean var: Sₙ = {t, f}
+Relational:  Sₙ = {+ε, =, −ε}</div>
+      <p style="font-size:13px;">Detects off-by-ε arithmetic errors on top of Boolean + relational faults.</p>
+    </div>
+  </div>
+
+  <p style="margin-top:1.25rem;">The true/false split of BRO leaf constraints depends on the relational operator:</p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>relop</th><th>Sᵗ (true)</th><th>Sᶠ (false)</th></tr></thead>
+      <tbody>
+        <tr><td>&gt;</td><td class="td-t">{(&gt;)}</td><td class="td-f">{(=), (&lt;)}</td></tr>
+        <tr><td>≥</td><td class="td-t">{(&gt;),(=)}</td><td class="td-f">{(&lt;)}</td></tr>
+        <tr><td>=</td><td class="td-t">{(=)}</td><td class="td-f">{(&lt;),(&gt;)}</td></tr>
+        <tr><td>&lt;</td><td class="td-t">{(&lt;)}</td><td class="td-f">{(=),(&gt;)}</td></tr>
+        <tr><td>≤</td><td class="td-t">{(&lt;),(=)}</td><td class="td-f">{(&gt;)}</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION 7 — FAULT PROPAGATION
+═══════════════════════════════════════════════ -->
+<section class="section" id="s7">
+  <div class="section-header">
+    <span class="section-num">4.4.8</span>
+    <span class="section-title">Fault Propagation</span>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Core Concept</div>
+    <p>A fault in a predicate <strong>propagates to the root</strong> of the AST if evaluating the correct predicate pₒ and the faulty predicate pᶠ on the same test case t gives different results:</p>
+    <div class="math-block">Fault propagates  ⟺  pₒ(t) ≠ pᶠ(t)</div>
+    <p style="margin-top:.6rem;">A test t that satisfies this is called a <strong>fault-revealing</strong> or <strong>error-revealing</strong> test.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Why Some Tests Don't Reveal Faults</div>
+    <p>Even a theoretically BOR-adequate test set can fail to reveal a bug in practice. Reasons:</p>
+    <p>① The faulty statement is <strong>unreachable</strong> (infeasible path).</p>
+    <p>② Another bug in the program <strong>masks</strong> the first bug.</p>
+    <p>③ The condition feeding the predicate is <strong>indirectly constrained</strong> by other inputs.</p>
+
+    <div class="callout danger" style="margin-top:.75rem;">
+      <div class="callout-icon">⚡</div>
+      <div class="callout-body">
+        <div class="callout-title">Key exam point</div>
+        <p>BOR/BRO/BRE-adequate test sets <strong>guarantee</strong> detection only for faults in the <em>predicate itself</em>. They cannot guarantee detection if the predicate is unreachable or if there are masking faults elsewhere in the program.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Size Advantage — Why Predicate Testing beats Brute Force</div>
+    <p>For predicate with n AND/OR operators and Boolean variables:</p>
+    <div class="compare-row">
+      <div class="compare-cell">
+        <div class="compare-label faulty">Brute Force (Enumerate All)</div>
+        <div class="math-block">Test cases: 2ⁿ</div>
+        <p style="font-size:13px;">For n=3: <strong>8 test cases</strong></p>
+      </div>
+      <div class="compare-cell">
+        <div class="compare-label correct">BOR/BRO/BRE-CSET</div>
+        <div class="math-block">BOR:     n + 2 tests
+BRO/BRE: 2n + 3 tests</div>
+        <p style="font-size:13px;">For n=3: <strong>5 test cases</strong> (BOR) or <strong>9 max</strong> (BRO/BRE)</p>
+      </div>
+    </div>
+    <p style="margin-top:.75rem;">Growth is <strong>linear</strong> in n, not exponential — this is the key advantage.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     QUICK REFERENCE SUMMARY
+═══════════════════════════════════════════════ -->
+<hr class="divider">
+<section class="section">
+  <div class="section-header">
+    <span class="section-num">EXAM</span>
+    <span class="section-title">Quick-Reference Cheatsheet</span>
+  </div>
+
+  <div class="card" style="border-top: 2px solid var(--accent);">
+    <div class="card-title">BOR-CSET Rules at a Glance</div>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr><th>Node Type</th><th>Sₙᵗ (True Set)</th><th>Sₙᶠ (False Set)</th></tr></thead>
+        <tbody>
+          <tr><td>Leaf</td><td class="td-t">{t}</td><td class="td-f">{f}</td></tr>
+          <tr><td>NOT (N₁)</td><td class="td-t">Sₙ₁ᶠ</td><td class="td-f">Sₙ₁ᵗ</td></tr>
+          <tr><td>AND (N₁, N₂)</td><td class="td-t">Sₙ₁ᵗ ⊗ Sₙ₂ᵗ</td><td class="td-f">(Sₙ₁ᶠ × {t₂}) ∪ ({t₁} × Sₙ₂ᶠ)</td></tr>
+          <tr><td>OR (N₁, N₂)</td><td class="td-t">(Sₙ₁ᵗ × {f₂}) ∪ ({f₁} × Sₙ₂ᵗ)</td><td class="td-f">Sₙ₁ᶠ ⊗ Sₙ₂ᶠ</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <span class="key-point">AND true → ⊗ (both must agree)</span>
+      <span class="key-point">AND false → × (one false, one true)</span>
+      <span class="key-point">OR false → ⊗ (both must agree)</span>
+      <span class="key-point">OR true → × (one true, one false)</span>
+      <span class="key-point">NOT → just swap t↔f</span>
+    </div>
+  </div>
+
+  <div class="card" style="border-top: 2px solid var(--accent4);">
+    <div class="card-title">Step-by-Step Exam Checklist</div>
+    <div class="procedure-step"><div class="step-num">1</div><div class="step-body">Parse the predicate. Identify leaf nodes (relational expressions / Boolean variables) and operator hierarchy. Draw the AST.</div></div>
+    <div class="procedure-step"><div class="step-num">2</div><div class="step-body">Label leaves: BOR → <code>{t,f}</code> | BRO → <code>{&lt;,=,&gt;}</code> | BRE → <code>{+ε,=,−ε}</code>. Split into Sᵗ and Sᶠ using the relop table.</div></div>
+    <div class="procedure-step"><div class="step-num">3</div><div class="step-body">Traverse bottom-up. At each node apply the NOT / AND / OR rules. Maintain Sᵗ and Sᶠ separately.</div></div>
+    <div class="procedure-step"><div class="step-num">4</div><div class="step-body">Combine Sᵗ ∪ Sᶠ at the root. This is your final constraint set.</div></div>
+    <div class="procedure-step"><div class="step-num">5</div><div class="step-body">Assign actual test values to each constraint. Verify by evaluating the predicate against each test.</div></div>
+    <div class="procedure-step"><div class="step-num">6</div><div class="step-body">(If fault propagation asked): Compare pₒ(t) vs pᶠ(t) for each test. A fault is detected where they differ.</div></div>
+  </div>
+</section>
+
+</main>
+
+<script>
+function toggleExample(header) {
+  const body = header.nextElementSibling;
+  const arrow = header.querySelector('.toggle-arrow');
+  const isCollapsed = body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', !isCollapsed);
+  arrow.style.transform = isCollapsed ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
+// Start with examples expanded
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.example-body').forEach(b => b.classList.remove('collapsed'));
+  document.querySelectorAll('.toggle-arrow').forEach(a => a.style.transform = 'rotate(0deg)');
+});
+</script>
+
+</body>
+</html>

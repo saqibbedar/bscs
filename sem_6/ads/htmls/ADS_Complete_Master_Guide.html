@@ -1,0 +1,1896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADS Midterm Prep — Ch 31·32·33</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300&display=swap');
+
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f5f0e8;
+    --cream: #ede7d5;
+    --accent: #c0392b;
+    --accent2: #2c6e49;
+    --muted: #6b6355;
+    --rule: #c9bfa8;
+    --highlight: #fff3cd;
+    --code-bg: #1a1a2e;
+    --code-fg: #e0e0e0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 15.5px;
+    line-height: 1.75;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--ink);
+    display: flex; flex-wrap: wrap; gap: 0;
+    border-bottom: 3px solid var(--accent);
+  }
+  nav a {
+    color: #ccc; text-decoration: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11.5px; letter-spacing: .05em;
+    padding: 10px 16px;
+    transition: background .15s, color .15s;
+  }
+  nav a:hover, nav a.active { background: var(--accent); color: #fff; }
+  nav .logo {
+    color: var(--paper);
+    font-family: 'Playfair Display', serif;
+    font-size: 14px; font-weight: 900;
+    padding: 10px 20px;
+    border-right: 1px solid #333;
+    margin-right: 4px;
+    letter-spacing: .02em;
+  }
+
+  /* LAYOUT */
+  .page { display: none; padding: 48px 5% 80px; max-width: 900px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* HERO */
+  .hero {
+    border-left: 5px solid var(--accent);
+    padding: 28px 32px;
+    background: var(--cream);
+    margin-bottom: 40px;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.6em; font-weight: 900;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+  .hero .sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; color: var(--muted);
+    margin-top: 8px; letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  /* SECTIONS */
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.55em; font-weight: 700;
+    margin: 44px 0 14px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--rule);
+    color: var(--accent);
+  }
+  h3 {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 600;
+    letter-spacing: .06em; text-transform: uppercase;
+    color: var(--accent2);
+    margin: 28px 0 8px;
+  }
+  h4 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 15px; font-weight: 600; font-style: italic;
+    color: var(--ink); margin: 20px 0 6px;
+  }
+  p { margin-bottom: 12px; }
+
+  /* DEFINITION BOX */
+  .def {
+    background: var(--cream);
+    border-left: 4px solid var(--accent2);
+    padding: 14px 18px;
+    margin: 16px 0;
+    font-style: italic;
+  }
+  .def strong {
+    display: block;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--accent2);
+    font-style: normal; margin-bottom: 4px;
+  }
+
+  /* KEY POINTS */
+  .keypoints {
+    background: var(--highlight);
+    border: 1.5px solid #e8c84a;
+    border-radius: 4px;
+    padding: 16px 20px 12px;
+    margin: 18px 0;
+  }
+  .keypoints h3 { margin-top: 0; color: #7a6000; }
+  .keypoints ul { padding-left: 18px; }
+  .keypoints li { margin-bottom: 6px; }
+
+  /* COMPARISON TABLE */
+  .table-wrap { overflow-x: auto; margin: 20px 0; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    background: var(--ink); color: var(--paper);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; letter-spacing: .07em; text-transform: uppercase;
+    padding: 10px 14px; text-align: left;
+  }
+  td { padding: 9px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  tr:nth-child(even) td { background: var(--cream); }
+  td:first-child { font-weight: 600; color: var(--accent); font-style: italic; }
+
+  /* BULLET LIST */
+  ul.clean { padding-left: 20px; margin: 10px 0 16px; }
+  ul.clean li { margin-bottom: 7px; }
+  ul.clean li::marker { color: var(--accent); }
+
+  /* CODE */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-fg);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12.5px;
+    padding: 18px 20px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 16px 0;
+    line-height: 1.6;
+  }
+  code.inline {
+    background: #e8e2d5;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px; padding: 1px 5px;
+    border-radius: 3px; color: var(--accent);
+  }
+
+  /* EXAM ALERT */
+  .exam-alert {
+    background: #fff0ee;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    padding: 14px 18px;
+    margin: 20px 0;
+  }
+  .exam-alert h3 { color: var(--accent); margin-top: 0; }
+
+  /* OPERATIONS BOX */
+  .ops-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px; margin: 16px 0;
+  }
+  .op-card {
+    background: var(--cream);
+    border-top: 3px solid var(--accent2);
+    padding: 14px 16px;
+  }
+  .op-card h4 { margin: 0 0 6px; color: var(--accent2); font-style: normal; }
+  .op-card p { margin: 0; font-size: 14px; }
+
+  /* SCHEMA VISUAL (pure CSS) */
+  .schema-box {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    background: var(--code-bg);
+    color: #a8e6cf;
+    padding: 20px;
+    margin: 16px 0;
+    line-height: 1.7;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* RULE GRID */
+  .rule-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px; margin: 14px 0;
+  }
+  .rule-item {
+    display: flex; gap: 10px;
+    background: var(--cream);
+    padding: 10px 12px;
+    border-radius: 3px;
+    font-size: 14px;
+    align-items: flex-start;
+  }
+  .rule-num {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px; font-weight: 600;
+    background: var(--accent);
+    color: #fff; border-radius: 50%;
+    min-width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; margin-top: 1px;
+  }
+
+  /* OLAP CATEGORIES */
+  .olap-cats {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 12px; margin: 14px 0;
+  }
+  .cat-card {
+    background: var(--cream);
+    border-left: 4px solid var(--accent);
+    padding: 14px;
+  }
+  .cat-card:nth-child(2) { border-color: var(--accent2); }
+  .cat-card:nth-child(3) { border-color: #8e44ad; }
+  .cat-card:nth-child(4) { border-color: #e67e22; }
+  .cat-card h4 { margin: 0 0 6px; font-style: normal; font-size: 14px; }
+  .cat-card p { margin: 0; font-size: 13.5px; }
+
+  /* PHASE STEPS */
+  .steps { counter-reset: step; margin: 16px 0; }
+  .step {
+    display: flex; gap: 16px; margin-bottom: 14px;
+    align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    min-width: 34px; height: 34px;
+    background: var(--accent); color: #fff;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 14px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 50%; flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body h4 { margin: 0 0 4px; }
+  .step-body p { margin: 0; font-size: 14px; }
+
+  /* SCD BOX */
+  .scd-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px; margin: 14px 0;
+  }
+  .scd-card {
+    padding: 12px 14px;
+    border-radius: 3px;
+    font-size: 13.5px;
+  }
+  .scd-card:nth-child(1) { background: #fde8e8; border-top: 3px solid #e74c3c; }
+  .scd-card:nth-child(2) { background: #e8f5e9; border-top: 3px solid #27ae60; }
+  .scd-card:nth-child(3) { background: #e8f0fe; border-top: 3px solid #3498db; }
+  .scd-card h4 { margin: 0 0 5px; font-style: normal; font-size: 13px; }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid var(--rule); margin: 32px 0; }
+
+  @media (max-width: 600px) {
+    .ops-grid, .rule-grid, .olap-cats, .scd-grid { grid-template-columns: 1fr; }
+    .hero h1 { font-size: 1.9em; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">ADS Mid</div>
+  <a href="#" class="active" onclick="show('home',this)">Overview</a>
+  <a href="#" onclick="show('ch31',this)">Ch 31 · DW</a>
+  <a href="#" onclick="show('ch32',this)">Ch 32 · Design</a>
+  <a href="#" onclick="show('ch33',this)">Ch 33 · OLAP</a>
+  <a href="#" onclick="show('batini',this)">Schema Integ.</a>
+  <a href="#" onclick="show('dataprep',this)" style="color:#3ecf8e">Data Prep</a>
+  <a href="#" onclick="show('labsql',this)" style="color:#e05c5c">Lab · SQL 🔥</a>
+  <a href="#" onclick="show('qbank',this)">Q Bank</a>
+</nav>
+
+<!-- ===================== HOME ===================== -->
+<div id="home" class="page active">
+  <div class="hero">
+    <div class="sub">Advanced Database Systems · Midterm Prep · Connolly & Begg 6th Ed.</div>
+    <h1>Chapters 31 · 32 · 33</h1>
+    <p style="margin-top:12px;color:var(--muted);font-size:14px;">Data Warehousing Concepts · Data Warehousing Design · OLAP · Batini Schema Integration — 10 out of 25 marks. Zero prior knowledge assumed.</p>
+  </div>
+
+  <div class="exam-alert">
+    <h3>📌 Exam Weight & Strategy</h3>
+    <p><strong>10/25 marks</strong> come from these three chapters + Batini's paper. Master Ch31 → Ch32 → Ch33 first, then do the Batini tab last. Everything builds in that order.</p>
+  </div>
+
+  <h2>What Each Chapter Is About</h2>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Chapter</th><th>Core Idea</th><th>Key Exam Topics</th></tr>
+      <tr>
+        <td>Ch 31</td>
+        <td>Why data warehouses exist, what they are, how they're structured</td>
+        <td>Inmon's 4 properties (SITN), OLTP vs DW comparison, ETL, Architecture components, Data Mart</td>
+      </tr>
+      <tr>
+        <td>Ch 32</td>
+        <td>How to design a data warehouse using the Kimball methodology</td>
+        <td>Star/Snowflake/Starflake schema, Fact & Dimension tables, Grain, Surrogate keys, SCD Types 1/2/3, Conformed dimensions</td>
+      </tr>
+      <tr>
+        <td>Ch 33</td>
+        <td>How OLAP tools work on top of a data warehouse</td>
+        <td>Drill-down/Roll-up/Slice/Dice/Pivot, MOLAP/ROLAP/HOLAP/DOLAP, Codd's 12 rules, ROLLUP/CUBE SQL extensions</td>
+      </tr>
+      <tr>
+        <td>Batini et al.</td>
+        <td>How to merge multiple database schemas into one unified global schema</td>
+        <td>Schema integration definition, causes of schema diversity, 4 integration steps, naming conflicts (homonyms/synonyms), structural conflicts, goals of integrated schema</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>Reading Order</h2>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-body"><h4>Ch 31 — DW Concepts</h4><p>Foundation. Learn Inmon's definition, OLTP vs DW, architecture, ETL, metadata, data mart.</p></div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-body"><h4>Ch 32 — DW Design</h4><p>Learn Kimball vs Inmon methodologies. Star/Snowflake schemas. Grain. Surrogate keys. SCD. Conformed dimensions.</p></div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-body"><h4>Ch 33 — OLAP</h4><p>Learn what OLAP is, cube operations (roll-up, drill-down, slice, dice, pivot), 4 OLAP architectures, Codd's 12 rules, ROLLUP/CUBE SQL.</p></div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-body"><h4>Batini Paper</h4><p>Schema integration theory. 4 activities, naming vs structural conflicts, goals of the integrated schema. This is the "Integrated" property of SITN in theoretical depth.</p></div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-body"><h4>Q Bank Tab</h4><p>Go through the exam question bank — answers from the book and Batini, mapped to review questions the teacher can directly lift.</p></div></div>
+  </div>
+</div>
+
+<!-- ===================== CH 31 ===================== -->
+<div id="ch31" class="page">
+  <div class="hero">
+    <div class="sub">Chapter 31</div>
+    <h1>Data Warehousing Concepts</h1>
+  </div>
+
+  <h2>31.1 What is a Data Warehouse?</h2>
+
+  <div class="def">
+    <strong>Inmon's Definition (1993) — MEMORISE THIS</strong>
+    A data warehouse is a <em>subject-oriented, integrated, time-variant, and nonvolatile</em> collection of data in support of management's decision-making process.
+  </div>
+
+  <h3>The Four Properties (S·I·T·N)</h3>
+  <ul class="clean">
+    <li><strong>Subject-oriented:</strong> Organised around major subjects of the enterprise (customers, products, sales) — NOT around application areas (invoicing, stock control). Purpose: decision support, not transaction processing.</li>
+    <li><strong>Integrated:</strong> Data comes from multiple inconsistent enterprise-wide sources. Must be made consistent to present a unified view. Example: one system stores "M/F", another stores "Male/Female" — must be standardised.</li>
+    <li><strong>Time-variant:</strong> Data is accurate and valid at a point in time or time interval. DW stores historical snapshots — unlike OLTP which only holds current data. Time is always associated with every record.</li>
+    <li><strong>Nonvolatile:</strong> Data is not updated in real-time. New data is added as a supplement, not as a replacement. Once loaded, it stays. No real-time inserts/deletes/updates by end users.</li>
+  </ul>
+
+  <div class="keypoints">
+    <h3>⚡ Exam Shortcut</h3>
+    <ul class="clean">
+      <li>SITN = Subject-oriented, Integrated, Time-variant, Nonvolatile</li>
+      <li>The ultimate goal: integrate enterprise-wide corporate data into a <strong>single repository</strong> for queries, reports, and analysis.</li>
+      <li>Bill Inmon = "Father of Data Warehousing"</li>
+      <li>Original concept by IBM = "Information Warehouse"</li>
+    </ul>
+  </div>
+
+  <h2>31.1.4 OLTP vs Data Warehousing — Critical Comparison</h2>
+
+  <p>This table is <strong>extremely likely to appear as a question</strong> — teachers love asking students to compare OLTP and DW.</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Characteristic</th><th>OLTP Systems</th><th>Data Warehousing</th></tr>
+      <tr><td>Main purpose</td><td>Support operational processing</td><td>Support analytical processing</td></tr>
+      <tr><td>Data age</td><td>Current data</td><td>Historic data</td></tr>
+      <tr><td>Data latency</td><td>Real-time</td><td>Depends on ETL refresh cycle</td></tr>
+      <tr><td>Data granularity</td><td>Detailed only</td><td>Detailed + lightly + highly summarised</td></tr>
+      <tr><td>Data processing</td><td>Predictable inserts/updates/deletes. High throughput.</td><td>Unpredictable ad-hoc queries. Low-medium throughput.</td></tr>
+      <tr><td>Reporting</td><td>Predictable, one-dimensional, static</td><td>Unpredictable, multidimensional, dynamic</td></tr>
+      <tr><td>Users</td><td>Large number of operational users</td><td>Lower number of managerial users</td></tr>
+    </table>
+  </div>
+
+  <p><strong>Key logic:</strong> OLTP feeds the DW. OLTP data can be inconsistent, fragmented, with duplicates/missing entries — so operational data must be "cleaned up" before loading into the DW.</p>
+
+  <h2>31.1.3 Benefits of Data Warehousing</h2>
+  <ul class="clean">
+    <li><strong>Potential high ROI:</strong> IDC study reported 401% three-year ROI average.</li>
+    <li><strong>Competitive advantage:</strong> Gives decision-makers access to previously untapped information on customers, trends, and demands.</li>
+    <li><strong>Increased productivity:</strong> Creates integrated, consistent, subject-oriented historical data — lets decision-makers perform more accurate analysis.</li>
+  </ul>
+
+  <h2>31.1.5 Problems of Data Warehousing</h2>
+  <ul class="clean">
+    <li>Underestimation of resources for data ETL</li>
+    <li>Hidden problems with source systems</li>
+    <li>Required data not captured</li>
+    <li>Increased end-user demands</li>
+    <li>Data homogenization</li>
+    <li>High demand for resources (disk space for large fact tables)</li>
+    <li>Data ownership issues</li>
+    <li>High maintenance</li>
+    <li>Long-duration projects</li>
+    <li>Complexity of integration</li>
+  </ul>
+
+  <h2>31.2 Data Warehouse Architecture</h2>
+
+  <h3>Components (know each role)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Component</th><th>Role</th></tr>
+      <tr><td>Operational Data</td><td>Source data: mainframe DBs, departmental files, workstation data, external sources (Internet)</td></tr>
+      <tr><td>Operational Data Store (ODS)</td><td>Repository of current + integrated operational data. Often staging area before loading into DW. Helps clean data first.</td></tr>
+      <tr><td>ETL Manager</td><td>Performs all Extraction, Transformation, Loading of data into the warehouse</td></tr>
+      <tr><td>Warehouse Manager</td><td>Manages data IN the warehouse: consistency checks, merging, creating indexes/views, aggregations, archiving</td></tr>
+      <tr><td>Query Manager</td><td>Manages user queries: directs queries to appropriate tables, schedules execution</td></tr>
+      <tr><td>Detailed Data</td><td>Stores all detailed data. Usually not stored online — aggregated to next level of detail instead.</td></tr>
+      <tr><td>Lightly/Highly Summarised Data</td><td>Predefined aggregated data. Transient — changes based on query profiles. Speeds up queries.</td></tr>
+      <tr><td>Archive/Backup Data</td><td>Detailed and summarised data for archiving and recovery</td></tr>
+      <tr><td>Metadata</td><td>"Data about data." Used by ETL (source mappings), Warehouse Manager (automate summaries), Query Manager (direct queries)</td></tr>
+      <tr><td>End-User Access Tools</td><td>Reporting/query tools, application dev tools, OLAP tools, data mining tools</td></tr>
+    </table>
+  </div>
+
+  <h2>31.3 ETL — Extract, Transform, Load</h2>
+
+  <h4>Extraction</h4>
+  <p>Targets data sources (OLTP DBs, spreadsheets, ERP files, web logs). Copies extracted data to ODS or Staging Area (SA). Complexity depends on how different/similar source systems are.</p>
+
+  <h4>Transformation</h4>
+  <p>Applies rules/functions to extracted data. Includes: data summations, encoding, merging, splitting, calculations, creation of surrogate keys. Output: clean, consistent data ready for analysis.</p>
+
+  <h4>Loading</h4>
+  <p>Loads transformed data into the warehouse. Additional constraints (uniqueness, referential integrity, mandatory fields) applied. Data may be forwarded to data marts. Key issues: frequency of loading, effect on DW availability.</p>
+
+  <div class="keypoints">
+    <h3>⚡ ETL Key Fact</h3>
+    <p>ETL is the most time-consuming part of DW projects. ETL tools also offer: data profiling, data quality control, and metadata management.</p>
+  </div>
+
+  <h2>31.3.3 Metadata</h2>
+  <p>Metadata is "data about data." Three key uses:</p>
+  <ul class="clean">
+    <li><strong>ETL metadata:</strong> Maps source data to warehouse — source field IDs, types, locations, transformations applied.</li>
+    <li><strong>Warehouse management metadata:</strong> Describes every object in the DB (tables, indexes, views, constraints, aggregations, partitions).</li>
+    <li><strong>Query management metadata:</strong> Helps query manager direct queries + generates query profiles per user/group.</li>
+  </ul>
+  <p>Major integration challenge: synchronising metadata between different vendor tools. Solution: OMG's Common Warehouse Metamodel (CWM).</p>
+
+  <h2>31.4 Data Mart</h2>
+
+  <div class="def">
+    <strong>Definition</strong>
+    A database containing a <em>subset of corporate data</em> to support the analytical requirements of a particular business unit or group of users sharing the same business process.
+  </div>
+
+  <h3>Kimball vs Inmon on Data Marts</h3>
+  <ul class="clean">
+    <li><strong>Kimball:</strong> Data mart = physical implementation of a single star schema for one business process. Multiple data marts → integrate → form the EDW.</li>
+    <li><strong>Inmon:</strong> Data mart = supports requirements of a particular business unit (e.g., Sales dept). Data mart receives data FROM the EDW.</li>
+  </ul>
+
+  <h3>Reasons for Creating a Data Mart</h3>
+  <ul class="clean">
+    <li>Gives users access to data they need most often</li>
+    <li>Provides data in the format the business unit needs</li>
+    <li>Improves response time (less data to access)</li>
+    <li>Simpler ETL process (less data)</li>
+    <li>Lower cost than full EDW</li>
+    <li>Users more clearly defined → easier to get project support</li>
+  </ul>
+
+  <h2>31.5 Temporal Databases</h2>
+  <p>Data warehouses are temporal databases — they store historical data with time associations.</p>
+  <ul class="clean">
+    <li><strong>Valid time:</strong> When a fact is true in the real world (business perspective). "What was the rent for PA14 on 25 Jan 2012?"</li>
+    <li><strong>Transaction time:</strong> When a transaction was made on the database (system perspective). "What did the DB show the rent was on 25 Jan 2012?"</li>
+    <li><strong>Bi-temporal database:</strong> Uses both valid time and transaction time.</li>
+    <li><strong>Slowly Changing Dimension (SCD):</strong> When dimension data changes over time — must decide how to handle. Type 2 = add new record (most common in DW).</li>
+  </ul>
+</div>
+
+<!-- ===================== CH 32 ===================== -->
+<div id="ch32" class="page">
+  <div class="hero">
+    <div class="sub">Chapter 32</div>
+    <h1>Data Warehousing Design</h1>
+  </div>
+
+  <h2>32.2 Two Main Methodologies</h2>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Feature</th><th>Inmon's CIF</th><th>Kimball's Business Dimensional Lifecycle</th></tr>
+      <tr><td>Starting point</td><td>Create full data model of ALL enterprise data first → then implement EDW → then feed data marts</td><td>Identify business processes first → build first data mart → integrate data marts → form EDW</td></tr>
+      <tr><td>Data model</td><td>ER modeling, 3NF (normalised)</td><td>Dimensionality modeling (star schema — denormalised)</td></tr>
+      <tr><td>Approach</td><td>Top-down: enterprise-wide from day one</td><td>Bottom-up: incremental, one data mart at a time</td></tr>
+      <tr><td>Main advantage</td><td>Consistent, comprehensive enterprise view</td><td>Delivers value faster; achievable within budget/time</td></tr>
+      <tr><td>Main disadvantage</td><td>Large, complex project — may fail to deliver within budget</td><td>Data marts by different teams may never form a consistent enterprise view</td></tr>
+      <tr><td>Best when</td><td>Enterprise-wide requirements needed ASAP; large budget</td><td>Need to serve a particular group quickly; limited budget</td></tr>
+    </table>
+  </div>
+
+  <h2>32.4 Dimensionality Modeling — Core Design Technique</h2>
+
+  <div class="def">
+    <strong>Dimensionality Modeling</strong>
+    A logical design technique that presents data in a standard, intuitive form for high-performance access. Every dimensional model (DM) has a <em>fact table</em> (composite PK) surrounded by <em>dimension tables</em> (simple PKs that are components of the fact table's composite PK).
+  </div>
+
+  <h3>Three Schema Types</h3>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Schema</th><th>Definition</th><th>Dimension tables</th></tr>
+      <tr><td>Star Schema</td><td>Fact table in center surrounded by denormalised dimension tables</td><td>Denormalised (flat, redundant)</td></tr>
+      <tr><td>Snowflake Schema</td><td>Fact table in center surrounded by normalised dimension tables</td><td>Normalised (dimensions can have sub-dimensions)</td></tr>
+      <tr><td>Starflake Schema</td><td>Mix of denormalised star and normalised snowflake schemas</td><td>Some normalised, some denormalised</td></tr>
+    </table>
+  </div>
+
+  <div class="schema-box">
+  STAR SCHEMA (property sales example):
+  ─────────────────────────────────────────────────────────
+  
+  [Time]      [Branch]     [Staff]
+     \            |           /
+      \           |          /
+       ──── [PropertySale] ────    ← FACT TABLE (centre)
+           (offerPrice,              composite PK = all FK refs
+            sellingPrice,            + own key
+            saleCommission,
+            saleRevenue)
+      /           |          \
+     /            |           \
+  [Owner]   [PropertyForSale]  [ClientBuyer]
+  
+  SNOWFLAKE: Branch → [City] → [Region]  (dimension has sub-dimensions)
+  ─────────────────────────────────────────────────────────</div>
+
+  <h3>Fact Table Rules</h3>
+  <ul class="clean">
+    <li>Contains ONE or more <strong>numerical measures (facts)</strong> per record</li>
+    <li>Facts should be <strong>numeric and additive</strong> — DW applications aggregate hundreds/thousands of records at a time</li>
+    <li>Composite primary key made up of foreign keys to all dimension tables</li>
+    <li>Fact tables are extremely large relative to dimension tables</li>
+    <li>Treat as read-only data (facts about past events don't change)</li>
+  </ul>
+
+  <div class="exam-alert">
+    <h3>⚠️ Badly Structured Fact Table (from Ch 32 — could be an exam question)</h3>
+    <p>A fact table is <strong>badly structured</strong> if it contains:</p>
+    <ul class="clean">
+      <li><strong>Non-numeric facts</strong> (e.g., promotionName, staffName)</li>
+      <li><strong>Non-additive facts</strong> (e.g., monthlyRent — an average rate, not additive across records)</li>
+      <li><strong>Facts at different granularity</strong> (e.g., lastYearRevenue is at a different level than the per-lease grain)</li>
+    </ul>
+  </div>
+
+  <h3>Dimension Table Rules</h3>
+  <ul class="clean">
+    <li>Contain descriptive textual information</li>
+    <li>Simple (non-composite) primary key</li>
+    <li>Attributes used as constraints in DW queries (filter, slice, group)</li>
+    <li>Generally much smaller than fact tables</li>
+  </ul>
+
+  <h3>Surrogate Keys — Why They Exist</h3>
+  <p>In a DM, all <strong>natural keys</strong> (e.g., branchNo from the OLTP system) are replaced with <strong>surrogate keys</strong> (e.g., branchID — a simple integer). Every join between fact and dimension tables uses surrogate keys.</p>
+  <p><strong>Benefit:</strong> Gives the DW independence from the OLTP system. If OLTP changes its natural keys, the DW is unaffected.</p>
+
+  <h2>32.4.1 DM vs ER Model</h2>
+  <ul class="clean">
+    <li><strong>ER model:</strong> Goal = remove redundancy (normalise). Best for OLTP. An enterprise ER model can have hundreds of tables with many joins — inefficient for ad hoc analysis.</li>
+    <li><strong>DM (Star schema):</strong> Goal = high-performance, intuitive analytical access. Denormalised. One ER model normally decomposes into multiple DMs.</li>
+    <li>Multiple DMs are associated through shared (conformed) dimension tables.</li>
+  </ul>
+
+  <h2>32.5 Kimball's Dimensional Modeling Stage — 4 Steps</h2>
+
+  <p>Phase I: Create high-level DM using these four steps:</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Select Business Process</h4>
+        <p>Choose the subject for the data mart (e.g., property sales, property rentals). First data mart should: be most deliverable, answer most commercially important questions, and establish reusable/conformed dimensions. Best choice = sales/finance (accessible + high quality data).</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Declare Grain</h4>
+        <p>The grain determines what one fact table record represents. Example: "individual property sale." Only after grain is chosen can dimensions be identified. Recommendation: lowest level of detail available. Grain of fact table determines grain of each dimension table.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Choose Dimensions</h4>
+        <p>Dimensions set context for asking questions about facts. Identify dimensions in sufficient detail at the correct grain. Dimensions that appear in more than one DM = <strong>conformed dimensions</strong>. Conformed dimensions must be exactly the same OR one is a mathematical subset of the other.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Identify Facts</h4>
+        <p>All facts must be at the grain level. Facts must be numeric and additive. Non-numeric, non-additive, or wrong-granularity items → do NOT belong in the fact table.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3>Phase II: Identify Dimension Attributes</h3>
+  <p>Add attributes identified in business requirements analysis. The usefulness of a DM = scope and nature of dimension attributes (they govern how data is viewed for analysis).</p>
+
+  <h2>32.5.2 Slowly Changing Dimensions (SCD)</h2>
+
+  <p>Dimensions like "Branch" or "Staff" change slowly over time (address changes, name changes). How do we handle this in the DW?</p>
+
+  <div class="scd-grid">
+    <div class="scd-card">
+      <h4>Type 1 — Overwrite</h4>
+      <p>Changed attribute simply overwrites the old value. No history preserved. Simple but loses historical accuracy.</p>
+    </div>
+    <div class="scd-card">
+      <h4>Type 2 — New Record ✓ (most used)</h4>
+      <p>Changed attribute causes a NEW dimension record to be created. Old record stays. History is fully preserved. Used in DW temporal data scenarios.</p>
+    </div>
+    <div class="scd-card">
+      <h4>Type 3 — Alternate Attribute</h4>
+      <p>Changed attribute causes an alternate attribute column to be added so both OLD and NEW values exist simultaneously in the same record.</p>
+    </div>
+  </div>
+
+  <h2>Conformed Dimensions & Fact Constellation</h2>
+  <ul class="clean">
+    <li><strong>Conformed dimension:</strong> A dimension shared across multiple DMs/data marts (e.g., Time, Branch). Enables drill-across queries.</li>
+    <li><strong>Drill-across queries:</strong> Allow data from different fact tables to be analysed together in the same query.</li>
+    <li><strong>Fact constellation:</strong> A dimensional model with MORE than one fact table sharing one or more conformed dimension tables. Represents the full EDW.</li>
+  </ul>
+
+  <div class="keypoints">
+    <h3>⚡ DW Design Quick Reference</h3>
+    <ul class="clean">
+      <li>Star = fact + denormalised dimensions</li>
+      <li>Snowflake = fact + normalised dimensions</li>
+      <li>Starflake = mix of both</li>
+      <li>Surrogate key = simple integer replacing natural key</li>
+      <li>Grain = what one fact record represents (lowest level possible)</li>
+      <li>Conformed dimension = shared across multiple data marts</li>
+      <li>Fact constellation = multiple fact tables + shared dimensions = full EDW</li>
+      <li>SCD Type 2 = new record created when dimension changes (DW default)</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================== CH 33 ===================== -->
+<div id="ch33" class="page">
+  <div class="hero">
+    <div class="sub">Chapter 33</div>
+    <h1>OLAP</h1>
+  </div>
+
+  <h2>33.1 What is OLAP?</h2>
+
+  <div class="def">
+    <strong>OLAP Definition</strong>
+    Online Analytical Processing (OLAP) is the <em>dynamic synthesis, analysis, and consolidation of large volumes of multidimensional data</em>. It uses a multidimensional view of aggregate data to provide quick access to information for advanced analysis.
+  </div>
+
+  <p>OLAP sits on TOP of the data warehouse. Together: DW + OLAP + Data Mining = <strong>Business Intelligence (BI) technologies</strong>.</p>
+
+  <div class="keypoints">
+    <h3>⚡ OLAP vs General Query Tools</h3>
+    <p>General query tools answer "who?" and "what?" questions. OLAP goes further — it answers <strong>"why?"</strong> questions. Example:</p>
+    <ul class="clean">
+      <li>Query tool: "What was the total revenue for Scotland in Q3 2013?"</li>
+      <li>OLAP: "WHY was the total revenue for Scotland in Q3 2013 higher than other quarters?"</li>
+    </ul>
+  </div>
+
+  <h2>33.2 Key Features of OLAP Applications</h2>
+
+  <ul class="clean">
+    <li><strong>Multidimensional views of data:</strong> Core requirement. All dimensions must be treated equally. Users can analyse data across any dimension at any level of aggregation.</li>
+    <li><strong>Support for complex calculations:</strong> Moving averages, percentage growth, forecasting. Mechanisms should be nonprocedural and easy for users.</li>
+    <li><strong>Time intelligence:</strong> Comparing this month vs last month, year-to-date, period-over-period. Time is the most common analytical dimension.</li>
+  </ul>
+
+  <h2>33.3 Multidimensional Data Model</h2>
+
+  <h3>Data Cube</h3>
+  <p>Multidimensional data (facts + dimensions) is best visualised as a data cube:</p>
+  <ul class="clean">
+    <li><strong>2D data</strong> (location × time): fits naturally in a matrix</li>
+    <li><strong>3D data</strong> (type × location × time): fits in a 3D cube — cells contain the fact values</li>
+    <li><strong>n-D data:</strong> In OLAP, a data cube is an n-dimensional structure. Represented as a lattice of cuboids.</li>
+  </ul>
+  <p>Example: cell where type='Flat', city='Glasgow', quarter='Q1' → revenue = 15,056.</p>
+
+  <h3>33.3.2 Dimensional Hierarchy</h3>
+  <p>Dimensions are hierarchical. Example hierarchies:</p>
+  <ul class="clean">
+    <li><strong>Location:</strong> zipCode → area → city → region → country</li>
+    <li><strong>Time:</strong> day → month → quarter → year &nbsp; OR &nbsp; day → week → season → year</li>
+  </ul>
+  <p>Hierarchies enable roll-up (aggregate up) and drill-down (detail down) operations.</p>
+
+  <h2>33.3.3 Multidimensional Operations — The Five Operations</h2>
+
+  <div class="ops-grid">
+    <div class="op-card">
+      <h4>🔼 Roll-Up</h4>
+      <p>Aggregates data by moving UP the dimensional hierarchy (zipCode → city) OR by dimensional reduction (4D → 3D by dropping one dimension).</p>
+    </div>
+    <div class="op-card">
+      <h4>🔽 Drill-Down</h4>
+      <p>Reverse of roll-up. Reveals detailed data. Moves DOWN the hierarchy (city → area → zipCode) OR by dimensional introduction (3D → 4D).</p>
+    </div>
+    <div class="op-card">
+      <h4>🍕 Slice</h4>
+      <p>Selection on ONE dimension. Example: show all revenue where type = 'Flat'. Creates a "slice" through the cube on one axis.</p>
+    </div>
+    <div class="op-card">
+      <h4>🎲 Dice</h4>
+      <p>Selection on TWO OR MORE dimensions. Example: revenue where type='Flat' AND time='Q1'. Creates a sub-cube.</p>
+    </div>
+    <div class="op-card" style="grid-column: span 2">
+      <h4>🔄 Pivot</h4>
+      <p>Rotates the data to provide an alternative view of the SAME data. Example: swap x-axis (location) with y-axis (time). Does not change the data — only the perspective.</p>
+    </div>
+  </div>
+
+  <div class="exam-alert">
+    <h3>⚠️ Common Confusion: Slice vs Dice</h3>
+    <p><strong>Slice = 1 dimension constrained.</strong> Dice = 2+ dimensions constrained. Both are sub-operations of "slice and dice" but they are distinct.</p>
+  </div>
+
+  <h2>33.4 OLAP Tools</h2>
+
+  <h3>33.4.1 Codd's 12 Rules for OLAP (1993)</h3>
+  <p>E.F. Codd (same Codd of relational DB fame) formulated these as requirements for OLAP tool selection:</p>
+
+  <div class="rule-grid">
+    <div class="rule-item"><div class="rule-num">1</div><div>Multidimensional conceptual view — model must match enterprise dimensions</div></div>
+    <div class="rule-item"><div class="rule-num">2</div><div>Transparency — underlying DB and architecture invisible to users</div></div>
+    <div class="rule-item"><div class="rule-num">3</div><div>Accessibility — access all data from heterogeneous sources (relational, nonrelational, legacy)</div></div>
+    <div class="rule-item"><div class="rule-num">4</div><div>Consistent reporting performance — no degradation as dimensions/aggregations grow</div></div>
+    <div class="rule-item"><div class="rule-num">5</div><div>Client-server architecture — optimal performance, flexibility, scalability</div></div>
+    <div class="rule-item"><div class="rule-num">6</div><div>Generic dimensionality — all dimensions equal in structure and operational capabilities</div></div>
+    <div class="rule-item"><div class="rule-num">7</div><div>Dynamic sparse matrix handling — efficient storage of empty cells (nulls)</div></div>
+    <div class="rule-item"><div class="rule-num">8</div><div>Multi-user support — concurrent access by group of users</div></div>
+    <div class="rule-item"><div class="rule-num">9</div><div>Unrestricted cross-dimensional operations — auto roll-up across dimensions</div></div>
+    <div class="rule-item"><div class="rule-num">10</div><div>Intuitive data manipulation — point-and-click and drag-and-drop actions on cube cells</div></div>
+    <div class="rule-item"><div class="rule-num">11</div><div>Flexible reporting — any view of data in any row/column/cell arrangement</div></div>
+    <div class="rule-item"><div class="rule-num">12</div><div>Unlimited dimensions and aggregation levels — no artificial restrictions</div></div>
+  </div>
+
+  <h2>33.4.3 Categories of OLAP Servers</h2>
+
+  <div class="olap-cats">
+    <div class="cat-card">
+      <h4>MOLAP — Multidimensional OLAP</h4>
+      <p>Uses specialised multidimensional data structures (MDDBMSs) and array technology. Data pre-aggregated for fast queries. Best for specific decision-support applications. Issues: limited data volume, requires specialised skills.</p>
+    </div>
+    <div class="cat-card">
+      <h4>ROLAP — Relational OLAP</h4>
+      <p>Uses relational DBMS with a metadata layer. Creates multidimensional views from 2D relations. No static multidimensional structure needed. Fastest growing. Issues: performance with complex queries, needs middleware.</p>
+    </div>
+    <div class="cat-card">
+      <h4>HOLAP — Hybrid OLAP</h4>
+      <p>Combines ROLAP and MOLAP. Delivers data from DBMS or via MOLAP server to desktop as a cube. Issues: significant data redundancy, consistency problems between users, limited data capacity.</p>
+    </div>
+    <div class="cat-card">
+      <h4>DOLAP — Desktop OLAP</h4>
+      <p>Stores OLAP data in client-based files. Multidimensional engine runs on the client. Small extracts of data held on client machines. Issues: security (data physically extracted), deployment effort, thin-client trend.</p>
+    </div>
+  </div>
+
+  <div class="keypoints">
+    <h3>⚡ Quick OLAP Architecture Memory Aid</h3>
+    <ul class="clean">
+      <li><strong>MOLAP:</strong> M = Multidimensional storage (own proprietary structure)</li>
+      <li><strong>ROLAP:</strong> R = Relational storage (existing RDBMS + metadata layer)</li>
+      <li><strong>HOLAP:</strong> H = Hybrid of MOLAP + ROLAP</li>
+      <li><strong>DOLAP:</strong> D = Desktop (client-side cube, small extracts)</li>
+    </ul>
+  </div>
+
+  <h2>33.5 OLAP Extensions to SQL</h2>
+
+  <p>SQL was extended with OLAP functions in SQL:2003 (IBM + Oracle jointly proposed) and enhanced in SQL:2008 and SQL:2011. Two key feature sets:</p>
+
+  <h3>ROLLUP — Subtotals at Multiple Levels</h3>
+
+  <div class="def">
+    <strong>ROLLUP</strong>
+    Creates subtotals at <strong>n+1 levels</strong> (where n = number of grouping columns). Rolls up from most detailed level to a grand total, following the column list order.
+  </div>
+
+<pre>SELECT propertyType, yearMonth, city, SUM(saleAmount) AS sales
+FROM Branch, PropertyForSale, PropertySale
+WHERE ...
+GROUP BY ROLLUP(propertyType, yearMonth, city);
+-- With n=3, produces 3+1 = 4 aggregation levels:
+-- 1. propertyType + yearMonth + city (detailed)
+-- 2. propertyType + yearMonth (subtotal across cities)
+-- 3. propertyType (subtotal across yearMonth and city)
+-- 4. Grand total</pre>
+
+  <h3>CUBE — All Possible Subtotal Combinations</h3>
+
+  <div class="def">
+    <strong>CUBE</strong>
+    Generates ALL possible subtotals for a data cube with specified dimensions. With n columns, produces 2<sup>n</sup> combinations (vs ROLLUP's n+1).
+  </div>
+
+<pre>GROUP BY CUBE(propertyType, yearMonth, city);
+-- With n=3: 2³ = 8 levels of aggregation
+-- Includes everything ROLLUP produces PLUS additional cross-combinations
+-- E.g., city totals for combined property types (not in ROLLUP)</pre>
+
+  <p><strong>When to use CUBE vs ROLLUP:</strong></p>
+  <ul class="clean">
+    <li>Use <strong>ROLLUP</strong> when dimensions have a natural hierarchy (year → month → day) — less meaningful combos</li>
+    <li>Use <strong>CUBE</strong> for cross-tabular reports with independent dimensions (propertyType × yearMonth × city)</li>
+  </ul>
+
+  <h3>33.5.2 RANK and DENSE_RANK</h3>
+
+<pre>SELECT branchNo, SUM(saleAmount) AS sales,
+       RANK() OVER (ORDER BY SUM(saleAmount) DESC) AS ranking,
+       DENSE_RANK() OVER (ORDER BY SUM(saleAmount) DESC) AS dense_ranking
+FROM ...
+GROUP BY(branchNo);</pre>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Function</th><th>Behaviour on Ties</th></tr>
+      <tr><td>RANK()</td><td>Leaves gaps. Three tied at 2nd place → next rank is 5th.</td></tr>
+      <tr><td>DENSE_RANK()</td><td>No gaps. Three tied at 2nd place → next rank is 3rd.</td></tr>
+    </table>
+  </div>
+
+  <h3>Windowing — Moving Averages & Sums</h3>
+<pre>AVG(SUM(saleAmount)) OVER (ORDER BY yearMonth ROWS 2 PRECEDING)
+-- Calculates 3-month moving average (current + 2 preceding months)</pre>
+  <p>Moving windows can compute: cumulative sums, moving averages, moving min/max. Returns a value for each row based on other rows in the window.</p>
+</div>
+
+<!-- ===================== Q BANK ===================== -->
+<div id="qbank" class="page">
+  <div class="hero">
+    <div class="sub">Exam Question Bank</div>
+    <h1>Likely Questions & Answers</h1>
+    <p style="margin-top:10px;color:var(--muted);font-size:14px;">Based on the Review Questions from Connolly & Begg Chapters 31–33. Click questions to expand.</p>
+  </div>
+
+  <style>
+    details { border: 1px solid var(--rule); border-radius: 4px; margin-bottom: 10px; }
+    summary {
+      cursor: pointer;
+      padding: 13px 16px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 13px;
+      background: var(--cream);
+      list-style: none;
+    }
+    summary::before { content: '▶ '; color: var(--accent); font-size: 11px; }
+    details[open] summary::before { content: '▼ '; }
+    details[open] { border-color: var(--accent2); }
+    .ans { padding: 14px 18px; font-size: 14.5px; line-height: 1.7; }
+    .ans ul { padding-left: 18px; margin: 6px 0; }
+    .ans li { margin-bottom: 5px; }
+    .tag {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px; letter-spacing: .07em;
+      text-transform: uppercase;
+      padding: 2px 7px; border-radius: 3px;
+      margin-right: 6px;
+    }
+    .tag.ch31 { background: #fde8e8; color: #c0392b; }
+    .tag.ch32 { background: #e8f5e9; color: #2c6e49; }
+    .tag.ch33 { background: #e8f0fe; color: #2c3e90; }
+    .tag.hot { background: #fff3cd; color: #7a6000; }
+  </style>
+
+  <h2>Chapter 31 Questions</h2>
+
+  <details>
+    <summary><span class="tag ch31">Ch31</span><span class="tag hot">🔥 Hot</span>Discuss what is meant by subject-oriented, integrated, time-variant, and nonvolatile when describing a data warehouse.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Subject-oriented:</strong> Organised around major business subjects (customers, products, sales) rather than application areas (invoicing, stock control). Supports decision-making, not transaction processing.</li>
+        <li><strong>Integrated:</strong> Data sourced from multiple inconsistent enterprise-wide systems. Made consistent (e.g., standardised gender codes M/F vs Male/Female) to present a unified view.</li>
+        <li><strong>Time-variant:</strong> Data is valid at a specific point in time or time interval. DW stores historical data as snapshots — unlike OLTP which only holds current data. Time is always associated with data.</li>
+        <li><strong>Nonvolatile:</strong> Data is not updated in real-time. New data supplements existing data rather than replacing it. Once loaded, records stay permanently.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch31">Ch31</span><span class="tag hot">🔥 Hot</span>Discuss how OLTP systems differ from data warehousing systems.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Purpose:</strong> OLTP = operational processing; DW = analytical processing</li>
+        <li><strong>Data age:</strong> OLTP = current; DW = historical</li>
+        <li><strong>Data latency:</strong> OLTP = real-time; DW = depends on ETL refresh cycle</li>
+        <li><strong>Granularity:</strong> OLTP = detailed only; DW = detailed + lightly summarised + highly summarised</li>
+        <li><strong>Processing:</strong> OLTP = predictable inserts/updates/deletes, high throughput; DW = unpredictable ad-hoc queries, low-medium throughput</li>
+        <li><strong>Reporting:</strong> OLTP = one-dimensional, static, predictable; DW = multidimensional, dynamic, unpredictable</li>
+        <li><strong>Users:</strong> OLTP = many operational users; DW = fewer managerial users</li>
+        <li><strong>Key relationship:</strong> OLTP provides source data for the DW. OLTP data is often inconsistent and must be cleaned before loading.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch31">Ch31</span>Describe the main functions of the ETL Manager, Warehouse Manager, Query Manager, and Metadata Repository.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>ETL Manager:</strong> Performs all extraction, transformation, and loading of data into the warehouse. Extraction = copies from source systems. Transformation = cleans, standardises, creates surrogate keys. Loading = applies constraints as data enters DW.</li>
+        <li><strong>Warehouse Manager:</strong> Manages data INSIDE the warehouse. Functions: consistency analysis, merging source data, creating indexes/views, generating denormalizations and aggregations, archiving and backing up data.</li>
+        <li><strong>Query Manager:</strong> Manages user queries. Functions: directing queries to appropriate tables, scheduling execution of queries. May generate query profiles.</li>
+        <li><strong>Metadata Repository:</strong> Stores "data about data." Three uses: (1) ETL — maps source fields to warehouse; (2) Warehouse management — automates aggregation; (3) Query management — directs queries to correct source. Major challenge: synchronising metadata across different vendor tools.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch31">Ch31</span>Discuss the main benefits and problems of data warehousing.</summary>
+    <div class="ans">
+      <p><strong>Benefits:</strong></p>
+      <ul>
+        <li>High ROI (IDC study: 401% three-year average)</li>
+        <li>Competitive advantage through access to customer/trend/demand data</li>
+        <li>Increased productivity — integrated consistent historical data enables better decisions</li>
+      </ul>
+      <p><strong>Problems:</strong></p>
+      <ul>
+        <li>Underestimation of ETL resources</li>
+        <li>Hidden source system problems surfacing late</li>
+        <li>Required data not captured by existing OLTP systems</li>
+        <li>Increasing end-user demands after deployment</li>
+        <li>Data homogenization risks</li>
+        <li>High resource demand (disk space for large fact tables)</li>
+        <li>Data ownership conflicts</li>
+        <li>High maintenance as business processes change</li>
+        <li>Long-duration projects</li>
+        <li>Complexity of integrating tools from different vendors</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch31">Ch31</span>Discuss how data marts differ from data warehouses and identify reasons for implementing a data mart.</summary>
+    <div class="ans">
+      <p><strong>Data Mart:</strong> A subset of corporate data supporting a particular business unit or group sharing the same business process. Smaller, faster to build, lower cost.</p>
+      <p><strong>Key difference from EDW:</strong> Data mart serves one department/process; EDW serves the entire enterprise.</p>
+      <p><strong>Kimball vs Inmon on data marts:</strong> Kimball = data marts integrate to form EDW (bottom-up). Inmon = data marts receive data from EDW (top-down).</p>
+      <p><strong>Reasons to implement:</strong></p>
+      <ul>
+        <li>Give users access to frequently needed data</li>
+        <li>Provide data in business-unit-specific format</li>
+        <li>Improve response time (less data volume)</li>
+        <li>Provide structured data for OLAP/data mining tools</li>
+        <li>Simpler, less complex ETL</li>
+        <li>Lower cost (time, money, resources)</li>
+        <li>Potential users more clearly defined — easier to justify project</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2>Chapter 32 Questions</h2>
+
+  <details>
+    <summary><span class="tag ch32">Ch32</span><span class="tag hot">🔥 Hot</span>Compare and contrast Inmon's CIF and Kimball's Business Dimensional Lifecycle.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Inmon's CIF:</strong> Top-down. Start with full enterprise data model → implement EDW → feed data marts. Uses ER modeling and 3NF. Best when enterprise-wide requirements needed ASAP and large budget available. Advantage: consistent comprehensive enterprise view. Disadvantage: large complex project, may fail within budget.</li>
+        <li><strong>Kimball's BDL:</strong> Bottom-up. Identify business processes → build first data mart using dimensionality modeling → integrate data marts → form EDW. Uses star schema (denormalised). Best when a group's needs must be met quickly. Advantage: delivers value faster. Disadvantage: may never form a consistent enterprise view.</li>
+        <li><strong>Common goal:</strong> Both aim to deliver an EDW supporting all enterprise information needs. They just take different routes.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch32">Ch32</span><span class="tag hot">🔥 Hot</span>What are star, snowflake, and starflake schemas? What are their advantages?</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Star schema:</strong> Fact table in center surrounded by denormalised dimension tables. Fastest query performance. Most intuitive. Recommended for DW.</li>
+        <li><strong>Snowflake schema:</strong> Fact table in center surrounded by normalised dimension tables (dimensions can have sub-dimensions). Reduces storage redundancy but requires more joins — can hurt performance.</li>
+        <li><strong>Starflake schema:</strong> Mix of star and snowflake. Some dimensions normalised, others denormalised based on query needs.</li>
+      </ul>
+      <p><strong>Advantages of the dimensional model generally:</strong></p>
+      <ul>
+        <li>Efficiency — consistent structure allows efficient access by various tools</li>
+        <li>Handles changing requirements — all dimensions are equivalent in providing access to fact table</li>
+        <li>Extensibility — can add new facts, new dimensions, new dimensional attributes</li>
+        <li>Models common business situations — well-understood patterns (e.g., SCD)</li>
+        <li>Predictable query processing — drill-down and drill-across are well-defined operations</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch32">Ch32</span>Discuss the four-step process for creating a dimensional model (Phase I of Kimball's BDL).</summary>
+    <div class="ans">
+      <ol style="padding-left:18px;line-height:2">
+        <li><strong>Select Business Process:</strong> Choose the subject matter (e.g., property sales). First DM should be most deliverable, answer most commercially important questions, and establish conformed dimensions. Best choice = sales/finance.</li>
+        <li><strong>Declare Grain:</strong> Define what one fact record represents (e.g., individual property sale). Must choose grain before identifying dimensions. Grain should be the lowest level of detail available.</li>
+        <li><strong>Choose Dimensions:</strong> Set context for analysing facts. Identify at correct grain. Conformed dimensions = shared across multiple DMs. Must be identical or one must be a subset of the other.</li>
+        <li><strong>Identify Facts:</strong> Must be at the grain level. Must be numeric and additive. Non-numeric (text), non-additive, or wrong-granularity items do not belong in the fact table.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch32">Ch32</span>What are slowly changing dimensions? Describe Types 1, 2, and 3.</summary>
+    <div class="ans">
+      <p>SCDs arise when "constant" dimensions (Branch, Staff, Client) actually change slowly over time. The DW must decide how to handle old vs new values.</p>
+      <ul>
+        <li><strong>Type 1 (Overwrite):</strong> New value simply replaces old value. No history. Simple but loses historical accuracy.</li>
+        <li><strong>Type 2 (New Record):</strong> A new dimension record is created when the value changes. Old record preserved. Full history maintained. Most commonly used in data warehousing.</li>
+        <li><strong>Type 3 (Alternate Attribute):</strong> A new column is added to the dimension table to hold both old and new values simultaneously in the same record. Limited history — only one prior value tracked.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch32">Ch32</span>Identify and discuss the purpose of surrogate keys in dimensional modeling.</summary>
+    <div class="ans">
+      <p>A <strong>surrogate key</strong> is a simple integer key assigned in the DW to replace the <strong>natural key</strong> from the OLTP source system.</p>
+      <p><strong>Why use surrogate keys?</strong></p>
+      <ul>
+        <li>Gives DW independence from OLTP systems — if OLTP changes its natural keys (e.g., branchNo format changes), the DW is unaffected</li>
+        <li>Simple integers → more efficient joins and indexing</li>
+        <li>Supports SCD Type 2 — multiple surrogate keys can exist for the same natural key (representing different time periods)</li>
+        <li>Provides a single consistent key even when data comes from multiple source systems with different key formats</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2>Chapter 33 Questions</h2>
+
+  <details>
+    <summary><span class="tag ch33">Ch33</span><span class="tag hot">🔥 Hot</span>Describe the five multidimensional operations available in OLAP.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Roll-Up:</strong> Aggregates data by moving UP the dimensional hierarchy (e.g., city → region) OR by reducing dimensions (4D → 3D). Results in less detail, higher aggregation.</li>
+        <li><strong>Drill-Down:</strong> Reverse of roll-up. Reveals detailed data. Moves DOWN the hierarchy (region → city → area) OR by adding a dimension (3D → 4D). Results in more detail.</li>
+        <li><strong>Slice:</strong> Selection on ONE dimension of the cube. Creates a 2D "slice." Example: show all revenue where type = 'Flat'.</li>
+        <li><strong>Dice:</strong> Selection on TWO OR MORE dimensions. Creates a sub-cube. Example: revenue where type='Flat' AND time='Q1'.</li>
+        <li><strong>Pivot:</strong> Rotates the data to provide an alternative view. Changes axis orientation without changing data. Example: swap location (x) with time (y) axes.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch33">Ch33</span><span class="tag hot">🔥 Hot</span>Describe the four categories of OLAP servers.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>MOLAP (Multidimensional OLAP):</strong> Uses specialised multidimensional database (MDDBMS) and array technology. Data preaggregated. Excellent performance for specific applications. Limited data volume; requires specialised skills.</li>
+        <li><strong>ROLAP (Relational OLAP):</strong> Uses existing RDBMS + metadata layer. Creates multidimensional views from 2D relations. Fastest growing. Issues: complex query performance; needs middleware.</li>
+        <li><strong>HOLAP (Hybrid OLAP):</strong> Combines ROLAP and MOLAP. Delivers subsets of data from DBMS or MOLAP server to desktop as cube. Issues: data redundancy; consistency problems across users.</li>
+        <li><strong>DOLAP (Desktop OLAP):</strong> Stores OLAP data in client-based files. Client machine holds small data extracts and runs multidimensional engine locally. Issues: security; thin-client trend makes this harder to manage.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch33">Ch33</span>State and briefly explain Codd's 12 rules for OLAP tools.</summary>
+    <div class="ans">
+      <ol style="padding-left:18px;line-height:2;font-size:14px">
+        <li><strong>Multidimensional conceptual view</strong> — model must match users' multidimensional enterprise view</li>
+        <li><strong>Transparency</strong> — underlying technology invisible to users</li>
+        <li><strong>Accessibility</strong> — access data from all heterogeneous sources</li>
+        <li><strong>Consistent reporting performance</strong> — no degradation as dimensions/aggregations increase</li>
+        <li><strong>Client-server architecture</strong> — efficient in client-server environment</li>
+        <li><strong>Generic dimensionality</strong> — all dimensions equal in structure and capability</li>
+        <li><strong>Dynamic sparse matrix handling</strong> — efficient storage of empty cube cells (nulls)</li>
+        <li><strong>Multi-user support</strong> — concurrent users on same or different models</li>
+        <li><strong>Unrestricted cross-dimensional operations</strong> — auto roll-up within and across dimensions</li>
+        <li><strong>Intuitive data manipulation</strong> — point-and-click, drag-and-drop on cube cells</li>
+        <li><strong>Flexible reporting</strong> — any arrangement of rows, columns, cells</li>
+        <li><strong>Unlimited dimensions and aggregation levels</strong> — no artificial restrictions</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch33">Ch33</span>Explain the ROLLUP and CUBE extensions to SQL. How many aggregation levels does each produce?</summary>
+    <div class="ans">
+      <p><strong>Both extend GROUP BY to produce multiple levels of aggregation in a single query.</strong></p>
+      <p><strong>ROLLUP:</strong></p>
+      <ul>
+        <li>Produces subtotals rolling up from most detailed to grand total, following column list order</li>
+        <li>With n columns → produces <strong>n+1 levels</strong> of aggregation</li>
+        <li>Example: ROLLUP(propertyType, yearMonth, city) with n=3 → 4 levels</li>
+        <li>Best for natural hierarchies (year → month → day)</li>
+      </ul>
+      <p><strong>CUBE:</strong></p>
+      <ul>
+        <li>Generates ALL possible combinations of subtotals for a data cube</li>
+        <li>With n columns → produces <strong>2<sup>n</sup> combinations</strong></li>
+        <li>Example: CUBE(propertyType, yearMonth, city) with n=3 → 8 combinations</li>
+        <li>Best for cross-tabular reports with independent dimensions</li>
+        <li>Includes everything ROLLUP produces PLUS additional combinations (e.g., city totals across property types)</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch33">Ch33</span>What is the difference between RANK() and DENSE_RANK() in SQL OLAP extensions?</summary>
+    <div class="ans">
+      <p>Both rank records based on measure values. The difference appears when there are ties:</p>
+      <ul>
+        <li><strong>RANK():</strong> Leaves gaps in the sequence. If three records tie for 2nd place, next rank is 5th (2nd, 2nd, 2nd, 5th).</li>
+        <li><strong>DENSE_RANK():</strong> No gaps. If three records tie for 2nd place, next rank is 3rd (2nd, 2nd, 2nd, 3rd).</li>
+      </ul>
+      <p>Syntax: <code class="inline">RANK() OVER (ORDER BY columnList)</code></p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag ch33">Ch33</span>What is the relationship between OLAP and data warehousing?</summary>
+    <div class="ans">
+      <ul>
+        <li>A data warehouse stores large volumes of historical data.</li>
+        <li>OLAP tools sit ON TOP of the data warehouse and provide multidimensional analytical access to that data.</li>
+        <li>Together: DW + OLAP + Data Mining = Business Intelligence (BI) technologies.</li>
+        <li>OLAP goes beyond general query tools — it answers "why?" questions, not just "what?" and "who?" questions.</li>
+        <li>Data warehouse must be organised appropriately (star schema) to enable high-performance OLAP queries.</li>
+        <li>Real-time DW poses a challenge for OLAP — OLAP tools assume data is static; changing data during a query creates problems.</li>
+      </ul>
+    </div>
+  </details>
+
+  <h2>Batini et al. — Schema Integration Questions</h2>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span><span class="tag hot">🔥 Hot</span>What is schema integration? Distinguish between view integration and database integration.</summary>
+    <div class="ans">
+      <p><strong>Schema integration</strong> is the activity of integrating the schemas of existing or proposed databases into a global, unified schema.</p>
+      <p><strong>View integration</strong> occurs during database design — it produces a global conceptual description of a <em>proposed</em> database by merging schemas that different user groups or designers have produced independently.</p>
+      <p><strong>Database integration</strong> occurs in distributed database management — it produces the global schema of a collection of <em>existing</em> databases. The global schema is a virtual view of all databases taken together, allowing users to query them as if they were one system.</p>
+      <p><strong>Key difference:</strong> View integration deals with proposed databases during design; database integration deals with existing, already-deployed databases.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span><span class="tag hot">🔥 Hot</span>What are the four activities of the schema integration process?</summary>
+    <div class="ans">
+      <ol style="padding-left:18px;line-height:2;font-size:14px">
+        <li><strong>Preintegration:</strong> Analysis before integration. Decide which schemas to integrate, in what order, and what preferences to assign. Global strategy (binary vs n-ary, amount of designer interaction) decided here.</li>
+        <li><strong>Comparison of Schemas:</strong> Schemas are analysed and compared to determine correspondences among concepts and detect conflicts (naming conflicts: homonyms, synonyms; structural conflicts: type, dependency, key, behavioral).</li>
+        <li><strong>Conforming the Schemas:</strong> Conflicts are resolved through schema transformations (renaming, type transformations, restructuring) to make schemas compatible for merging. Requires close interaction with designers — automatic resolution is generally not feasible.</li>
+        <li><strong>Merging and Restructuring:</strong> Schemas are superimposed to produce an intermediate integrated schema. Restructuring improves the schema with respect to completeness, minimality, and understandability.</li>
+      </ol>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span><span class="tag hot">🔥 Hot</span>What are the causes of schema diversity? Give examples.</summary>
+    <div class="ans">
+      <p>Three root causes:</p>
+      <ul>
+        <li><strong>Different perspectives:</strong> Different user groups model the same real-world objects differently. Example: Employee–Department modelled as a direct relationship in one schema, but via Employee–Project–Department in another.</li>
+        <li><strong>Equivalence among constructs:</strong> Multiple combinations of modelling constructs can equivalently represent the same domain. Example: Publisher as an attribute of Book in one schema vs Publisher as a separate entity with a relationship in another.</li>
+        <li><strong>Incompatible design specifications:</strong> Erroneous choices regarding names, types, or constraints. Example: Employee assigned to one project (1:n) in one schema, but many projects (n:m) in another — only one is correct.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span>Distinguish between homonyms and synonyms in schema integration.</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Homonyms:</strong> The same name is used for two <em>different</em> concepts in different schemas. Example: "Equipment" refers to computers in one schema and furniture in another. Risk: merging without detection produces a single entity for two distinct objects.</li>
+        <li><strong>Synonyms:</strong> Two different names refer to the <em>same</em> concept. Example: "Client" and "Customer" in two schemas refer to the same real-world entity. Risk: keeping both in the integrated schema models one object with two separate entities.</li>
+      </ul>
+      <p>Homonyms can be detected automatically by checking for name matches. Synonyms require external specification — they cannot be detected by name comparison alone. Data dictionaries are useful tools for managing both.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span>What are structural conflicts? Name and explain the four types.</summary>
+    <div class="ans">
+      <p>Structural conflicts arise from different choices of modelling constructs or integrity constraints. Four types:</p>
+      <ul>
+        <li><strong>Type conflicts:</strong> Same concept represented by different modelling constructs. Example: Publisher as attribute in one schema, entity in another.</li>
+        <li><strong>Dependency conflicts:</strong> Same concepts related by different dependencies. Example: Marriage is 1:1 in one schema (one spouse) but m:n in another (records marriage history).</li>
+        <li><strong>Key conflicts:</strong> Different keys for the same concept. Example: Employee identified by SS# in one schema, by EmpID in another.</li>
+        <li><strong>Behavioral conflicts:</strong> Different insertion/deletion policies for the same class. Example: In one schema a department can exist without employees; in another, deleting the last employee triggers deletion of the department.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span>What are the three goals (qualitative criteria) of the integrated schema?</summary>
+    <div class="ans">
+      <ul>
+        <li><strong>Completeness and Correctness:</strong> The integrated schema must contain all concepts present in any component schema, correctly represented. It must represent the union of all application domains.</li>
+        <li><strong>Minimality:</strong> If the same concept appears in more than one component schema, it must appear only once in the integrated schema. Redundant relationships, derived attributes, and cycles are identified and eliminated.</li>
+        <li><strong>Understandability:</strong> The integrated schema should be easy to understand for both designer and end user. Among all possible equivalent representations, the most understandable one should be chosen.</li>
+      </ul>
+    </div>
+  </details>
+
+  <details>
+    <summary><span class="tag" style="background:#e8f0fe;color:#2c3e90">Batini</span>How does schema integration relate to data warehousing?</summary>
+    <div class="ans">
+      <ul>
+        <li>Inmon's "Integrated" property in the SITN definition is precisely what schema integration achieves — a single unified view of data from multiple inconsistent sources.</li>
+        <li>A typical organisation has multiple OLTP systems with overlapping, inconsistent schemas — exactly the scenario Batini addresses.</li>
+        <li>The ETL Transformation step in a DW project is the practical implementation of Batini's conforming and merging stages — standardising formats, resolving naming conflicts, creating surrogate keys.</li>
+        <li>Inmon's CIF methodology uses ER modelling and 3NF — the same modelling tradition as the dominant Batini methodologies.</li>
+        <li>"Complexity of integration" is listed as a DW problem in Ch 31 — Batini's paper is the theoretical framework for addressing exactly that complexity.</li>
+      </ul>
+    </div>
+  </details>
+
+  <hr>
+  <div class="exam-alert">
+    <h3>📋 Final Pre-Exam Checklist</h3>
+    <ul class="clean">
+      <li>☐ Can recite Inmon's 4 properties (SITN) with examples</li>
+      <li>☐ Can draw OLTP vs DW comparison table from memory</li>
+      <li>☐ Know all 10+ DW architecture components and their roles</li>
+      <li>☐ Know ETL three stages (Extraction, Transformation, Loading)</li>
+      <li>☐ Can distinguish Star vs Snowflake vs Starflake schema</li>
+      <li>☐ Know Kimball's 4-step DM process (Select BP, Grain, Dimensions, Facts)</li>
+      <li>☐ Know SCD Types 1, 2, 3</li>
+      <li>☐ Know surrogate key purpose</li>
+      <li>☐ Know all 5 OLAP operations (Roll-up, Drill-down, Slice, Dice, Pivot)</li>
+      <li>☐ Know 4 OLAP categories (MOLAP/ROLAP/HOLAP/DOLAP)</li>
+      <li>☐ Know Codd's 12 rules (at least the names)</li>
+      <li>☐ Know ROLLUP produces n+1 levels, CUBE produces 2ⁿ levels</li>
+      <li>☐ Know RANK vs DENSE_RANK difference</li>
+      <li>☐ Know schema integration definition (view integration vs database integration)</li>
+      <li>☐ Know the 4 integration activities (Preintegration → Compare → Conform → Merge/Restructure)</li>
+      <li>☐ Know 3 causes of schema diversity</li>
+      <li>☐ Know naming conflicts (homonyms vs synonyms)</li>
+      <li>☐ Know 4 structural conflict types (type, dependency, key, behavioral)</li>
+      <li>☐ Know 3 goals of integrated schema (completeness, minimality, understandability)</li>
+      <li>☐ Can connect Batini to Inmon's "Integrated" property and ETL</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================== BATINI ===================== -->
+<div id="batini" class="page">
+  <div class="hero">
+    <div class="sub">Batini, Lenzerini & Navathe · ACM Computing Surveys · 1986</div>
+    <h1>Database Schema Integration</h1>
+    <p style="margin-top:10px;color:var(--muted);font-size:14px;">A Comparative Analysis of Methodologies for Database Schema Integration — the theoretical foundation for the "Integrated" property in Inmon's SITN definition.</p>
+  </div>
+
+  <div class="exam-alert">
+    <h3>⚠️ Why This Paper Matters for Your Midterm</h3>
+    <p>Khalid Saleem assigned this to give the DW integration problem a formal theoretical grounding. Ch 31 says a DW must be "integrated" — this paper explains <em>how</em> that integration is done methodologically. Focus on: the definition of schema integration, causes of schema diversity, the 4 integration activities, types of conflicts, and goals of the integrated schema.</p>
+  </div>
+
+  <h2>What is Schema Integration?</h2>
+
+  <div class="def">
+    <strong>Schema Integration</strong>
+    The activity of integrating the schemas of existing or proposed databases into a <em>global, unified schema</em>.
+  </div>
+
+  <p>It occurs in two contexts:</p>
+  <ul class="clean">
+    <li><strong>View Integration</strong> (in database design): Produces a global conceptual description of a <em>proposed</em> database. Multiple designers/user groups produce their own schemas independently, then these are merged during conceptual design.</li>
+    <li><strong>Database Integration</strong> (in distributed databases): Produces the global schema of a <em>collection of existing</em> databases. The global schema is a virtual view of all databases taken together in a distributed database environment.</li>
+  </ul>
+
+  <div class="keypoints">
+    <h3>⚡ The Core Motivation</h3>
+    <p>One of the fundamental principles of the database approach is that a database allows a <strong>nonredundant, unified representation</strong> of all data managed in an organisation. This is only achievable when methodologies exist to support integration across organisational and application boundaries. This is precisely what the "Integrated" property in Inmon's SITN definition demands of a data warehouse.</p>
+  </div>
+
+  <h2>Why Schema Integration Is Needed</h2>
+
+  <p>Two reasons integration is necessary:</p>
+  <ul class="clean">
+    <li>The structure of a database for large organisations is too complex to be modelled by a single designer in a single view.</li>
+    <li>User groups typically operate independently and have their own requirements and expectations of data — which may conflict with other user groups.</li>
+  </ul>
+
+  <p>The preferred phase to perform integration is <strong>conceptual design</strong> — after requirements analysis but before implementation design. Doing it too early (requirements phase) is difficult because requirements are unstructured. Doing it too late (implementation phase) loses the power of abstraction.</p>
+
+  <h2>1.2 Causes of Schema Diversity</h2>
+
+  <p>Why do schemas from different designers/user groups differ? Three root causes:</p>
+
+  <h3>1. Different Perspectives</h3>
+  <p>Different user groups adopt their own viewpoints when modelling the same real-world objects. Example: one schema models Employee → Department directly; another schema models it via Employee → Project → Department. Same reality, different representations.</p>
+
+  <h3>2. Equivalence Among Constructs</h3>
+  <p>Multiple combinations of modelling constructs can represent the same domain equivalently. Example: "Publisher" modelled as an <em>attribute</em> of Book in one schema, but as a separate <em>entity</em> with a relationship in another. Both are valid — but incompatible for merging without transformation.</p>
+
+  <h3>3. Incompatible Design Specifications</h3>
+  <p>Erroneous choices regarding names, types, integrity constraints. Example: one schema shows Employee assigned to exactly one project (cardinality 1:n), while the correct schema allows many projects (n:m). A good integration methodology must detect such errors.</p>
+
+  <h2>1.2.4 Semantic Relationships Between Representations</h2>
+
+  <p>When the same concept appears in two schemas as representations R₁ and R₂, they can be:</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Relationship</th><th>Meaning</th></tr>
+      <tr><td>Identical</td><td>R₁ and R₂ are exactly the same — same constructs, same perceptions, no incoherence</td></tr>
+      <tr><td>Equivalent</td><td>Not exactly the same because different but equivalent constructs were applied — same perception, coherent</td></tr>
+      <tr><td>Compatible</td><td>Neither identical nor equivalent — but not contradictory either</td></tr>
+      <tr><td>Incompatible</td><td>Contradictory due to incoherence in specification — these are <strong>conflicts</strong></td></tr>
+    </table>
+  </div>
+
+  <p>Situations (2), (3), and (4) can all be interpreted as <strong>conflicts</strong>. A conflict = any situation that gives rise to R₁ and R₂ not being identical. <strong>Conflicts and their resolutions are central to the problems of integration.</strong></p>
+
+  <h2>1.3 The Four Steps of Schema Integration</h2>
+
+  <p>Every integration methodology — regardless of its specific approach — can be understood as a combination of these four activities:</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <h4>Preintegration</h4>
+        <p>Analysis of schemas <em>before</em> integration to decide on integration policy: which schemas to integrate, in what order, what preferences to assign to schemas or portions of schemas. Global strategies are also decided here — how much designer interaction is needed, how many schemas to integrate at once. Collection of additional information (constraints, assertions among views) also happens here.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <h4>Comparison of Schemas</h4>
+        <p>Schemas are analysed and compared to determine correspondences among concepts and detect possible conflicts. Two types of conflicts: <strong>naming conflicts</strong> and <strong>structural conflicts</strong>. Interschema properties may also be discovered during this step.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <h4>Conforming the Schemas</h4>
+        <p>Once conflicts are detected, an effort is made to resolve them so that merging becomes possible. Automatic conflict resolution is generally not feasible — close interaction with designers and users is required. Schema transformations are the key mechanism: renaming, type transformations, restructuring.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-body">
+        <h4>Merging and Restructuring</h4>
+        <p>Schemas are superimposed (merged) to produce an intermediate integrated schema. The result is then restructured to achieve the three qualitative goals: <strong>completeness</strong>, <strong>minimality</strong>, and <strong>understandability</strong>.</p>
+      </div>
+    </div>
+  </div>
+
+  <h2>2.6 Types of Conflicts (Comparison Step)</h2>
+
+  <h3>Naming Conflicts</h3>
+
+  <div class="ops-grid">
+    <div class="op-card">
+      <h4>Homonyms</h4>
+      <p>The same name is used for two <em>different</em> concepts in different schemas. Example: "Equipment" means computers in Schema 1 but furniture in Schema 2. Merging without detection would create a single entity for two distinct real-world objects.</p>
+    </div>
+    <div class="op-card">
+      <h4>Synonyms</h4>
+      <p>The same concept is described by two <em>different</em> names. Example: "Client" in Schema 1 and "Customer" in Schema 2 refer to the same real-world concept. Keeping both in the integrated schema would model one object with two entities.</p>
+    </div>
+  </div>
+
+  <h3>Structural Conflicts</h3>
+
+  <p>Conflicts arising from different choices of modelling constructs or integrity constraints:</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Type</th><th>Definition</th><th>Example</th></tr>
+      <tr><td>Type Conflicts</td><td>Same concept represented by different modelling constructs in different schemas</td><td>"Publisher" is an attribute in Schema 1 but an entity in Schema 2</td></tr>
+      <tr><td>Dependency Conflicts</td><td>Same group of concepts related by different dependencies in different schemas</td><td>Marriage is 1:1 in one schema (one spouse) but m:n in another (marriage history)</td></tr>
+      <tr><td>Key Conflicts</td><td>Different keys assigned to the same concept in different schemas</td><td>Employee identified by SS# in Schema 1 but by EmpID in Schema 2</td></tr>
+      <tr><td>Behavioral Conflicts</td><td>Different insertion/deletion policies for the same class of objects</td><td>In Schema 1 a department can exist without employees; in Schema 2 deleting the last employee deletes the department</td></tr>
+    </table>
+  </div>
+
+  <h2>2.7 Conforming — Schema Transformations</h2>
+
+  <p>To resolve conflicts, schema transformations are applied. The goal is to reach a common canonical representation so that schemas can be merged. Examples:</p>
+  <ul class="clean">
+    <li><strong>Renaming:</strong> Resolves naming conflicts — unify "Topics" and "Keyword" into a single name</li>
+    <li><strong>Type transformations:</strong> Transform an attribute into an entity (or vice versa) to reach structural compatibility</li>
+    <li><strong>Restructuring:</strong> Simplify representation after merging</li>
+  </ul>
+  <p>Important: no methodology surveyed provides a formal proof that its set of transformations is <em>complete</em> — i.e., capable of resolving any possible conflict.</p>
+
+  <h2>2.8 Goals of the Integrated Schema (Merging & Restructuring)</h2>
+
+  <p>After merging, the integrated schema is tested against three qualitative criteria:</p>
+
+  <div class="scd-grid">
+    <div class="scd-card">
+      <h4>Completeness & Correctness</h4>
+      <p>The integrated schema must contain all concepts present in <em>any</em> component schema, correctly. It must represent the <em>union</em> of all application domains of the component schemas.</p>
+    </div>
+    <div class="scd-card">
+      <h4>Minimality</h4>
+      <p>If the same concept appears in more than one component schema, it must appear only <em>once</em> in the integrated schema. Redundant relationships, derived attributes, and cycles are identified and eliminated.</p>
+    </div>
+    <div class="scd-card">
+      <h4>Understandability</h4>
+      <p>The integrated schema should be easy to understand for both the designer and end user. Among all possible equivalent representations, the most understandable one should be chosen.</p>
+    </div>
+  </div>
+
+  <h2>Integration Processing Strategies</h2>
+
+  <p>Methodologies differ in how many schemas they integrate at one time:</p>
+
+  <div class="table-wrap">
+    <table>
+      <tr><th>Strategy</th><th>How it works</th><th>Advantage</th></tr>
+      <tr><td>Binary — Ladder</td><td>Integrate two schemas at a time; each step takes a new component schema and merges it with the current intermediate result</td><td>Resolves conflicts in favour of the growing integrated schema; simpler at each step</td></tr>
+      <tr><td>Binary — Balanced</td><td>Schemas divided into pairs at the start; integrated symmetrically</td><td>Minimises number of comparisons among concepts</td></tr>
+      <tr><td>N-ary — One-shot</td><td>All n schemas integrated in a single step</td><td>Minimises number of integration steps; allows full semantic analysis before merging</td></tr>
+      <tr><td>N-ary — Iterative</td><td>Groups of schemas integrated iteratively</td><td>Most general; intermediate results refined progressively</td></tr>
+    </table>
+  </div>
+
+  <p>Most methodologies prefer <strong>binary strategies</strong> because the merging algorithm complexity is n² in the number of schemas — keeping n=2 at each step reduces complexity significantly.</p>
+
+  <h2>Connection to Data Warehousing (Ch 31–32)</h2>
+
+  <div class="keypoints">
+    <h3>⚡ How Batini Maps to Your DW Chapters</h3>
+    <ul class="clean">
+      <li><strong>Inmon's "Integrated" property</strong> = the end goal of schema integration. A DW integrates data from multiple OLTP systems that have exactly the naming and structural conflicts Batini describes.</li>
+      <li><strong>ETL Transformation step</strong> = practical implementation of Batini's conforming and merging stages. Standardising gender codes, date formats, field names during ETL = resolving naming and type conflicts.</li>
+      <li><strong>Inmon's CIF methodology</strong> uses ER modelling and 3NF — the same modelling tradition as most of Batini's surveyed methodologies (particularly Batini & Lenzerini 1984).</li>
+      <li><strong>Metadata in the DW</strong> (Section 31.3.3) = the integration mapping rules output that Batini identifies — tracking what happened to data from its source to its warehouse form.</li>
+      <li><strong>"Complexity of integration"</strong> listed as a DW problem in Ch 31 = the core problem Batini's paper addresses.</li>
+    </ul>
+  </div>
+
+  <h2>The Influence of the Conceptual Model</h2>
+
+  <p>Batini observes a fundamental trade-off in choosing a data model for integration:</p>
+  <ul class="clean">
+    <li><strong>Simpler model</strong> (e.g., relational): fewer type conflicts possible, simpler transformations, easier merging. But a weaker tool for discovering similarities and incompatibilities.</li>
+    <li><strong>Richer semantic model</strong> (e.g., ER model): more powerful for representing predefined groupings and comparing at a higher level of abstraction. But more complex to work with. Deals with a much wider spectrum of conflicts.</li>
+  </ul>
+  <p>The ER model and its variants dominate in practice — it is the most widely used model for schema integration and forms the basis of Batini & Lenzerini's own 1984 methodology.</p>
+
+  <h2>Interschema Properties</h2>
+
+  <p>During comparison and merging, hidden relationships between concepts in <em>different</em> schemas are discovered — these are called <strong>interschema properties</strong>. Example: Person in Schema 1 and Employee in Schema 2 have a subset relationship (all employees are persons) that was not visible in either component schema alone.</p>
+  <p>The most common interschema property used across methodologies is <strong>subsetting</strong> — the basis for accommodating multiple user perspectives on comparable classes of objects.</p>
+</div>
+
+<!-- ══════════ DATA PREPARATION ══════════ -->
+<div id="dataprep" class="page">
+<div class="hero">
+  <div class="sub">Slide W06-A · Slide W07</div>
+  <h1>Data Preparation &amp; Schema Matching</h1>
+  <p style="margin-top:10px;color:var(--muted);font-size:14px;">Erroneous values, missing values, outliers, univariate analysis, feature reduction, schema matching — Khalid's actual lecture slides.</p>
+</div>
+
+<h2>Erroneous Values</h2>
+<p>Even when data is in standard form, it cannot be assumed to be error-free. Erroneous values arise due to: measurement errors, subjective judgments, malfunctioning or misuse of automatic recording equipment.</p>
+<div class="keypoints"><h3>⚡ Two Categories (Slide W06-A)</h3>
+<ul class="clean">
+  <li><strong>Possible values of the attribute</strong> — valid for the dataset but incorrectly recorded (noisy values)</li>
+  <li><strong>Not possible values</strong> — clearly invalid, fails format/range check (invalid values)</li>
+</ul></div>
+
+<h3>Noisy Values</h3>
+<div class="def"><strong>Noisy Value</strong>
+<p>A value that is <strong>valid for the dataset but is incorrectly recorded.</strong> Example: 69.72 accidentally entered as 6.972. Or the colour <em>brown</em> accidentally recorded as <em>blue</em>. Noise is a perpetual problem — the value looks plausible so automated format checks miss it.</p></div>
+
+<h3>Invalid Values</h3>
+<p>Noisy values that are also <strong>invalid for the dataset</strong> — fail a format or range check. Examples: 69.7X (letter in numeric field), bbrown (extra character). Can be easily detected and corrected/rejected.</p>
+
+<h2>Cleaning Data — Sorting Approach</h2>
+<p>Hard to spot errors buried in 100,000 values. <strong>Sorting values into ascending order</strong> can reveal:</p>
+<div class="table-wrap"><table>
+<tr><th>What You Observe</th><th>What It Means / What to Do</th></tr>
+<tr><td>Variable takes only 6 distinct values, widely separated</td><td>Treat as categorical, not continuous</td></tr>
+<tr><td>All values identical</td><td>"Ignore" attribute — no analytical value</td></tr>
+<tr><td>All values identical except one</td><td>Decide: error or genuinely significant?</td></tr>
+<tr><td>Values outside normal range (e.g., 22654.8 when range is 200–5000)</td><td>Investigate: data entry error or equipment malfunction</td></tr>
+<tr><td>One value abnormally frequent ("Albania" in 10% of country fields)</td><td>Likely default value problem — first list option auto-selected</td></tr>
+<tr><td>Age = 72 in many records of a student survey</td><td>Default DOB (01/01/1930) converted to age by poorly designed program</td></tr>
+</table></div>
+
+<h2>Outliers</h2>
+<div class="def"><strong>Outlier</strong>
+<p>A <strong>genuine value significantly different from all others.</strong> NOT necessarily an error. Recognition of outliers may be the key to major discoveries — especially in medicine, physics, financial fraud. Do NOT blindly discard or adjust them.</p></div>
+
+<h2>Missing Values — Two Types</h2>
+<ul class="clean">
+  <li><strong>Attribute not applicable:</strong> e.g., certain medical data only meaningful for female patients. Best approach: split dataset into two parts and treat separately.</li>
+  <li><strong>Attribute should be recorded but isn't:</strong> Equipment malfunction, form fields added after data collection started, information that could not be obtained.</li>
+</ul>
+
+<h2>Two Strategies for Missing Values</h2>
+<div class="ops-grid">
+  <div class="op-card" style="border-top-color:var(--accent4)">
+    <h4 style="color:var(--accent4)">Strategy 1 — Discard Instances</h4>
+    <p>Delete ALL instances with at least one missing value. Use the remainder.<br><br><strong>Advantage:</strong> Conservative — no artificial errors introduced.<br><strong>Disadvantage:</strong> Discarding data damages reliability. NOT recommended in general. Useless when most instances have missing values.<br><br><strong>Use when:</strong> Missing proportion is small.</p>
+  </div>
+  <div class="op-card" style="border-top-color:var(--accent2)">
+    <h4 style="color:var(--accent2)">Strategy 2 — Replace by Estimate</h4>
+    <p>Estimate each missing value using values that ARE present.<br><br><strong>Categorical attributes:</strong> Most frequent non-missing value.<br><strong>Continuous attributes:</strong> Average (mean) value.<br><br><strong>Less cautious.</strong> May introduce noise. Use when missing proportion is large. Caution: if attribute is genuinely inapplicable for some instances, replacement gives invalid results.</p>
+  </div>
+</div>
+<p><strong>Key point from slide:</strong> There is no single method better than all others for all datasets. Experiment with multiple strategies.</p>
+
+<h2>Univariate Analysis — Numerical Statistics (Slide W06-A)</h2>
+<div class="table-wrap"><table>
+<tr><th>Statistic</th><th>Equation</th><th>Description</th><th>Visualised By</th></tr>
+<tr><td>Count</td><td>N</td><td>Number of observations of the variable</td><td>Histogram</td></tr>
+<tr><td>Minimum</td><td>Min</td><td>Smallest value of the variable</td><td>Box Plot</td></tr>
+<tr><td>Maximum</td><td>Max</td><td>Largest value of the variable</td><td>Box Plot</td></tr>
+<tr><td>Mean</td><td>x̄ = ΣX/N</td><td>Sum of values divided by count</td><td>Box Plot</td></tr>
+<tr><td>Median</td><td>X̃</td><td>Middle value — equal numbers above and below</td><td>Box Plot</td></tr>
+<tr><td>Mode</td><td>—</td><td>Most frequent value. Can be more than one.</td><td>Histogram</td></tr>
+<tr><td>Quantile</td><td>Q_k</td><td>Cut points dividing data into equal-count groups (Quartile, Quintile, Percentile)</td><td>Box Plot</td></tr>
+<tr><td>Range</td><td>Max − Min</td><td>Difference between maximum and minimum</td><td>Box Plot</td></tr>
+<tr><td>Variance</td><td>S² = Σ(X−x̄)²/(N−1)</td><td>Measure of data dispersion</td><td>Histogram</td></tr>
+<tr><td>Std Deviation</td><td>S = √S²</td><td>Square root of variance</td><td>Histogram</td></tr>
+</table></div>
+
+<h2>Feature / Dimension Reduction</h2>
+<div class="def"><strong>Feature Reduction / Dimension Reduction</strong>
+<p>Reducing the number of attributes before processing a dataset. Modern storage is cheap so organisations record everything — but too many irrelevant attributes add computational overhead and cause data mining algorithms to perform poorly.</p></div>
+<p>Example from slide: 10,000 attributes per supermarket customer. Goal: predict who will buy cat food. Only 5–10 attributes matter. At best, irrelevant attributes add overhead. At worst, they cause poor predictions.</p>
+
+<h2>Schema Matching (Slide W07)</h2>
+<div class="def"><strong>Schema Matching</strong>
+<p>Takes two schemas/ontologies as input and produces a <strong>mapping between elements of the two schemas that correspond semantically to each other.</strong></p></div>
+<div class="ops-grid">
+  <div class="op-card"><h4>1-1 Match</h4><p>One element in Source A maps to exactly one element in Source B.<br>Example: <code>price</code> ↔ <code>listed-price</code></p></div>
+  <div class="op-card"><h4>Complex Match</h4><p>One element maps to a combination of elements.<br>Example: <code>author-name</code> ↔ <code>a-fname + a-lname</code></p></div>
+</div>
+<p>Schema matching applies to: Distributed Databases, Data Warehousing, Data Mining, Information Retrieval, Knowledge Extraction, and Mediation systems.</p>
+</div>
+
+<!-- ══════════ LAB & SQL ══════════ -->
+<div id="labsql" class="page">
+<div class="hero">
+  <div class="sub">Lab · SQL Server · Apache Spark · Databricks · Excel</div>
+  <h1>Lab Work &amp; Advanced SQL</h1>
+  <p style="margin-top:10px;color:var(--muted);font-size:14px;">Your exact lab SQL files with your exact dataset. Every query explained line-by-line with real output. He said advanced SQL will be in the paper.</p>
+</div>
+
+<div class="exam-alert"><h3>🔥 What Khalid Will Test from Lab</h3>
+<p>He made you run ROLLUP and CUBE in SQL Server and introduced Apache Spark/Databricks. He explicitly said <strong>advanced SQL will be in the paper.</strong> Expect: write a ROLLUP/CUBE query, explain NULL rows, know n+1 vs 2ⁿ formula, write RANK vs DENSE_RANK, write a window function. He gave you 4 lab tasks:</p>
+<ul class="clean">
+  <li><strong>Task 1:</strong> Pivot Table in Excel — summarise sales by Region and Product_Category</li>
+  <li><strong>Task 2:</strong> Bar/Line Graphs in Excel — visualise student performance (marks vs subjects)</li>
+  <li><strong>Task 3:</strong> SQL CUBE — build a data cube for sales analysis</li>
+  <li><strong>Task 4:</strong> SQL ROLLUP — aggregate data city → region → country</li>
+</ul></div>
+
+<h2>Your Actual Dataset — sales_dataset.csv</h2>
+<p>Columns: Date, Country, Region, City, Product_Category, Product, Sales_Amount, Quantity. All data is Pakistan-based across 3 regions, 3 categories.</p>
+<div class="table-wrap"><table>
+<tr><th>Date</th><th>Country</th><th>Region</th><th>City</th><th>Category</th><th>Product</th><th>Sales_Amount</th><th>Qty</th></tr>
+<tr><td>2024-01-05</td><td>Pakistan</td><td>Punjab</td><td>Multan</td><td>Electronics</td><td>Mobile</td><td>50,000</td><td>5</td></tr>
+<tr><td>2024-01-06</td><td>Pakistan</td><td>Punjab</td><td>Lahore</td><td>Electronics</td><td>Laptop</td><td>120,000</td><td>3</td></tr>
+<tr><td>2024-01-07</td><td>Pakistan</td><td>Sindh</td><td>Karachi</td><td>Furniture</td><td>Chair</td><td>15,000</td><td>10</td></tr>
+<tr><td>2024-01-08</td><td>Pakistan</td><td>Sindh</td><td>Karachi</td><td>Furniture</td><td>Table</td><td>30,000</td><td>4</td></tr>
+<tr><td>2024-01-09</td><td>Pakistan</td><td>KPK</td><td>Peshawar</td><td>Clothing</td><td>Shirt</td><td>8,000</td><td>20</td></tr>
+<tr><td>2024-02-01</td><td>Pakistan</td><td>Punjab</td><td>Multan</td><td>Electronics</td><td>Tablet</td><td>40,000</td><td>6</td></tr>
+<tr><td>2024-02-02</td><td>Pakistan</td><td>Punjab</td><td>Lahore</td><td>Clothing</td><td>Jeans</td><td>20,000</td><td>8</td></tr>
+<tr><td>2024-02-03</td><td>Pakistan</td><td>Sindh</td><td>Karachi</td><td>Electronics</td><td>Mobile</td><td>60,000</td><td>7</td></tr>
+<tr><td>2024-02-04</td><td>Pakistan</td><td>KPK</td><td>Peshawar</td><td>Furniture</td><td>Sofa</td><td>70,000</td><td>2</td></tr>
+<tr><td>2024-02-05</td><td>Pakistan</td><td>Punjab</td><td>Faisalabad</td><td>Clothing</td><td>Jacket</td><td>25,000</td><td>5</td></tr>
+<tr><td>2024-03-01</td><td>Pakistan</td><td>Punjab</td><td>Lahore</td><td>Electronics</td><td>Laptop</td><td>150,000</td><td>4</td></tr>
+<tr><td>2024-03-02</td><td>Pakistan</td><td>Sindh</td><td>Karachi</td><td>Clothing</td><td>Shirt</td><td>10,000</td><td>15</td></tr>
+<tr><td>2024-03-03</td><td>Pakistan</td><td>KPK</td><td>Peshawar</td><td>Electronics</td><td>Mobile</td><td>45,000</td><td>6</td></tr>
+<tr><td>2024-03-04</td><td>Pakistan</td><td>Punjab</td><td>Multan</td><td>Furniture</td><td>Table</td><td>35,000</td><td>3</td></tr>
+<tr><td>2024-03-05</td><td>Pakistan</td><td>Punjab</td><td>Faisalabad</td><td>Electronics</td><td>Tablet</td><td>30,000</td><td>4</td></tr>
+</table></div>
+
+<h2>Lab Task 4 — ROLLUP: Your Exact SQL File</h2>
+<p>This is the exact query from <strong>roll_up_in_lab_task.sql</strong>:</p>
+<pre><code class="inline">USE SalesDB;</code>
+
+SELECT 
+    Country,
+    Region,
+    City,
+    SUM(Sales_Amount) AS Total_Sales,
+    SUM(Quantity)     AS Total_Quantity
+FROM dbo.sales_dataset
+GROUP BY ROLLUP (Country, Region, City)
+ORDER BY Country, Region, City;</pre>
+
+<h3>Line-by-Line Explanation</h3>
+<ul class="clean">
+  <li><code>USE SalesDB</code> — selects the database where your table lives</li>
+  <li><code>FROM dbo.sales_dataset</code> — your actual imported CSV table</li>
+  <li><code>SUM(Sales_Amount) AS Total_Sales</code> — sums all sales amounts within each group</li>
+  <li><code>GROUP BY ROLLUP (Country, Region, City)</code> — this is the key part. Instead of just grouping by all three columns (plain GROUP BY), ROLLUP creates ADDITIONAL rows for subtotals and grand total</li>
+  <li><code>ORDER BY Country, Region, City</code> — sorts results (NULLs go to bottom in SQL Server by default)</li>
+</ul>
+
+<div class="keypoints"><h3>⚡ What ROLLUP Does — The Core Concept</h3>
+<p>ROLLUP(Country, Region, City) with n=3 columns produces <strong>n+1 = 4 levels</strong>:</p>
+<ul class="clean">
+  <li><strong>Level 1:</strong> GROUP BY Country + Region + City (full detail — each city row)</li>
+  <li><strong>Level 2:</strong> GROUP BY Country + Region (subtotal: all cities within each region)</li>
+  <li><strong>Level 3:</strong> GROUP BY Country (subtotal: all regions within each country)</li>
+  <li><strong>Level 4:</strong> GROUP BY nothing (grand total: everything)</li>
+</ul>
+<p>ROLLUP drops columns from the <strong>RIGHT side first</strong> at each level.</p></div>
+
+<h3>Expected Output with Your Data — Annotated</h3>
+<div class="table-wrap"><table>
+<tr><th>Country</th><th>Region</th><th>City</th><th>Total_Sales</th><th>Total_Qty</th><th>→ What This Row Is</th></tr>
+<tr><td>Pakistan</td><td>KPK</td><td>Peshawar</td><td>123,000</td><td>28</td><td style="color:var(--accent2);font-size:12px">Level 1: Peshawar city detail</td></tr>
+<tr style="background:rgba(240,165,0,.06)"><td>Pakistan</td><td>KPK</td><td>NULL</td><td>123,000</td><td>28</td><td style="color:var(--accent);font-size:12px">Level 2: All KPK cities combined</td></tr>
+<tr><td>Pakistan</td><td>Punjab</td><td>Faisalabad</td><td>55,000</td><td>9</td><td style="color:var(--accent2);font-size:12px">Level 1: Faisalabad detail</td></tr>
+<tr><td>Pakistan</td><td>Punjab</td><td>Lahore</td><td>290,000</td><td>15</td><td style="color:var(--accent2);font-size:12px">Level 1: Lahore detail</td></tr>
+<tr><td>Pakistan</td><td>Punjab</td><td>Multan</td><td>125,000</td><td>14</td><td style="color:var(--accent2);font-size:12px">Level 1: Multan detail</td></tr>
+<tr style="background:rgba(240,165,0,.06)"><td>Pakistan</td><td>Punjab</td><td>NULL</td><td>470,000</td><td>38</td><td style="color:var(--accent);font-size:12px">Level 2: All Punjab cities (55K+290K+125K)</td></tr>
+<tr><td>Pakistan</td><td>Sindh</td><td>Karachi</td><td>115,000</td><td>36</td><td style="color:var(--accent2);font-size:12px">Level 1: Karachi detail</td></tr>
+<tr style="background:rgba(240,165,0,.06)"><td>Pakistan</td><td>Sindh</td><td>NULL</td><td>115,000</td><td>36</td><td style="color:var(--accent);font-size:12px">Level 2: All Sindh cities</td></tr>
+<tr style="background:rgba(240,165,0,.1)"><td>Pakistan</td><td>NULL</td><td>NULL</td><td>708,000</td><td>102</td><td style="color:var(--accent);font-size:12px">Level 3: All Pakistan regions</td></tr>
+<tr style="background:rgba(240,165,0,.16)"><td>NULL</td><td>NULL</td><td>NULL</td><td>708,000</td><td>102</td><td style="color:var(--accent);font-size:12px">Level 4: GRAND TOTAL</td></tr>
+</table></div>
+
+<div class="exam-alert"><h3>⚠️ The NULL Rule — He Will Ask This</h3>
+<ul class="clean">
+  <li><strong>NULL in City only</strong> = subtotal across all cities within that specific Region</li>
+  <li><strong>NULL in City + Region</strong> = subtotal across all regions within that Country</li>
+  <li><strong>NULL in all columns</strong> = GRAND TOTAL (every row in the table)</li>
+  <li>Since all data is Pakistan, Level 3 (Pakistan total) and Level 4 (Grand Total) are the same number here</li>
+  <li>Use <code>COALESCE(City, 'ALL CITIES')</code> to replace NULLs with readable labels</li>
+</ul></div>
+
+<h2>Lab Task 3 — CUBE: Your Exact SQL File</h2>
+<p>This is the exact query from <strong>cube_in_lab_task.sql</strong>:</p>
+<pre><code class="inline">USE SalesDB;</code>
+
+SELECT * FROM dbo.sales_dataset;   <span style="color:#555;font-style:italic">-- first just view the data</span>
+
+SELECT 
+    Product_Category,
+    Region,
+    YEAR(Date) AS Year,
+    SUM(Sales_Amount) AS Total_Sales,
+    SUM(Quantity)     AS Total_Quantity
+FROM dbo.sales_dataset
+GROUP BY CUBE (Product_Category, Region, YEAR(Date));</pre>
+
+<div class="keypoints"><h3>⚡ What CUBE Does — The Core Concept</h3>
+<p>CUBE(Product_Category, Region, YEAR(Date)) with n=3 produces <strong>2³ = 8 combinations</strong>. Every possible grouping combination is generated:</p>
+<div class="table-wrap"><table>
+<tr><th>Combination</th><th>Category NULL?</th><th>Region NULL?</th><th>Year NULL?</th><th>Meaning</th></tr>
+<tr><td>(Cat, Reg, Yr)</td><td>No</td><td>No</td><td>No</td><td>Sales for specific category + region + year</td></tr>
+<tr><td>(Cat, Reg)</td><td>No</td><td>No</td><td>Yes</td><td>Category + region, ALL years combined</td></tr>
+<tr><td>(Cat, Yr)</td><td>No</td><td>Yes</td><td>No</td><td>Category + year, ALL regions combined</td></tr>
+<tr><td>(Reg, Yr)</td><td>Yes</td><td>No</td><td>No</td><td>Region + year, ALL categories combined</td></tr>
+<tr><td>(Cat)</td><td>No</td><td>Yes</td><td>Yes</td><td>Category only — total across all regions and years</td></tr>
+<tr><td>(Reg)</td><td>Yes</td><td>No</td><td>Yes</td><td>Region only — total across all categories and years</td></tr>
+<tr><td>(Yr)</td><td>Yes</td><td>Yes</td><td>No</td><td>Year only — total across all categories and regions</td></tr>
+<tr><td>(grand total)</td><td>Yes</td><td>Yes</td><td>Yes</td><td>Everything combined — one grand total row</td></tr>
+</table></div></div>
+
+<h3>Selected Output Rows — Annotated</h3>
+<div class="table-wrap"><table>
+<tr><th>Product_Category</th><th>Region</th><th>Year</th><th>Total_Sales</th><th>→ Combination Type</th></tr>
+<tr><td>Clothing</td><td>KPK</td><td>2024</td><td>8,000</td><td style="color:var(--accent2);font-size:12px">(Cat,Reg,Yr) — full detail</td></tr>
+<tr><td>Clothing</td><td>Punjab</td><td>2024</td><td>45,000</td><td style="color:var(--accent2);font-size:12px">(Cat,Reg,Yr) — full detail</td></tr>
+<tr style="background:rgba(240,165,0,.06)"><td>Clothing</td><td>NULL</td><td>2024</td><td>63,000</td><td style="color:var(--accent);font-size:12px">(Cat,Yr) — Clothing 2024, ALL regions</td></tr>
+<tr style="background:rgba(240,165,0,.06)"><td>Clothing</td><td>KPK</td><td>NULL</td><td>8,000</td><td style="color:var(--accent);font-size:12px">(Cat,Reg) — Clothing KPK, ALL years</td></tr>
+<tr style="background:rgba(240,165,0,.06)"><td>Clothing</td><td>NULL</td><td>NULL</td><td>63,000</td><td style="color:var(--accent);font-size:12px">(Cat) — Clothing total, ALL regions+years</td></tr>
+<tr style="background:rgba(91,141,238,.07)"><td>NULL</td><td>Punjab</td><td>2024</td><td>470,000</td><td style="color:var(--accent3);font-size:12px">(Reg,Yr) — Punjab 2024, ALL categories ← CUBE ONLY</td></tr>
+<tr style="background:rgba(91,141,238,.07)"><td>NULL</td><td>Punjab</td><td>NULL</td><td>470,000</td><td style="color:var(--accent3);font-size:12px">(Reg) — Punjab total, ALL cats+years ← CUBE ONLY</td></tr>
+<tr style="background:rgba(91,141,238,.07)"><td>NULL</td><td>NULL</td><td>2024</td><td>708,000</td><td style="color:var(--accent3);font-size:12px">(Yr) — 2024 grand total ← CUBE ONLY</td></tr>
+<tr style="background:rgba(240,165,0,.16)"><td>NULL</td><td>NULL</td><td>NULL</td><td>708,000</td><td style="color:var(--accent);font-size:12px">() — GRAND TOTAL</td></tr>
+</table></div>
+
+<div class="exam-alert"><h3>⚠️ CUBE vs ROLLUP — Critical Difference</h3>
+<ul class="clean">
+  <li><strong>ROLLUP</strong> only rolls up in one direction (left to right through columns). It would give (Cat,Reg,Yr), (Cat,Reg), (Cat), () — that's it</li>
+  <li><strong>CUBE</strong> gives ALL combinations. The blue rows above — (Region+Year), (Region), (Year) — are CUBE ONLY. ROLLUP would never produce them</li>
+  <li>This matters for lab task "Create dimensions (time, product, location), query the cube for insights" — CUBE gives you all cross-dimensional totals</li>
+</ul></div>
+
+<h2>ROLLUP vs CUBE — Formula Summary</h2>
+<pre>ROLLUP(A, B, C)  →  n = 3  →  n+1 = <span style="color:#f0a500">4</span> aggregation levels
+CUBE(A, B, C)    →  n = 3  →  2³  = <span style="color:#3ecf8e">8</span> combinations
+
+USE ROLLUP when: dimensions have natural hierarchy (Country→Region→City)
+USE CUBE when:   dimensions are independent (Category × Region × Year)
+
+CUBE always produces MORE rows than ROLLUP for same column set.</pre>
+
+<h2>Advanced SQL: RANK and DENSE_RANK</h2>
+<pre>-- Rank regions by total sales
+SELECT
+    Region,
+    SUM(Sales_Amount) AS Total_Sales,
+    RANK()       OVER (ORDER BY SUM(Sales_Amount) DESC) AS ranking,
+    DENSE_RANK() OVER (ORDER BY SUM(Sales_Amount) DESC) AS dense_ranking
+FROM dbo.sales_dataset
+GROUP BY Region;</pre>
+
+<div class="table-wrap"><table>
+<tr><th>Region</th><th>Total_Sales</th><th>RANK()</th><th>DENSE_RANK()</th></tr>
+<tr><td>Punjab</td><td>470,000</td><td>1</td><td>1</td></tr>
+<tr><td>KPK</td><td>123,000</td><td>2</td><td>2</td></tr>
+<tr><td>Sindh</td><td>115,000</td><td>3</td><td>3</td></tr>
+</table></div>
+
+<p>Now imagine KPK and Sindh have the same total (tie for 2nd):</p>
+<div class="table-wrap"><table>
+<tr><th>Region</th><th>Total_Sales</th><th>RANK()</th><th>DENSE_RANK()</th></tr>
+<tr><td>Punjab</td><td>470,000</td><td>1</td><td>1</td></tr>
+<tr><td>KPK</td><td>115,000</td><td>2</td><td>2</td></tr>
+<tr><td>Sindh</td><td>115,000</td><td>2</td><td>2</td></tr>
+<tr style="background:rgba(240,165,0,.08)"><td>Balochistan</td><td>50,000</td><td style="color:var(--accent4)">4 ← skips 3</td><td style="color:var(--accent2)">3 ← no skip</td></tr>
+</table></div>
+
+<div class="keypoints"><h3>⚡ RANK vs DENSE_RANK — Memorise This</h3>
+<ul class="clean">
+  <li><strong>RANK():</strong> Leaves gaps after ties. Two tied at 2nd → next is 4th. Like Olympic/sports rankings.</li>
+  <li><strong>DENSE_RANK():</strong> No gaps. Two tied at 2nd → next is 3rd. Dense continuous sequence.</li>
+  <li>Syntax: <code>RANK() OVER (ORDER BY column DESC)</code> — ORDER BY determines direction</li>
+</ul></div>
+
+<h2>Advanced SQL: Window Functions — Moving Averages</h2>
+<pre>-- Monthly sales for Punjab with 3-month moving average
+SELECT
+    YEAR(Date)  AS Year,
+    MONTH(Date) AS Month,
+    SUM(Sales_Amount) AS Monthly_Sales,
+
+    -- Moving average: current month + 2 preceding months
+    AVG(SUM(Sales_Amount)) OVER (
+        ORDER BY YEAR(Date), MONTH(Date)
+        ROWS 2 PRECEDING
+    ) AS Moving_Avg_3Month,
+
+    -- Running total: first month to current month
+    SUM(SUM(Sales_Amount)) OVER (
+        ORDER BY YEAR(Date), MONTH(Date)
+        ROWS UNBOUNDED PRECEDING
+    ) AS Running_Total
+
+FROM dbo.sales_dataset
+WHERE Region = 'Punjab'
+GROUP BY YEAR(Date), MONTH(Date)
+ORDER BY YEAR(Date), MONTH(Date);</pre>
+
+<div class="table-wrap"><table>
+<tr><th>Year</th><th>Month</th><th>Monthly_Sales</th><th>Moving_Avg_3Month</th><th>Running_Total</th></tr>
+<tr><td>2024</td><td>1</td><td>170,000</td><td>170,000 (1 month only)</td><td>170,000</td></tr>
+<tr><td>2024</td><td>2</td><td>85,000</td><td>127,500 (2 months avg)</td><td>255,000</td></tr>
+<tr><td>2024</td><td>3</td><td>215,000</td><td>156,667 (full 3-month)</td><td>470,000</td></tr>
+</table></div>
+
+<div class="keypoints"><h3>⚡ How ROWS 2 PRECEDING Works</h3>
+<ul class="clean">
+  <li>Month 1: window = [Month 1] → average of 1 value</li>
+  <li>Month 2: window = [Month 1, Month 2] → average of 2 values</li>
+  <li>Month 3+: window = [current-2, current-1, current] → average of 3 values</li>
+  <li><code>ROWS UNBOUNDED PRECEDING</code> = from very first row to current row = cumulative/running total</li>
+</ul></div>
+
+<h2>PARTITION BY — Advanced</h2>
+<pre>-- Rank product categories BY REGION (rank resets within each region)
+SELECT
+    Region,
+    Product_Category,
+    SUM(Sales_Amount) AS Total_Sales,
+    RANK() OVER (
+        PARTITION BY Region              -- rank resets for each Region
+        ORDER BY SUM(Sales_Amount) DESC
+    ) AS Rank_Within_Region
+FROM dbo.sales_dataset
+GROUP BY Region, Product_Category;</pre>
+
+<div class="table-wrap"><table>
+<tr><th>Region</th><th>Product_Category</th><th>Total_Sales</th><th>Rank_Within_Region</th></tr>
+<tr><td>KPK</td><td>Furniture</td><td>70,000</td><td>1 ← rank 1 within KPK</td></tr>
+<tr><td>KPK</td><td>Electronics</td><td>45,000</td><td>2</td></tr>
+<tr><td>KPK</td><td>Clothing</td><td>8,000</td><td>3</td></tr>
+<tr><td>Punjab</td><td>Electronics</td><td>340,000</td><td>1 ← rank resets for Punjab</td></tr>
+<tr><td>Punjab</td><td>Clothing</td><td>45,000</td><td>2</td></tr>
+<tr><td>Punjab</td><td>Furniture</td><td>35,000</td><td>3</td></tr>
+<tr><td>Sindh</td><td>Electronics</td><td>60,000</td><td>1 ← rank resets for Sindh</td></tr>
+<tr><td>Sindh</td><td>Furniture</td><td>45,000</td><td>2</td></tr>
+<tr><td>Sindh</td><td>Clothing</td><td>10,000</td><td>3</td></tr>
+</table></div>
+
+<h2>Lab Task 1: Pivot Table in Excel (sales_dataset)</h2>
+<p>Task: Summarise sales by Region and Product_Category. Result:</p>
+<div class="table-wrap"><table>
+<tr><th>Region \ Category</th><th>Clothing</th><th>Electronics</th><th>Furniture</th><th>Grand Total</th></tr>
+<tr><td>KPK</td><td>8,000</td><td>45,000</td><td>70,000</td><td>123,000</td></tr>
+<tr><td>Punjab</td><td>45,000</td><td>340,000</td><td>35,000</td><td>420,000</td></tr>
+<tr><td>Sindh</td><td>10,000</td><td>60,000</td><td>45,000</td><td>115,000</td></tr>
+<tr><td><strong>Grand Total</strong></td><td><strong>63,000</strong></td><td><strong>445,000</strong></td><td><strong>150,000</strong></td><td><strong>658,000</strong></td></tr>
+</table></div>
+<div class="keypoints"><h3>⚡ Insights from This Pivot Table</h3>
+<ul class="clean">
+  <li><strong>Top-selling category:</strong> Electronics (445,000) — 68% of all sales</li>
+  <li><strong>Top region:</strong> Punjab (420,000) — driven by Electronics (340,000)</li>
+  <li><strong>Underperforming:</strong> Clothing across all regions — only 63,000 total (9.5%)</li>
+  <li><strong>KPK strength:</strong> Furniture (70,000) — largest category in KPK despite small overall size</li>
+</ul></div>
+
+<h2>Lab Task 2: Graphs in Excel (student_performance.csv)</h2>
+<p>Task: Visualise student performance data — marks vs subjects, compare class performance.</p>
+<div class="table-wrap"><table>
+<tr><th>Student</th><th>Math</th><th>English</th><th>Science</th><th>Average</th></tr>
+<tr><td>Ali</td><td>85</td><td>78</td><td>88</td><td>83.7</td></tr>
+<tr><td>Sara</td><td>92</td><td>81</td><td>95</td><td>89.3 ← Top student</td></tr>
+<tr><td>Ahmed</td><td>70</td><td>65</td><td>72</td><td>69.0</td></tr>
+<tr><td>Ayesha</td><td>88</td><td>90</td><td>85</td><td>87.7</td></tr>
+<tr><td>Usman</td><td>60</td><td>55</td><td>65</td><td>60.0 ← Weakest</td></tr>
+<tr><td><strong>Class Avg</strong></td><td><strong>79</strong></td><td><strong>73.8</strong></td><td><strong>81</strong></td><td><strong>78</strong></td></tr>
+</table></div>
+<div class="keypoints"><h3>⚡ Insights for the Graphs</h3>
+<ul class="clean">
+  <li><strong>Bar chart:</strong> X-axis = students, Y-axis = marks, three bars per student (one per subject)</li>
+  <li><strong>Line chart:</strong> X-axis = subjects, separate line per student — shows each student's profile</li>
+  <li><strong>English</strong> is hardest (lowest class average: 73.8)</li>
+  <li><strong>Science</strong> is highest scoring (class average: 81)</li>
+  <li><strong>Sara</strong> is the top performer. <strong>Usman</strong> needs attention.</li>
+</ul></div>
+
+<h2>Apache Spark &amp; Databricks — What You Need to Know</h2>
+<div class="def"><strong>Apache Spark</strong>
+<p>A distributed computing framework for processing large-scale datasets across multiple machines (nodes) in parallel. Dramatically faster than traditional single-machine databases for big data workloads.</p></div>
+<div class="def"><strong>Databricks</strong>
+<p>A cloud-based platform built on Apache Spark. Provides a notebook interface (like Jupyter) to write and run Spark SQL queries. Managed Spark — you don't set up the cluster yourself.</p></div>
+<div class="keypoints"><h3>⚡ Key Facts for the Exam</h3>
+<ul class="clean">
+  <li>Khalid introduced Databricks as a platform to run SQL at scale — same SQL syntax works (ROLLUP, CUBE, RANK, window functions)</li>
+  <li>Databricks processes data in parallel across a cluster — this is why it handles massive datasets</li>
+  <li>In Databricks: load CSV → create DataFrame → register as table → run SQL on it</li>
+  <li>The conceptual understanding of ROLLUP, CUBE, RANK etc. is exactly the same whether you're in SQL Server, Databricks, or any other SQL system</li>
+</ul></div>
+
+<h2>SQL Quick Reference Card</h2>
+<div class="table-wrap"><table>
+<tr><th>Function</th><th>Syntax</th><th>Formula</th><th>When to use</th></tr>
+<tr><td>ROLLUP</td><td><code>GROUP BY ROLLUP(A,B,C)</code></td><td>n+1 levels</td><td>Hierarchical (Country→Region→City)</td></tr>
+<tr><td>CUBE</td><td><code>GROUP BY CUBE(A,B,C)</code></td><td>2ⁿ combos</td><td>Independent dimensions</td></tr>
+<tr><td>RANK</td><td><code>RANK() OVER (ORDER BY col DESC)</code></td><td>Gaps on ties</td><td>Standard ranking</td></tr>
+<tr><td>DENSE_RANK</td><td><code>DENSE_RANK() OVER (ORDER BY col DESC)</code></td><td>No gaps</td><td>Continuous ranking</td></tr>
+<tr><td>Moving AVG</td><td><code>AVG(SUM(col)) OVER (ORDER BY x ROWS 2 PRECEDING)</code></td><td>3-row window</td><td>Smooth time series</td></tr>
+<tr><td>Running SUM</td><td><code>SUM(SUM(col)) OVER (ORDER BY x ROWS UNBOUNDED PRECEDING)</code></td><td>Cumulative</td><td>Running totals</td></tr>
+<tr><td>PARTITION BY</td><td><code>RANK() OVER (PARTITION BY region ORDER BY sales DESC)</code></td><td>—</td><td>Rank within groups</td></tr>
+<tr><td>COALESCE</td><td><code>COALESCE(City, 'ALL CITIES')</code></td><td>—</td><td>Replace NULLs in output</td></tr>
+</table></div>
+</div>
+
+<script>
+  function show(id, el) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    el.classList.add('active');
+    window.scrollTo(0,0);
+  }
+</script>
+</body>
+</html>

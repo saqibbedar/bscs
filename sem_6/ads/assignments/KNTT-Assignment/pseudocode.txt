@@ -1,0 +1,35 @@
+Input: Time-series temperature dataset
+Parameters: 
+    Ω (window size), K (number of nearest trends)
+
+For each missing value in dataset:
+
+    1. Identify:
+        target_year
+        target_date (index)
+
+    2. Extract trend window:
+        from (date - Ω) to (date + Ω)
+        exclude missing value position
+
+    3. For each other year:
+        a. Extract same window (excluding missing index)
+        b. Compute distance:
+            distance = average absolute difference 
+                       between corresponding values
+
+    4. Store (year, distance)
+
+    5. Sort all years by distance (ascending)
+
+    6. Select top K nearest years
+
+    7. Get temperature values of missing date 
+       from these K years
+
+    8. Compute imputed value:
+        predicted_value = average of K values
+
+    9. Replace missing value with predicted_value
+
+Output: Dataset with imputed values
